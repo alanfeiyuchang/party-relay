@@ -1,0 +1,216 @@
+import SwiftUI
+
+/// 记分板：大分（赛点）为主，附上轮小分
+struct ScoreboardView: View {
+    @EnvironmentObject var store: GameStore
+    @State private var showResetConfirm = false
+
+    private var matchOver: Bool {
+        store.roundNumber >= store.totalRounds
+    }
+
+    private var isTied: Bool {
+        store.teams[0].score == store.teams[1].score
+    }
+
+    var body: some View {
+        ZStack {
+            PartyBackground()
+            VStack(spacing: 18) {
+                Text(L("board.title"))
+                    .font(.system(size: 36, weight: .black, design: .rounded))
+                    .padding(.top, 26)
+                Text(store.isOvertime
+                     ? L("board.overtime")
+                     : L("board.progress", store.roundNumber, store.totalRounds))
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.secondary)
+
+                // 大分
+                HStack(spacing: 16) {
+                    ForEach(store.teams) { team in
+                        VStack(spacing: 4) {
+                            ScoreBadge(team: team)
+                            Text(L("board.big_label"))
+                                .font(.caption.bold())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+
+                // 上轮小分
+                if let o = store.lastOutcome {
+                    HStack(spacing: 10) {
+                        Text("\(o.game.emoji) \(L("board.last_round_label"))")
+                            .font(.subheadline.bold())
+                        Text("\(store.teams[0].name) \(o.small[0]) : \(o.small[1]) \(store.teams[1].name)")
+                            .font(.headline.bold())
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 10)
+                    .background(Capsule().fill(.white.opacity(0.8)))
+
+                    if !o.words[0].isEmpty || !o.words[1].isEmpty {
+                        RoundWordsRecap(outcome: o)
+                    }
+                }
+
+                // 追分提示
+                if let trailing = store.trailingIndex, !matchOver {
+                    let diff = store.bigDiff
+                    VStack(spacing: 4) {
+                        if diff >= 2 {
+                            Text(L("board.trailing", store.teams[trailing].name, diff))
+                        }
+                        if store.pickEligibleTeam != nil {
+                            Text(L("board.pick_hint"))
+                        }
+                    }
+                    .font(.subheadline.bold())
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.orange.opacity(0.15)))
+                } else if isTied {
+                    Text(L("board.tied"))
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Button {
+                    FeedbackManager.shared.tap()
+                    store.nextTurn()
+                } label: {
+                    if matchOver {
+                        Label(isTied ? L("board.overtime_btn") : L("board.reveal"),
+                              systemImage: "flag.checkered.2.crossed")
+                    } else {
+                        Label(L("board.next_round", store.roundNumber + 1), systemImage: "arrow.right.circle.fill")
+                    }
+                }
+                .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))
+                .padding(.horizontal, 28)
+
+                Button(role: .destructive) {
+                    showResetConfirm = true
+                } label: {
+                    Label(L("board.reset"), systemImage: "arrow.counterclockwise")
+                        .font(.subheadline.bold())
+                }
+                .padding(.bottom, 24)
+            }
+        }
+        .confirmationDialog(L("board.reset_confirm_title"), isPresented: $showResetConfirm, titleVisibility: .visible) {
+            Button(L("board.reset_confirm_action"), role: .destructive) {
+                FeedbackManager.shared.tap()
+                store.resetToHome()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        }
+    }
+}
+
+/// 上轮两队各自出现过的词
+private struct RoundWordsRecap: View {
+    @EnvironmentObject var store: GameStore
+    var outcome: RoundOutcome
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(L("board.words_label"))
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 10) {
+                ForEach(0..<2, id: \.self) { i in
+                    WordChipColumn(words: outcome.words[i], team: store.teams[i])
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(.white.opacity(0.7)))
+        .padding(.horizontal, 20)
+    }
+}
+
+private struct WordChipColumn: View {
+    var words: [String]
+    var team: Team
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("\(team.emoji) \(team.name)")
+                .font(.caption2.bold())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            if words.isEmpty {
+                Text(L("board.no_words"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else {
+                ScrollView {
+                    FlowLayout(spacing: 5) {
+                        ForEach(Array(words.enumerated()), id: \.offset) { _, w in
+                            Text(w)
+                                .font(.caption2.bold())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Capsule().fill(team.gradient))
+                        }
+                    }
+                }
+                .frame(maxHeight: 110)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+/// 简单的自适应换行流式布局（用于词语标签墙）
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 200
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        return CGSize(width: width, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let width = bounds.width
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            view.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y),
+                       anchor: .topLeading, proposal: .unspecified)
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+    }
+}
