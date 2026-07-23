@@ -1,0 +1,9 @@
+{
+  "id" : "6d50b936-62a5-4820-a46e-bf43a646b1c3",
+  "targets" : [
+    {
+      "id" : "f9bd8683-65b6-4857-85cb-0b15c98c5271",
+      "name" : "PartyRelay"
+    }
+  ]
+}

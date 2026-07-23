@@ -1,0 +1,8 @@
+🎉 Welcome to PartyRelay!
+
+• Four party games in one wheel: Say & Guess, Draw & Guess, Lip Reading, and Charades
+• Open Buzz wheel modifier lets the opposing team steal points
+• Smart catch-up system keeps close matches close, without ever calling it out
+• Round-by-round word recap on the scoreboard
+• Optional privacy guard using motion sensing
+• Full English and Simplified Chinese localization

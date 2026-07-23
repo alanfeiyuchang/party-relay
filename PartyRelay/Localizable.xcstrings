@@ -11,16 +11,6 @@
         }
       }
     },
-    "%@ · %@%@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@%3$@"
-          }
-        }
-      }
-    },
     "%@ %@": {
       "localizations": {
         "en": {
@@ -41,6 +31,16 @@
         }
       }
     },
+    "%@ · %@%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@%3$@"
+          }
+        }
+      }
+    },
     "%@%@": {
       "localizations": {
         "en": {
@@ -53,10 +53,6 @@
     },
     "%lld": {},
     "+%lld": {},
-    "⚡️": {},
-    "🎉": {},
-    "🏆": {},
-    "🙈": {},
     "app.title": {
       "extractionState": "stale",
       "localizations": {
@@ -121,6 +117,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 %d 轮 · 转盘走起"
+          }
+        }
+      }
+    },
+    "board.no_words": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No words yet"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无"
           }
         }
       }
@@ -193,6 +206,57 @@
         }
       }
     },
+    "board.reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Game"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重开游戏"
+          }
+        }
+      }
+    },
+    "board.reset_confirm_action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重开"
+          }
+        }
+      }
+    },
+    "board.reset_confirm_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset the whole game?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确定要重开游戏吗？"
+          }
+        }
+      }
+    },
     "board.reveal": {
       "extractionState": "stale",
       "localizations": {
@@ -261,6 +325,23 @@
         }
       }
     },
+    "board.words_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words played this round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本轮出现过的词"
+          }
+        }
+      }
+    },
     "catchup.active": {
       "extractionState": "stale",
       "localizations": {
@@ -308,6 +389,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "时间 +%ds"
+          }
+        }
+      }
+    },
+    "common.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
           }
         }
       }
@@ -516,23 +614,6 @@
         }
       }
     },
-    "draw.word_hint": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap “Start drawing” to hide the word and open the canvas.\nScore buttons live on this word screen."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "按「开始作画」隐藏词语、打开画布\n答对 / 换一个 都在这个看词界面操作"
-          }
-        }
-      }
-    },
     "game.act.rule": {
       "extractionState": "stale",
       "localizations": {
@@ -716,6 +797,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "先手 %@ 上场 →"
+          }
+        }
+      }
+    },
+    "gamecard.info_plain": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both teams play once"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队各玩一遍"
           }
         }
       }
@@ -1774,23 +1872,6 @@
         }
       }
     },
-    "wheel.first_up": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "First up: %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "先手：%@"
-          }
-        }
-      }
-    },
     "wheel.overtime": {
       "extractionState": "stale",
       "localizations": {
@@ -1804,6 +1885,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "⚔️ 加时赛"
+          }
+        }
+      }
+    },
+    "wheel.pick_subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a game — no spin needed:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接选一个玩法，无需转盘："
           }
         }
       }
@@ -1893,142 +1991,10 @@
         }
       }
     },
-    "gamecard.info_plain": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Both teams play once"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "两队各玩一遍"
-          }
-        }
-      }
-    },
-    "wheel.pick_subtitle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pick a game — no spin needed:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "直接选一个玩法，无需转盘："
-          }
-        }
-      }
-    },
-    "board.reset": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset Game"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重开游戏"
-          }
-        }
-      }
-    },
-    "board.reset_confirm_title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset the whole game?"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "确定要重开游戏吗？"
-          }
-        }
-      }
-    },
-    "board.reset_confirm_action": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重开"
-          }
-        }
-      }
-    },
-    "common.cancel": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancel"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "取消"
-          }
-        }
-      }
-    },
-    "board.words_label": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Words played this round"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "本轮出现过的词"
-          }
-        }
-      }
-    },
-    "board.no_words": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No words yet"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "暂无"
-          }
-        }
-      }
-    }
+    "⚡️": {},
+    "🎉": {},
+    "🏆": {},
+    "🙈": {}
   },
   "version": "1.0"
 }

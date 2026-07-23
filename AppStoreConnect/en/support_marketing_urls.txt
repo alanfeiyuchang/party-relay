@@ -1,0 +1,6 @@
+Support URL: https://github.com/alanfeiyuchang/party-relay/issues
+Marketing URL (optional): https://github.com/alanfeiyuchang/party-relay
+
+Note: fill these in with a real support contact if you'd rather not point directly
+to GitHub Issues (e.g. a simple support page or a mailto: link). Apple requires a
+working Support URL before the app can go to review.

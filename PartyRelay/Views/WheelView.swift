@@ -48,9 +48,6 @@ struct WheelView: View {
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 16)
-                    Text(L("wheel.first_up", "\(store.teams[store.firstTeamIndex].emoji) \(store.teams[store.firstTeamIndex].name)"))
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.secondary)
                 }
                 .padding(.top, 16)
 

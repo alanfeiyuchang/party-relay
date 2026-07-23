@@ -1,0 +1,6 @@
+主要类别 Primary category: 游戏 Games
+次要类别建议 Secondary category: 游戏 > 家庭 Family，或 游戏 > 棋牌 Board
+年龄分级 Age rating: 4+（无不良内容、无对外分享的用户生成内容、无广告、无第三方统计 SDK、无联网行为）
+版权 Copyright: © 2026 [你的姓名或公司名] — 请替换为实际版权主体
+价格 Price: 免费（无内购）— 如计划收费或加入内购请调整
+隐私 Privacy: App 不收集任何数据（请在 App 隐私 部分确认——未集成任何统计/广告 SDK）

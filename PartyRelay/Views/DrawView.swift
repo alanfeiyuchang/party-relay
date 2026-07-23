@@ -121,10 +121,6 @@ struct DrawView: View {
                         .minimumScaleFactor(0.4)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
-                    Text(L("draw.word_hint"))
-                        .font(.caption.bold())
-                        .foregroundStyle(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 38)

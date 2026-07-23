@@ -1,0 +1,7 @@
+Primary category: Games
+Secondary category suggestion: Games > Family, or Games > Board
+Age rating: 4+ (no objectionable content, no user-generated content shared externally,
+no ads, no third-party analytics, no network access)
+Copyright: © 2026 [YOUR NAME OR COMPANY] — replace with the legal entity/individual name
+Price: Free (no IAP) — adjust if you plan to charge or add in-app purchases
+Privacy: App collects no data (confirm in App Privacy section — no analytics/ads SDKs used)

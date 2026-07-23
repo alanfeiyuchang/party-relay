@@ -1,0 +1,5 @@
+支持网址 Support URL: https://github.com/alanfeiyuchang/party-relay/issues
+营销网址 Marketing URL（可选）: https://github.com/alanfeiyuchang/party-relay
+
+说明：如果不想直接使用 GitHub Issues 作为支持入口，请替换成真实的客服联系方式
+（例如一个简单的支持页面或 mailto: 邮箱链接）。App Store 审核要求 Support URL 必须可正常访问。

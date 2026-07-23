@@ -62,11 +62,6 @@ struct PlayView: View {
             Text("\(game.emoji) \(game.title)")
                 .font(.system(size: 34, weight: .black, design: .rounded))
                 .foregroundStyle(game.gradient)
-            Text(game.rule)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 30)
             if store.openBuzz {
                 OpenBuzzBadge()
             }

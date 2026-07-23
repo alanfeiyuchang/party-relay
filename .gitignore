@@ -11,3 +11,7 @@ xcuserdata/
 # Swift Package Manager (not used, but harmless to ignore)
 .swiftpm/
 .build/
+
+# Scratch output for AppStoreConnect promo image generation (regenerate with scripts/build_all.py)
+AppStoreConnect/_build/
+__pycache__/
