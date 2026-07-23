@@ -66,10 +66,10 @@ Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String 
 
 | Game | Chinese entries | English entries |
 |---|---:|---:|
-| Say & Guess | 578 | 120 |
-| Draw & Guess | 570 | 120 |
-| Lip Reading | 570 | 120 |
-| Charades | 570 | 120 |
+| Say & Guess | 1778 | 120 |
+| Draw & Guess | 1770 | 120 |
+| Lip Reading | 1770 | 120 |
+| Charades | 1769 | 120 |
 
 Each is split across 3 internal difficulty tiers and hand-curated per game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes).
 

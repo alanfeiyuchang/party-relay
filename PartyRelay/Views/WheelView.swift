@@ -138,7 +138,10 @@ struct WheelView: View {
         let target = games.randomElement()!
         let index = games.firstIndex(of: target)!
         let sector = 360.0 / Double(games.count)
-        let sectorCenter = sector * (Double(index) + 0.5)
+        // WheelCanvas centers sector i at angle (-90° + sector·i), so the rotation
+        // that brings it under the fixed top pointer is a multiple of `sector`,
+        // not `sector·(i + 0.5)` — no extra half-sector offset.
+        let sectorCenter = sector * Double(index)
         let currentMod = rotation.truncatingRemainder(dividingBy: 360)
         var delta = -sectorCenter - currentMod
         while delta < 0 { delta += 360 }
