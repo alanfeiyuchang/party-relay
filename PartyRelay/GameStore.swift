@@ -174,6 +174,40 @@ final class GameStore: ObservableObject {
 
     func proceedToScoreboard() { phase = .scoreboard }
 
+    // MARK: - 主持人手动调分（纠错/裁决用，不影响自动计分流程）
+
+    /// 手动调整大分
+    func adjustBig(team: Int, delta: Int) {
+        let newVal = max(0, teams[team].score + delta)
+        guard newVal != teams[team].score else { return }
+        FeedbackManager.shared.tap()
+        teams[team].score = newVal
+    }
+
+    /// 手动调整上轮小分：同步重算该轮大分归属（先撤销原奖励再按新小分重发）
+    func adjustLastSmall(team: Int, delta: Int) {
+        guard var o = lastOutcome else { return }
+        let newVal = max(0, o.small[team] + delta)
+        guard newVal != o.small[team] else { return }
+        FeedbackManager.shared.tap()
+        o.small[team] = newVal
+
+        var newAwards = [0, 0]
+        if o.small[0] > o.small[1] {
+            newAwards[0] = 1
+        } else if o.small[1] > o.small[0] {
+            newAwards[1] = 1
+        } else {
+            newAwards = [1, 1]
+        }
+        for i in teams.indices {
+            teams[i].score = max(0, teams[i].score - o.awards[i] + newAwards[i])
+        }
+        o.awards = newAwards
+        lastOutcome = o
+        roundSmall = o.small
+    }
+
     /// 记分板 → 下一轮 / 加时 / 终局
     func nextTurn() {
         if roundNumber >= totalRounds {

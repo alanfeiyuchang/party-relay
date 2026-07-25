@@ -110,6 +110,8 @@ FEATURE_COPY = {
         "catchup":  ("Never a", "Blowout", "Trailing teams get a comeback boost — and late-game, they pick the next game outright."),
         "privacy":  ("Built-In", "Privacy Guard", "Hold it up to see the word, lay it flat to hide it automatically."),
         "recap":    ("Every Word,", "Remembered", "A full recap after each round settles every 'wait, was that the word?' debate."),
+        "drawguess": ("Draw It,", "They Guess It", "No letters or numbers — just your best sketch, one word at a time."),
+        "actguess": ("Act It Out,", "No Talking", "Gestures only — see how fast your team can read the room."),
     },
     "zh-Hans": {
         "games":    ("一个转盘，", "四种玩法", "你说我猜 · 你画我猜 · 唇语猜词 · 肢体模仿"),
@@ -117,6 +119,8 @@ FEATURE_COPY = {
         "catchup":  ("比赛永远", "势均力敌", "落后队伍会获得追分加成，决胜阶段甚至能直接指定玩法。"),
         "privacy":  ("内置", "防偷窥模式", "立起手机才看到词语，放平自动隐藏。"),
         "recap":    ("每个词，", "都不会忘记", "每轮结束后的完整回顾，终结所有“这真的是这个词吗”的争论。"),
+        "drawguess": ("画出来，", "让队友猜", "不能写字不能写数字——用你的画笔，一词一画。"),
+        "actguess": ("只用动作，", "不许出声", "全程不能说话——看队友能多快读懂你的表演。"),
     },
 }
 

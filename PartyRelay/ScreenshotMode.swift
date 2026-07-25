@@ -39,6 +39,19 @@ enum ScreenshotMode {
             store.firstTeamIndex = 0
             store.phase = .playing
 
+        case "act":
+            // 普通比手画脚（不带开放抢答、不带防偷窥），用于宣传素材单独展示这个玩法
+            MotionManager.debugOverride = .upright
+            store.settings.privacyGuardOn = false
+            store.teams[0].score = 2
+            store.teams[1].score = 1
+            store.roundNumber = 4
+            store.currentGame = .act
+            store.openBuzz = false
+            store.playingTeamIndex = 0
+            store.firstTeamIndex = 0
+            store.phase = .playing
+
         case "privacy":
             // 防偷窥模式开启 + 放平 → 防窥屏
             MotionManager.debugOverride = .flat

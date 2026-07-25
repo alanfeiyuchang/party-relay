@@ -47,8 +47,11 @@ FEATURE_SHOTS = {
     "catchup": "pick.png",
     "privacy": "privacy.png",
     "recap": "scoreboard.png",
+    "drawguess": "drawcanvas.png",
+    "actguess": "act.png",
 }
-FEATURE_BG = {"games": "games", "openbuzz": "buzz", "catchup": "catchup", "privacy": "privacy", "recap": "recap"}
+FEATURE_BG = {"games": "games", "openbuzz": "buzz", "catchup": "catchup", "privacy": "privacy", "recap": "recap",
+              "drawguess": "ocean", "actguess": "citrus"}
 
 manifest = []
 
@@ -61,7 +64,7 @@ for lang in LANGS:
             f.write(html)
         manifest.append((fname, f"hero/{lang}/{i:02d}-hero-{key}.png"))
 
-    for i, key in enumerate(["games", "openbuzz", "catchup", "privacy", "recap"], start=1):
+    for i, key in enumerate(["games", "openbuzz", "catchup", "privacy", "recap", "drawguess", "actguess"], start=1):
         html = feature_slide(lang, key, BG[FEATURE_BG[key]], f"{shot_prefix}-{FEATURE_SHOTS[key]}", FEATURE_BG[key])
         fname = f"feature-{i}-{key}-{lang}.html"
         with open(os.path.join(HTML_OUT, fname), "w", encoding="utf-8") as f:

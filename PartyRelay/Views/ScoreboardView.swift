@@ -26,33 +26,48 @@ struct ScoreboardView: View {
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
 
-                // 大分
+                // 大分（含主持人手动 +/−）
                 HStack(spacing: 16) {
                     ForEach(store.teams) { team in
-                        VStack(spacing: 4) {
+                        VStack(spacing: 6) {
                             ScoreBadge(team: team)
-                            Text(L("board.big_label"))
-                                .font(.caption.bold())
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 10) {
+                                AdjustButton(icon: "minus.circle.fill", tint: team.colors[0]) {
+                                    store.adjustBig(team: team.id, delta: -1)
+                                }
+                                Text(L("board.big_label"))
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.secondary)
+                                AdjustButton(icon: "plus.circle.fill", tint: team.colors[0]) {
+                                    store.adjustBig(team: team.id, delta: +1)
+                                }
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 24)
 
-                // 上轮小分
+                // 上轮小分（含主持人手动 +/−，改动自动重算该轮大分）
                 if let o = store.lastOutcome {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         Text("\(o.game.emoji) \(L("board.last_round_label"))")
-                            .font(.subheadline.bold())
-                        Text("\(store.teams[0].name) \(o.small[0]) : \(o.small[1]) \(store.teams[1].name)")
+                            .font(.caption.bold())
+                            .layoutPriority(1)
+                        SmallScoreStepper(teamIndex: 0, value: o.small[0])
+                        Text(":")
                             .font(.headline.bold())
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
+                        SmallScoreStepper(teamIndex: 1, value: o.small[1])
                     }
                     .foregroundStyle(.primary)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
                     .background(Capsule().fill(.white.opacity(0.8)))
+
+                    Text(L("board.adjust_hint"))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 30)
 
                     if !o.words[0].isEmpty || !o.words[1].isEmpty {
                         RoundWordsRecap(outcome: o)
@@ -114,6 +129,46 @@ struct ScoreboardView: View {
                 store.resetToHome()
             }
             Button(L("common.cancel"), role: .cancel) {}
+        }
+    }
+}
+
+/// 主持人调分 +/− 小圆钮
+private struct AdjustButton: View {
+    var icon: String
+    var tint: Color
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(tint)
+                .background(Circle().fill(.white).padding(2))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// 上轮小分步进器：− 数字 +（修改会触发该轮大分重算）
+private struct SmallScoreStepper: View {
+    @EnvironmentObject var store: GameStore
+    var teamIndex: Int
+    var value: Int
+
+    var body: some View {
+        let team = store.teams[teamIndex]
+        HStack(spacing: 5) {
+            AdjustButton(icon: "minus.circle.fill", tint: team.colors[0]) {
+                store.adjustLastSmall(team: teamIndex, delta: -1)
+            }
+            Text("\(team.emoji)\(value)")
+                .font(.headline.bold())
+                .contentTransition(.numericText())
+                .frame(minWidth: 40)
+            AdjustButton(icon: "plus.circle.fill", tint: team.colors[0]) {
+                store.adjustLastSmall(team: teamIndex, delta: +1)
+            }
         }
     }
 }

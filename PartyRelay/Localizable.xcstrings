@@ -70,6 +70,22 @@
         }
       }
     },
+    "board.adjust_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host: tap +/− to fix scores. Editing a small score re-awards that round's point automatically."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主持人可点 +/− 手动调分；修改小分会自动重算该轮大分归属"
+          }
+        }
+      }
+    },
     "board.big_label": {
       "extractionState": "stale",
       "localizations": {
