@@ -17,6 +17,11 @@ struct BigButtonStyle: ButtonStyle {
     var colors: [Color]
     var textColor: Color = .white
     var font: Font = .title2.bold()
+    /// 加高按钮（得分 / 被抢答用）：高度约为普通大按钮的两倍
+    var tall: Bool = false
+
+    /// 普通大按钮的实际高度约 58~64pt，加高档给两倍
+    private var minHeight: CGFloat? { tall ? 120 : nil }
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -24,6 +29,7 @@ struct BigButtonStyle: ButtonStyle {
             .foregroundStyle(textColor)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
+            .frame(minHeight: minHeight)
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -104,6 +110,8 @@ struct CatchUpBanner: View {
 
 struct ScoreBadge: View {
     var team: Team
+    /// 展示的比分（大分制传大分，小分制传累计小分）
+    var score: Int
     var highlight: Bool = false
     @State private var bounce = false
 
@@ -114,7 +122,7 @@ struct ScoreBadge: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-            Text("\(team.score)")
+            Text("\(score)")
                 .font(.system(size: 44, weight: .black, design: .rounded))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
@@ -131,11 +139,68 @@ struct ScoreBadge: View {
                         .stroke(.white, lineWidth: highlight ? 4 : 0)
                 )
         )
-        .onChange(of: team.score) {
+        .onChange(of: score) {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.45)) { bounce = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { bounce = false }
             }
         }
+    }
+}
+
+// MARK: - 返回主页按钮（所有游戏中页面顶部，二次确认后才真的退出）
+
+struct HomeExitButton: View {
+    @EnvironmentObject var store: GameStore
+    /// 深色/彩色背景上用浅色描边样式
+    var light: Bool = false
+    @State private var showConfirm = false
+
+    var body: some View {
+        Button {
+            FeedbackManager.shared.tap()
+            showConfirm = true
+        } label: {
+            Label(L("common.back_home"), systemImage: "house.fill")
+                .font(.caption.bold())
+                .foregroundStyle(light ? .white : Color.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(
+                    Capsule()
+                        .fill(light ? AnyShapeStyle(.white.opacity(0.22))
+                                    : AnyShapeStyle(.white.opacity(0.85)))
+                        .overlay(Capsule().stroke(light ? .white.opacity(0.5) : .clear, lineWidth: 1))
+                )
+        }
+        .accessibilityIdentifier("backHome")
+        // 用 alert 而不是 confirmationDialog：alert 一定会同时显示「取消」按钮
+        .alert(L("exit.confirm_title"), isPresented: $showConfirm) {
+            Button(L("exit.confirm_action"), role: .destructive) {
+                FeedbackManager.shared.tap()
+                store.resetToHome()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("exit.confirm_body"))
+        }
+        .onAppear {
+            guard ScreenshotMode.autoPresents("exitconfirm") else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { showConfirm = true }
+        }
+    }
+}
+
+/// 顶部只放一个返回主页按钮的行（用于原本没有顶栏的页面）
+struct HomeExitBar: View {
+    var light: Bool = false
+
+    var body: some View {
+        HStack {
+            HomeExitButton(light: light)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
     }
 }

@@ -10,6 +10,7 @@ struct RoundResultView: View {
             PartyBackground()
             if let o = store.lastOutcome {
                 VStack(spacing: 20) {
+                    HomeExitBar()
                     Spacer()
                     Text(o.game.emoji)
                         .font(.system(size: 60))
@@ -47,13 +48,14 @@ struct RoundResultView: View {
                     }
                     .padding(.horizontal, 26)
 
-                    // 大分归属
+                    // 大分归属（小分制下没有大分，只宣布本轮领先方）
                     Group {
                         if o.awards[0] == 1 && o.awards[1] == 1 {
-                            Text(L("result.tie"))
+                            Text(L(store.smallScoreWin ? "result.tie_small" : "result.tie"))
                         } else {
                             let w = o.awards[0] == 1 ? 0 : 1
-                            Text(L("result.winner", "\(store.teams[w].emoji) \(store.teams[w].name)"))
+                            Text(L(store.smallScoreWin ? "result.winner_small" : "result.winner",
+                                   "\(store.teams[w].emoji) \(store.teams[w].name)"))
                         }
                     }
                     .multilineTextAlignment(.center)

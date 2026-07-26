@@ -58,6 +58,7 @@ struct PlayView: View {
 
     private var readyBody: some View {
         VStack(spacing: 24) {
+            HomeExitBar()
             Spacer()
             Text("\(game.emoji) \(game.title)")
                 .font(.system(size: 34, weight: .black, design: .rounded))
@@ -89,9 +90,12 @@ struct PlayView: View {
         VStack(spacing: 14) {
             // 顶部状态栏
             HStack(spacing: 10) {
+                HomeExitButton()
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(store.playingTeam.emoji) \(store.playingTeam.name)")
                         .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     Text(L("play.this_turn", ownPoints)
                          + (stolenPoints > 0 ? " · " + L("play.stolen", stolenPoints) : ""))
                         .font(.subheadline.bold())
@@ -134,7 +138,7 @@ struct PlayView: View {
                         } label: {
                             Label(L("play.correct_us"), systemImage: "checkmark.circle.fill")
                         }
-                        .buttonStyle(BigButtonStyle(colors: [.green, .mint], font: .headline))
+                        .buttonStyle(BigButtonStyle(colors: [.green, .mint], font: .headline, tall: true))
 
                         Button {
                             FeedbackManager.shared.buzz()
@@ -143,7 +147,7 @@ struct PlayView: View {
                         } label: {
                             Label(L("play.sniped_them"), systemImage: "bolt.fill")
                         }
-                        .buttonStyle(BigButtonStyle(colors: [.red, .orange], font: .headline))
+                        .buttonStyle(BigButtonStyle(colors: [.red, .orange], font: .headline, tall: true))
                     }
                 } else {
                     Button {
@@ -153,7 +157,7 @@ struct PlayView: View {
                     } label: {
                         Label(L("play.correct"), systemImage: "checkmark.circle.fill")
                     }
-                    .buttonStyle(BigButtonStyle(colors: [.green, .mint]))
+                    .buttonStyle(BigButtonStyle(colors: [.green, .mint], tall: true))
                 }
 
                 Button {
@@ -231,6 +235,8 @@ struct OpenBuzzBadge: View {
         Text(compact ? L("play.openbuzz_badge") : L("play.openbuzz_full"))
             .font(.caption.bold())
             .foregroundStyle(.black)
+            .lineLimit(compact ? 1 : nil)
+            .fixedSize(horizontal: compact, vertical: false)
             .padding(.horizontal, compact ? 8 : 14)
             .padding(.vertical, 6)
             .background(Capsule().fill(.yellow))

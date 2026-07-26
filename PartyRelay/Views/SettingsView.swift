@@ -10,7 +10,7 @@ struct SettingsView: View {
                 // 玩法开关
                 Section {
                     ForEach(GameKind.allCases) { kind in
-                        Toggle(isOn: binding(for: kind)) {
+                        Toggle(isOn: store.gameEnabledBinding(for: kind)) {
                             HStack(spacing: 12) {
                                 Text(kind.emoji)
                                     .font(.title3)
@@ -54,12 +54,30 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    Stepper(value: $store.settings.maxSkips, in: GameSettings.skipsRange) {
+                        HStack {
+                            Text(L("settings.max_skips"))
+                            Spacer()
+                            Text(L("settings.skips_value", store.settings.maxSkips))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(L("settings.rules_title")).font(.subheadline.bold())
-                        Text(L("settings.rules_body"))
+                        Text(L(store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                }
+
+                // 计分制：小分制（无大分，累计小分定胜负）
+                Section {
+                    Toggle(isOn: $store.settings.smallScoreWin) {
+                        Label(L("settings.small_score_win"), systemImage: "sum")
+                    }
+                    .tint(.teal)
+                } footer: {
+                    Text(L("settings.small_score_footer"))
                 }
 
                 // 防偷窥模式（默认关闭）
@@ -93,21 +111,6 @@ struct SettingsView: View {
         }
         .onChange(of: store.settings.feedbackOn) {
             FeedbackManager.shared.isEnabled = store.settings.feedbackOn
-        }
-    }
-
-    /// 玩法开关绑定：普通玩法至少保留 1 个（抢答是加成扇区，不算数）
-    private func binding(for kind: GameKind) -> Binding<Bool> {
-        Binding {
-            store.settings.enabled.contains(kind)
-        } set: { on in
-            if on {
-                store.settings.enabled.insert(kind)
-            } else if kind == .quiz || store.settings.playableList.count > 1 {
-                store.settings.enabled.remove(kind)
-            } else {
-                FeedbackManager.shared.locked()   // 拒绝关掉最后一个普通玩法
-            }
         }
     }
 }

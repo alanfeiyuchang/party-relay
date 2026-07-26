@@ -24,8 +24,60 @@ enum ScreenshotMode {
             store.teams[0].score = 2
             store.teams[1].score = 2
             store.roundNumber = 4
-            store.firstTeamIndex = 1
             store.phase = .wheel
+
+        case "handoff":
+            // 换手交接页：「开始」按钮带 5 秒倒计时，倒计时结束前不可按
+            store.teams[0].score = 2
+            store.teams[1].score = 1
+            store.roundNumber = 4
+            store.currentGame = .act
+            store.roundSmall = [4, 0]
+            store.playIndex = 1
+            store.playingTeamIndex = 1
+            store.phase = .handoff
+
+        case "smallboard":
+            // 小分制记分板：没有大分，只有累计小分
+            store.settings.smallScoreWin = true
+            store.teams[0].smallTotal = 17
+            store.teams[1].smallTotal = 13
+            store.roundNumber = 4
+            store.currentGame = .lipRead
+            store.lastOutcome = RoundOutcome(game: .lipRead, openBuzz: false,
+                                             small: [5, 3], awards: [1, 0],
+                                             roundNumber: 4, isOvertime: false,
+                                             words: LanguageManager.shared.language == .en
+                                                ? [["mom", "cheers", "yummy"], ["thank you", "good night"]]
+                                                : [["妈妈", "干杯", "真好吃"], ["谢谢你", "晚安"]])
+            store.phase = .scoreboard
+
+        case "onegame":
+            // 只开了一个普通玩法：开始游戏后不转盘，直达该玩法
+            store.settings.enabled = [.act, .quiz]
+            store.phase = .home
+
+        case "direct":
+            // 只开了一个普通玩法 → startMatch 走 enterGameSelection，应直接落在交接页而非转盘
+            store.settings.enabled = [.act, .quiz]
+            store.startMatch()
+
+        case "gametag":
+            // 主界面玩法标签弹窗（唇语被移出转盘 → 首页标签置灰），弹窗由 HomeView 自动打开
+            store.settings.enabled = [.describeGuess, .drawGuess, .act, .quiz]
+            store.phase = .home
+
+        case "exitconfirm":
+            // 游戏中页面顶部「返回主页」的二次确认弹窗，由 HomeExitButton 自动打开
+            MotionManager.debugOverride = .upright
+            store.settings.privacyGuardOn = false
+            store.teams[0].score = 2
+            store.teams[1].score = 1
+            store.roundNumber = 4
+            store.currentGame = .act
+            store.openBuzz = false
+            store.playingTeamIndex = 0
+            store.phase = .playing
 
         case "openbuzz":
             // 开放抢答加成下的比手画脚：多一个"被抢答"按钮
@@ -61,7 +113,7 @@ enum ScreenshotMode {
             store.roundNumber = 3
             store.currentGame = .describeGuess
             store.playingTeamIndex = 1
-            store.firstTeamIndex = 1
+            store.firstTeamIndex = 0
             store.phase = .playing
 
         case "pick":
@@ -69,7 +121,7 @@ enum ScreenshotMode {
             store.teams[0].score = 1
             store.teams[1].score = 4
             store.roundNumber = 6
-            store.firstTeamIndex = 1
+            store.firstTeamIndex = 0
             store.phase = .wheel
 
         case "draw", "drawcanvas":
@@ -111,6 +163,14 @@ enum ScreenshotMode {
                 showSettings.wrappedValue = true
             }
 
+        case "smallvictory":
+            // 小分制终局：胜负与终局比分都取累计小分
+            store.settings.smallScoreWin = true
+            store.teams[0].smallTotal = 26
+            store.teams[1].smallTotal = 21
+            store.roundNumber = 6
+            store.phase = .victory
+
         case "victory":
             store.teams[0].score = 4
             store.teams[1].score = 2
@@ -121,6 +181,9 @@ enum ScreenshotMode {
             break
         }
     }
+
+    /// 截图模式下需要自动弹出的弹窗（simctl 无法注入点击）
+    static func autoPresents(_ name: String) -> Bool { mode == name }
 
     /// 画板演示笔画：一个雪人 ⛄️
     static func demoStrokes() -> [Stroke] {

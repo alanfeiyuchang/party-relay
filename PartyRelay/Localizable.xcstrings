@@ -86,6 +86,23 @@
         }
       }
     },
+    "board.adjust_hint_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host: tap +/− to fix scores. Editing a small score updates that team's total automatically."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主持人可点 +/− 手动调分；修改上轮小分会同步到该队累计小分"
+          }
+        }
+      }
+    },
     "board.big_label": {
       "extractionState": "stale",
       "localizations": {
@@ -133,6 +150,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 %d 轮 · 转盘走起"
+          }
+        }
+      }
+    },
+    "board.next_round_direct": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round %d — let's go"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %d 轮 · 直接开始"
           }
         }
       }
@@ -188,6 +222,23 @@
         }
       }
     },
+    "board.overtime_btn_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tied! Overtime"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小分平！加时赛"
+          }
+        }
+      }
+    },
     "board.pick_hint": {
       "extractionState": "stale",
       "localizations": {
@@ -218,6 +269,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已完成 %d / %d 轮 · 大分定胜负"
+          }
+        }
+      }
+    },
+    "board.progress_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d of %d rounds done · highest total score wins"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已完成 %d / %d 轮 · 累计小分定胜负"
           }
         }
       }
@@ -290,6 +358,23 @@
         }
       }
     },
+    "board.small_total_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "total"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "累计小分"
+          }
+        }
+      }
+    },
     "board.tied": {
       "extractionState": "stale",
       "localizations": {
@@ -337,6 +422,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "🔥 %@ 落后 %d 大分，下轮追分卡待命"
+          }
+        }
+      }
+    },
+    "board.trailing_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 %@ trails by %d points — comeback boost ready"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 %@ 落后 %d 小分，下轮追分卡待命"
           }
         }
       }
@@ -405,6 +507,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "时间 +%ds"
+          }
+        }
+      }
+    },
+    "common.back_home": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主页"
           }
         }
       }
@@ -630,6 +749,57 @@
         }
       }
     },
+    "exit.confirm_action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to home"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回主页"
+          }
+        }
+      }
+    },
+    "exit.confirm_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current game's progress will be lost."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前这局的进度将会丢失。"
+          }
+        }
+      }
+    },
+    "exit.confirm_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to home?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回主页？"
+          }
+        }
+      }
+    },
     "game.act.rule": {
       "extractionState": "stale",
       "localizations": {
@@ -851,6 +1021,74 @@
         }
       }
     },
+    "gametag.close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "知道了"
+          }
+        }
+      }
+    },
+    "gametag.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared with Settings — keep at least one regular game on."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与设置页是同一个开关，普通玩法至少保留 1 个。"
+          }
+        }
+      }
+    },
+    "gametag.include": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include in the wheel"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入转盘"
+          }
+        }
+      }
+    },
+    "gametag.quiz_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a standalone game: the wheel spins again to pick a real one."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它不是独立玩法：转到后会再转一次决定真正的玩法。"
+          }
+        }
+      }
+    },
     "handoff.beat_them": {
       "extractionState": "stale",
       "localizations": {
@@ -864,6 +1102,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "对方本轮拿了 %d 小分\n超过他们就赢下这一轮大分！"
+          }
+        }
+      }
+    },
+    "handoff.beat_them_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The other team scored %d this round.\nEvery correct guess adds to your total!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对方本轮拿了 %d 小分\n你们每猜对一个都直接累进总分！"
           }
         }
       }
@@ -970,6 +1225,23 @@
         }
       }
     },
+    "handoff.start_in": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get ready… %d"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备一下… %d"
+          }
+        }
+      }
+    },
     "handoff.you_first": {
       "extractionState": "stale",
       "localizations": {
@@ -1068,6 +1340,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "两队同玩比小分 · 小分赢家拿大分"
+          }
+        }
+      }
+    },
+    "home.subtitle_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both teams play the same game — highest total score wins"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队同玩比小分 · 累计小分最高者胜"
+          }
+        }
+      }
+    },
+    "home.tag_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a game to see its rules and add or remove it from the wheel"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点玩法标签查看规则，并可加入/移出转盘"
           }
         }
       }
@@ -1497,6 +1803,23 @@
         }
       }
     },
+    "result.tie_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🤝 Tied this round!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🤝 本轮小分打平！"
+          }
+        }
+      }
+    },
     "result.to_scoreboard": {
       "extractionState": "stale",
       "localizations": {
@@ -1527,6 +1850,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "🏅 %@ 小分更高 · +1 大分"
+          }
+        }
+      }
+    },
+    "result.winner_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ scored higher this round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ 本轮小分更高"
           }
         }
       }
@@ -1633,6 +1973,23 @@
         }
       }
     },
+    "settings.max_skips": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skips per turn"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每局跳过次数"
+          }
+        }
+      }
+    },
     "settings.privacy": {
       "extractionState": "stale",
       "localizations": {
@@ -1701,6 +2058,23 @@
         }
       }
     },
+    "settings.rules_body_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each round, spin once and both teams play the same game. Every correct guess adds to that team's running total — no big points. After all rounds, the highest total wins."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每轮转一次盘，两队各玩一遍同一个游戏；猜对的小分直接累进总分，不设大分。全部轮次后累计小分多者胜。"
+          }
+        }
+      }
+    },
     "settings.rules_title": {
       "extractionState": "stale",
       "localizations": {
@@ -1731,6 +2105,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "%d 秒"
+          }
+        }
+      }
+    },
+    "settings.skips_value": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d skips"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d 次"
+          }
+        }
+      }
+    },
+    "settings.small_score_footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On: no big points at all — every correct guess adds to a running total, and the team with the most points after all rounds wins. Off: each round's small-score winner takes 1 big point (the classic rules)."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启后：完全不设大分，每次猜对都累进总分，全部轮次结束后累计小分最高的队获胜。关闭则沿用原规则：每轮小分赢家 +1 大分。"
+          }
+        }
+      }
+    },
+    "settings.small_score_win": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decide the winner by small score"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用小分决定胜负"
           }
         }
       }
@@ -1986,6 +2411,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 大分 %d"
+          }
+        }
+      }
+    },
+    "wheel.score_chip_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %d total"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 小分 %d"
           }
         }
       }

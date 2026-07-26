@@ -1,8 +1,17 @@
 import SwiftUI
+import Combine
 
 /// 交接遮挡屏：防止对方偷看词；后手上场时显示先手的小分
+/// 换手（上一队打完交给下一队）时，「开始」按钮要等 5 秒倒计时结束才可按
 struct HandoffView: View {
     @EnvironmentObject var store: GameStore
+
+    @State private var waitLeft = 0
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    /// 只在「换到下一队」这一刻加倒计时（本轮第二遍上场）
+    private var needsWait: Bool { store.playIndex == 1 }
+    private var locked: Bool { waitLeft > 0 }
 
     var body: some View {
         ZStack {
@@ -11,6 +20,8 @@ struct HandoffView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
+                HomeExitBar(light: true)
+
                 Spacer()
 
                 Text(store.currentGame.emoji)
@@ -30,7 +41,8 @@ struct HandoffView: View {
                     .padding(.horizontal, 20)
 
                 if store.playIndex == 1 {
-                    Text(L("handoff.beat_them", store.roundSmall[1 - store.playingTeamIndex]))
+                    Text(L(store.smallScoreWin ? "handoff.beat_them_small" : "handoff.beat_them",
+                           store.roundSmall[1 - store.playingTeamIndex]))
                         .font(.headline.bold())
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
@@ -79,13 +91,25 @@ struct HandoffView: View {
                     FeedbackManager.shared.tap()
                     store.startPlaying()
                 } label: {
-                    Text(L("handoff.start"))
+                    Text(locked ? L("handoff.start_in", waitLeft) : L("handoff.start"))
+                        .contentTransition(.numericText(countsDown: true))
                 }
-                .buttonStyle(BigButtonStyle(colors: [.white, .white.opacity(0.92)],
-                                            textColor: store.currentGame.colors[0]))
+                .buttonStyle(BigButtonStyle(colors: locked
+                                            ? [Color(.systemGray3), Color(.systemGray4)]
+                                            : [.white, .white.opacity(0.92)],
+                                            textColor: locked ? .white : store.currentGame.colors[0]))
+                .disabled(locked)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 36)
             }
+        }
+        .onAppear {
+            waitLeft = needsWait ? GameSettings.handoffCountdown : 0
+        }
+        .onReceive(timer) { _ in
+            guard waitLeft > 0 else { return }
+            FeedbackManager.shared.countdownTick()
+            withAnimation { waitLeft -= 1 }
         }
     }
 }

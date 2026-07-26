@@ -36,6 +36,8 @@ struct WheelView: View {
         ZStack {
             PartyBackground()
             VStack(spacing: 12) {
+                HomeExitBar()
+
                 // 顶部：轮次信息
                 VStack(spacing: 6) {
                     Text(store.isOvertime ? L("wheel.overtime") : L("wheel.round", store.roundNumber, store.totalRounds))
@@ -94,7 +96,8 @@ struct WheelView: View {
                 // 大分横条
                 HStack(spacing: 10) {
                     ForEach(store.teams) { team in
-                        Text(L("wheel.score_chip", "\(team.emoji) \(team.name)", team.score))
+                        Text(L(store.smallScoreWin ? "wheel.score_chip_small" : "wheel.score_chip",
+                               "\(team.emoji) \(team.name)", store.matchScore(team.id)))
                             .font(.subheadline.bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 14)

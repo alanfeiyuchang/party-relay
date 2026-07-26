@@ -83,6 +83,7 @@ struct DrawView: View {
     private var wordBody: some View {
         VStack(spacing: 14) {
             HStack(spacing: 10) {
+                HomeExitButton()
                 TimerRing(remaining: remaining, total: store.roundDuration, size: 50)
                 Text("+\(ownPoints)")
                     .font(.title3.weight(.black))
@@ -155,7 +156,7 @@ struct DrawView: View {
                         } label: {
                             Label(L("draw.sniped"), systemImage: "bolt.fill")
                         }
-                        .buttonStyle(BigButtonStyle(colors: [.red, .orange], font: .headline))
+                        .buttonStyle(BigButtonStyle(colors: [.red, .orange], font: .headline, tall: true))
                     }
                 } else {
                     correctButton(compactLabel: false)
@@ -188,7 +189,7 @@ struct DrawView: View {
             Label(compactLabel ? L("play.correct_us") : L("draw.correct_plain"),
                   systemImage: "checkmark.circle.fill")
         }
-        .buttonStyle(BigButtonStyle(colors: [.green, .mint], font: .headline))
+        .buttonStyle(BigButtonStyle(colors: [.green, .mint], font: .headline, tall: true))
     }
 
     // MARK: 画布界面（只有作画工具 + 收起画布）
@@ -196,6 +197,7 @@ struct DrawView: View {
     private var canvasBody: some View {
         VStack(spacing: 10) {
             HStack(spacing: 12) {
+                HomeExitButton()
                 TimerRing(remaining: remaining, total: store.roundDuration, size: 48)
                 Text("+\(ownPoints)")
                     .font(.title3.weight(.black))

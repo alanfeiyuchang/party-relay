@@ -31,7 +31,7 @@ final class GameStore: ObservableObject {
     // 当前轮状态：每轮转一次盘，两队先后玩同一个游戏，各得小分
     @Published var roundNumber: Int = 1          // 1-based，可超过 totalRounds（加时）
     @Published var isOvertime = false
-    @Published var firstTeamIndex: Int = 0       // 本轮先手队
+    @Published var firstTeamIndex: Int = 0       // 本轮先手队：红队恒定先手（不再轮换）
     @Published var playIndex: Int = 0            // 0=先手那一遍，1=后手那一遍
     @Published var playingTeamIndex: Int = 0     // 当前执机队
     @Published var currentGame: GameKind = .describeGuess
@@ -48,24 +48,57 @@ final class GameStore: ObservableObject {
     var totalRounds: Int { settings.totalRounds }
     var completedRounds: Int { roundNumber - 1 }
 
-    // MARK: - 大分 / 落后判断
+    // MARK: - 比分 / 落后判断（大分制看大分，小分制看累计小分）
+
+    /// 小分制：不设大分，累计小分决定胜负
+    var smallScoreWin: Bool { settings.smallScoreWin }
+
+    /// 当前计分制下用于排名的比分
+    func matchScore(_ index: Int) -> Int {
+        smallScoreWin ? teams[index].smallTotal : teams[index].score
+    }
 
     var winnerIndex: Int? {
-        if teams[0].score == teams[1].score { return nil }
-        return teams[0].score > teams[1].score ? 0 : 1
+        if matchScore(0) == matchScore(1) { return nil }
+        return matchScore(0) > matchScore(1) ? 0 : 1
     }
 
     var trailingIndex: Int? {
-        if teams[0].score == teams[1].score { return nil }
-        return teams[0].score < teams[1].score ? 0 : 1
+        if matchScore(0) == matchScore(1) { return nil }
+        return matchScore(0) < matchScore(1) ? 0 : 1
     }
 
-    var bigDiff: Int { abs(teams[0].score - teams[1].score) }
+    var scoreDiff: Int { abs(matchScore(0) - matchScore(1)) }
+
+    /// 追分卡用的归一化差值：小分制下小分差按每轮约 3 分折算成「大分档位」
+    var catchUpDiff: Int { smallScoreWin ? scoreDiff / 3 : scoreDiff }
 
     /// 平衡策略：已进行轮数达到总轮数 2/3 后，落后队可直接指定玩法（不转盘）
+    /// 只有一个玩法时没有可选项，直接不给这个特权
     var pickEligibleTeam: Int? {
+        guard settings.soleGame == nil else { return nil }
         guard Double(completedRounds) >= Double(totalRounds) * 2.0 / 3.0 else { return nil }
         return trailingIndex
+    }
+
+    // MARK: - 玩法开关（设置页与主界面标签弹窗共用同一份状态）
+
+    /// 普通玩法至少保留 1 个（抢答是加成扇区，不算数）
+    func gameEnabledBinding(for kind: GameKind) -> Binding<Bool> {
+        Binding { [weak self] in
+            self?.settings.enabled.contains(kind) ?? false
+        } set: { [weak self] on in
+            guard let self else { return }
+            if on {
+                FeedbackManager.shared.tap()
+                self.settings.enabled.insert(kind)
+            } else if kind == .quiz || self.settings.playableList.count > 1 {
+                FeedbackManager.shared.tap()
+                self.settings.enabled.remove(kind)
+            } else {
+                FeedbackManager.shared.locked()   // 拒绝关掉最后一个普通玩法
+            }
+        }
     }
 
     // MARK: - 难度档位（随轮次爬升）
@@ -85,13 +118,27 @@ final class GameStore: ObservableObject {
     // MARK: - 流程
 
     func startMatch() {
-        for i in teams.indices { teams[i].score = 0 }
+        for i in teams.indices {
+            teams[i].score = 0
+            teams[i].smallTotal = 0
+        }
         roundNumber = 1
         isOvertime = false
         firstTeamIndex = 0
+        lastOutcome = nil
         usedWords = [:]
         beginRound()
-        phase = .wheel
+        enterGameSelection()
+    }
+
+    /// 进入玩法选择：转盘只有一种结果时（只开了一个普通玩法）直接进那个游戏，不转盘
+    private func enterGameSelection() {
+        if let only = settings.soleGame {
+            gameDecided(only, openBuzz: false)
+            phase = .handoff
+        } else {
+            phase = .wheel
+        }
     }
 
     private func beginRound() {
@@ -117,10 +164,10 @@ final class GameStore: ObservableObject {
         phase = .handoff
     }
 
-    /// 追分卡：只在落后队（按大分）自己那一遍激活
+    /// 追分卡：只在落后队自己那一遍激活
     private func refreshCatchUp() {
         if let trailing = trailingIndex, trailing == playingTeamIndex {
-            catchUp = CatchUp.evaluate(bigDiff: bigDiff)
+            catchUp = CatchUp.evaluate(diff: catchUpDiff)
         } else {
             catchUp = CatchUp()
         }
@@ -134,7 +181,7 @@ final class GameStore: ObservableObject {
     }
 
     var skipAllowance: Int {
-        GameSettings.skipsPerRound + (catchUp.isActive ? catchUp.extraSkips : 0)
+        settings.maxSkips + (catchUp.isActive ? catchUp.extraSkips : 0)
     }
 
     /// 一遍游戏结束：own=己方猜对数，stolen=开放抢答中被对方偷走的分
@@ -153,18 +200,17 @@ final class GameStore: ObservableObject {
         }
     }
 
-    /// 两遍都玩完：比小分，定大分
+    /// 两遍都玩完：大分制比小分定大分；小分制只累计小分
     private func concludeRound() {
-        var awards = [0, 0]
-        if roundSmall[0] > roundSmall[1] {
-            awards[0] = 1
-        } else if roundSmall[1] > roundSmall[0] {
-            awards[1] = 1
+        let awards = Self.awards(forSmall: roundSmall)
+        if smallScoreWin {
+            // 小分制：没有大分，本轮小分直接进累计；awards 只用于结算页高亮本轮领先方
+            teams[0].smallTotal += roundSmall[0]
+            teams[1].smallTotal += roundSmall[1]
         } else {
-            awards = [1, 1]   // 小分打平，双方各 +1 大分
+            teams[0].score += awards[0]
+            teams[1].score += awards[1]
         }
-        teams[0].score += awards[0]
-        teams[1].score += awards[1]
         lastOutcome = RoundOutcome(game: currentGame, openBuzz: openBuzz,
                                    small: roundSmall, awards: awards,
                                    roundNumber: roundNumber, isOvertime: isOvertime,
@@ -172,68 +218,90 @@ final class GameStore: ObservableObject {
         phase = .roundResult
     }
 
+    /// 本轮小分 → 大分归属（小分打平则双方各 +1）
+    private static func awards(forSmall small: [Int]) -> [Int] {
+        if small[0] > small[1] { return [1, 0] }
+        if small[1] > small[0] { return [0, 1] }
+        return [1, 1]
+    }
+
     func proceedToScoreboard() { phase = .scoreboard }
 
     // MARK: - 主持人手动调分（纠错/裁决用，不影响自动计分流程）
 
-    /// 手动调整大分
-    func adjustBig(team: Int, delta: Int) {
-        let newVal = max(0, teams[team].score + delta)
-        guard newVal != teams[team].score else { return }
-        FeedbackManager.shared.tap()
-        teams[team].score = newVal
+    /// 手动调整总分：大分制调大分，小分制调累计小分
+    func adjustTotal(team: Int, delta: Int) {
+        if smallScoreWin {
+            let newVal = max(0, teams[team].smallTotal + delta)
+            guard newVal != teams[team].smallTotal else { return }
+            FeedbackManager.shared.tap()
+            teams[team].smallTotal = newVal
+        } else {
+            let newVal = max(0, teams[team].score + delta)
+            guard newVal != teams[team].score else { return }
+            FeedbackManager.shared.tap()
+            teams[team].score = newVal
+        }
     }
 
-    /// 手动调整上轮小分：同步重算该轮大分归属（先撤销原奖励再按新小分重发）
+    /// 手动调整上轮小分：大分制下同步重算该轮大分归属（先撤销原奖励再按新小分重发）；
+    /// 小分制下直接把差值同步到累计小分
     func adjustLastSmall(team: Int, delta: Int) {
         guard var o = lastOutcome else { return }
         let newVal = max(0, o.small[team] + delta)
         guard newVal != o.small[team] else { return }
         FeedbackManager.shared.tap()
+        let applied = newVal - o.small[team]
         o.small[team] = newVal
 
-        var newAwards = [0, 0]
-        if o.small[0] > o.small[1] {
-            newAwards[0] = 1
-        } else if o.small[1] > o.small[0] {
-            newAwards[1] = 1
+        let newAwards = Self.awards(forSmall: o.small)
+        if smallScoreWin {
+            teams[team].smallTotal = max(0, teams[team].smallTotal + applied)
         } else {
-            newAwards = [1, 1]
-        }
-        for i in teams.indices {
-            teams[i].score = max(0, teams[i].score - o.awards[i] + newAwards[i])
+            for i in teams.indices {
+                teams[i].score = max(0, teams[i].score - o.awards[i] + newAwards[i])
+            }
         }
         o.awards = newAwards
         lastOutcome = o
         roundSmall = o.small
     }
 
-    /// 记分板 → 下一轮 / 加时 / 终局
+    /// 记分板 → 下一轮 / 加时 / 终局。红队恒定先手，不再轮换
     func nextTurn() {
         if roundNumber >= totalRounds {
-            if teams[0].score == teams[1].score {
-                // 大分平：加时赛，一轮定胜负（还平就继续加时）
+            if winnerIndex == nil {
+                // 比分平：加时赛，一轮定胜负（还平就继续加时）
                 isOvertime = true
                 roundNumber += 1
-                firstTeamIndex = 1 - firstTeamIndex
                 beginRound()
-                phase = .wheel
+                enterGameSelection()
             } else {
                 phase = .victory
             }
             return
         }
         roundNumber += 1
-        firstTeamIndex = 1 - firstTeamIndex   // 先手轮换
         beginRound()
-        phase = .wheel
+        enterGameSelection()
     }
 
     func resetToHome() {
         phase = .home
-        for i in teams.indices { teams[i].score = 0 }
+        for i in teams.indices {
+            teams[i].score = 0
+            teams[i].smallTotal = 0
+        }
         roundNumber = 1
         isOvertime = false
+        firstTeamIndex = 0
+        lastOutcome = nil
+        catchUp = CatchUp()
+        roundSmall = [0, 0]
+        roundWords = [[], []]
+        openBuzz = false
+        playIndex = 0
+        playingTeamIndex = 0
     }
 
     // MARK: - 词库派发（同一轮两队共用去重池，保证不重复）

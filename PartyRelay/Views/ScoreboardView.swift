@@ -10,36 +10,40 @@ struct ScoreboardView: View {
     }
 
     private var isTied: Bool {
-        store.teams[0].score == store.teams[1].score
+        store.winnerIndex == nil
     }
 
     var body: some View {
         ZStack {
             PartyBackground()
             VStack(spacing: 18) {
+                HomeExitBar()
+
                 Text(L("board.title"))
                     .font(.system(size: 36, weight: .black, design: .rounded))
-                    .padding(.top, 26)
                 Text(store.isOvertime
                      ? L("board.overtime")
-                     : L("board.progress", store.roundNumber, store.totalRounds))
+                     : L(store.smallScoreWin ? "board.progress_small" : "board.progress",
+                         store.roundNumber, store.totalRounds))
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
 
-                // 大分（含主持人手动 +/−）
+                // 总分：大分制显示大分，小分制显示累计小分（含主持人手动 +/−）
                 HStack(spacing: 16) {
                     ForEach(store.teams) { team in
                         VStack(spacing: 6) {
-                            ScoreBadge(team: team)
+                            ScoreBadge(team: team, score: store.matchScore(team.id))
                             HStack(spacing: 10) {
                                 AdjustButton(icon: "minus.circle.fill", tint: team.colors[0]) {
-                                    store.adjustBig(team: team.id, delta: -1)
+                                    store.adjustTotal(team: team.id, delta: -1)
                                 }
-                                Text(L("board.big_label"))
+                                Text(L(store.smallScoreWin ? "board.small_total_label" : "board.big_label"))
                                     .font(.caption.bold())
                                     .foregroundStyle(.secondary)
                                 AdjustButton(icon: "plus.circle.fill", tint: team.colors[0]) {
-                                    store.adjustBig(team: team.id, delta: +1)
+                                    store.adjustTotal(team: team.id, delta: +1)
                                 }
                             }
                         }
@@ -63,7 +67,7 @@ struct ScoreboardView: View {
                     .padding(.vertical, 8)
                     .background(Capsule().fill(.white.opacity(0.8)))
 
-                    Text(L("board.adjust_hint"))
+                    Text(L(store.smallScoreWin ? "board.adjust_hint_small" : "board.adjust_hint"))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                         .multilineTextAlignment(.center)
@@ -74,12 +78,13 @@ struct ScoreboardView: View {
                     }
                 }
 
-                // 追分提示
-                if let trailing = store.trailingIndex, !matchOver {
-                    let diff = store.bigDiff
+                // 追分提示（两条都没有时不留空盒子）
+                if let trailing = store.trailingIndex, !matchOver,
+                   store.catchUpDiff >= 2 || store.pickEligibleTeam != nil {
                     VStack(spacing: 4) {
-                        if diff >= 2 {
-                            Text(L("board.trailing", store.teams[trailing].name, diff))
+                        if store.catchUpDiff >= 2 {
+                            Text(L(store.smallScoreWin ? "board.trailing_small" : "board.trailing",
+                                   store.teams[trailing].name, store.scoreDiff))
                         }
                         if store.pickEligibleTeam != nil {
                             Text(L("board.pick_hint"))
@@ -105,10 +110,14 @@ struct ScoreboardView: View {
                     store.nextTurn()
                 } label: {
                     if matchOver {
-                        Label(isTied ? L("board.overtime_btn") : L("board.reveal"),
+                        Label(isTied
+                              ? L(store.smallScoreWin ? "board.overtime_btn_small" : "board.overtime_btn")
+                              : L("board.reveal"),
                               systemImage: "flag.checkered.2.crossed")
                     } else {
-                        Label(L("board.next_round", store.roundNumber + 1), systemImage: "arrow.right.circle.fill")
+                        Label(L(store.settings.soleGame == nil ? "board.next_round" : "board.next_round_direct",
+                                store.roundNumber + 1),
+                              systemImage: "arrow.right.circle.fill")
                     }
                 }
                 .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))

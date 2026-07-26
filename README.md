@@ -34,7 +34,15 @@ The wheel has a 5th sector, **Open Buzz**. Landing on it doesn't start a game by
 
 ### Scoring: small points → 1 big point
 
-Each round, **both teams play the same game**, one after the other. Whoever gets more correct guesses (small points) in their turn wins the round and earns **+1 big point**. Tie on small points → both teams get the big point. First to the most big points after all rounds wins; a tied match goes to a sudden-death overtime round.
+Each round, **both teams play the same game**, one after the other — the **Red team always goes first**. Whoever gets more correct guesses (small points) in their turn wins the round and earns **+1 big point**. Tie on small points → both teams get the big point. First to the most big points after all rounds wins; a tied match goes to a sudden-death overtime round.
+
+### Small-score mode (optional)
+
+Flip **"Decide the winner by small score"** in Settings and big points disappear entirely: every correct guess adds to that team's running total, the scoreboard just shows those two totals, and after the configured number of rounds the highest total wins (a tie still goes to overtime). The host's +/− buttons adjust the running totals directly, and the catch-up system works off the point gap the same way.
+
+### Handoff countdown
+
+When one team's turn ends and the phone passes to the other team, the handoff screen's start button stays disabled for 5 seconds — enough of a beat that nobody starts their turn while the phone is still in the air.
 
 ### Catch-up system (invisible to players)
 
@@ -50,11 +58,19 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 
 ### Settings
 
-- Toggle any of the 4 games off (Open Buzz always stays available as long as ≥1 game is on) — the wheel rebuilds its sectors immediately.
+- Toggle any of the 4 games off (Open Buzz always stays available as long as ≥1 game is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
 - Total rounds: 3–10 (default 6).
 - Turn length: 30–180s in 15s steps.
+- Skips per turn: 0–10 (default 3).
+- Small-score win mode on/off (see above).
 - Privacy guard on/off.
 - Haptics + sound effects on/off (global switch).
+
+When exactly one regular game is enabled, spinning would be pointless — the wheel is skipped entirely and the match drops straight into that game (Open Buzz doesn't count here, since landing on it only re-spins for a real game).
+
+### Getting out mid-match
+
+Every in-game screen has a **Home** button in the top-left corner. It asks for confirmation first ("Return to home? The current game's progress will be lost."), so a stray tap can't wipe a match in progress.
 
 ### Localization
 

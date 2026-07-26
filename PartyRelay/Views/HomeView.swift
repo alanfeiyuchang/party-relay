@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject var langManager = LanguageManager.shared
     @Binding var showSettings: Bool
+    @State private var infoGame: GameKind?
 
     var body: some View {
         ZStack {
@@ -41,7 +42,7 @@ struct HomeView: View {
                         LinearGradient(colors: [.pink, .orange, .purple],
                                        startPoint: .leading, endPoint: .trailing)
                     )
-                Text(L("home.subtitle"))
+                Text(L(store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -65,19 +66,20 @@ struct HomeView: View {
                 .font(.subheadline.bold())
                 .foregroundStyle(.secondary)
 
-                // 已启用玩法一览（自适应换行）
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 8)], spacing: 8) {
-                    ForEach(store.settings.enabledList) { kind in
-                        Text("\(kind.emoji) \(kind.title)")
-                            .font(.caption.bold())
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .frame(maxWidth: .infinity)
-                            .background(Capsule().fill(kind.gradient))
+                // 玩法一览（点标签看规则并加入/移出转盘；已排除的置灰）
+                VStack(spacing: 6) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 8)], spacing: 8) {
+                        ForEach(GameKind.allCases) { kind in
+                            GameTagChip(kind: kind,
+                                        included: store.settings.enabled.contains(kind)) {
+                                FeedbackManager.shared.tap()
+                                infoGame = kind
+                            }
+                        }
                     }
+                    Text(L("home.tag_hint"))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
                 }
                 .padding(.horizontal, 20)
 
@@ -104,6 +106,117 @@ struct HomeView: View {
                 .padding(.horizontal, 28)
                 .padding(.bottom, 16)
             }
+
+            // 玩法说明 + 加入/移出转盘（与设置页共用同一份开关状态）
+            if let kind = infoGame {
+                GameInfoOverlay(kind: kind) {
+                    withAnimation(.easeOut(duration: 0.2)) { infoGame = nil }
+                }
+            }
+        }
+        .onAppear {
+            if ScreenshotMode.autoPresents("gametag") { infoGame = .lipRead }
+        }
+    }
+}
+
+/// 主界面玩法标签：未加入转盘的置灰
+private struct GameTagChip: View {
+    var kind: GameKind
+    var included: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 3) {
+                Text("\(kind.emoji) \(kind.title)")
+                if !included {
+                    Image(systemName: "slash.circle")
+                        .font(.system(size: 9, weight: .bold))
+                }
+            }
+            .font(.caption.bold())
+            .foregroundStyle(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity)
+            .background(Capsule().fill(kind.gradient))
+            .grayscale(included ? 0 : 1)
+            .opacity(included ? 1 : 0.45)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// 玩法说明弹窗：规则 + 加入/移出转盘开关
+private struct GameInfoOverlay: View {
+    @EnvironmentObject var store: GameStore
+    var kind: GameKind
+    var onClose: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture { onClose() }
+
+            VStack(spacing: 14) {
+                Text(kind.emoji).font(.system(size: 56))
+                Text(kind.title)
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Text(kind.rule)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .multilineTextAlignment(.center)
+
+                if kind == .quiz {
+                    Text(L("gametag.quiz_note"))
+                        .font(.caption.bold())
+                        .foregroundStyle(.black)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(.yellow))
+                }
+
+                Toggle(isOn: store.gameEnabledBinding(for: kind)) {
+                    Text(L("gametag.include"))
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white)
+                }
+                .tint(.white.opacity(0.9))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.black.opacity(0.18)))
+
+                Text(L("gametag.footer"))
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+
+                Button {
+                    FeedbackManager.shared.tap()
+                    onClose()
+                } label: {
+                    Text(L("gametag.close"))
+                }
+                .buttonStyle(BigButtonStyle(colors: [.white.opacity(0.95), .white],
+                                            textColor: kind.colors[0], font: .headline))
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 32, style: .continuous)
+                    .fill(kind.gradient)
+                    .shadow(color: .black.opacity(0.3), radius: 20, y: 8)
+            )
+            .padding(.horizontal, 28)
+            .transition(.scale(scale: 0.8).combined(with: .opacity))
         }
     }
 }

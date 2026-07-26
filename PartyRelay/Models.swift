@@ -6,6 +6,7 @@ struct Team: Identifiable {
     let id: Int
     var name: String
     var score: Int = 0          // 大分（赛点）
+    var smallTotal: Int = 0     // 累计小分（小分制下用它定胜负）
     var emoji: String
     var colors: [Color]
 
@@ -67,10 +68,13 @@ struct GameSettings {
     var enabled: Set<GameKind> = Set(GameKind.allCases)
     var totalRounds: Int = 6          // 总轮数 3~10（每轮两队同玩比小分）
     var roundSeconds: Int = 60        // 每队单局时长
+    var maxSkips: Int = 3             // 每局可跳过次数（可调）
     var feedbackOn: Bool = true       // 震动+音效总开关
     var privacyGuardOn: Bool = false  // 防偷窥模式（姿态感应隐词），默认关闭
+    var smallScoreWin: Bool = false   // 小分制：不设大分，累计小分高者胜
 
-    static let skipsPerRound = 3      // 每局默认可跳过次数
+    static let skipsRange = 0...10
+    static let handoffCountdown = 5   // 交接页「开始」按钮的等待秒数
 
     var enabledList: [GameKind] {
         GameKind.allCases.filter { enabled.contains($0) }
@@ -86,6 +90,11 @@ struct GameSettings {
         playableList.isEmpty ? [] : enabledList
     }
 
+    /// 转盘实际只有一种结果时的那个玩法（抢答不算独立玩法，它只会二次转盘回到普通玩法）
+    var soleGame: GameKind? {
+        playableList.count == 1 ? playableList[0] : nil
+    }
+
     // MARK: 持久化
     private static let key = "PartyRelay.settings.v2"
 
@@ -94,8 +103,10 @@ struct GameSettings {
             "enabled": enabledList.map(\.rawValue),
             "totalRounds": totalRounds,
             "roundSeconds": roundSeconds,
+            "maxSkips": maxSkips,
             "feedbackOn": feedbackOn,
             "privacyGuardOn": privacyGuardOn,
+            "smallScoreWin": smallScoreWin,
         ]
         UserDefaults.standard.set(dict, forKey: Self.key)
     }
@@ -109,8 +120,10 @@ struct GameSettings {
         }
         if let r = dict["totalRounds"] as? Int, (3...10).contains(r) { s.totalRounds = r }
         if let t = dict["roundSeconds"] as? Int, (30...180).contains(t) { s.roundSeconds = t }
+        if let k = dict["maxSkips"] as? Int, skipsRange.contains(k) { s.maxSkips = k }
         if let f = dict["feedbackOn"] as? Bool { s.feedbackOn = f }
         if let p = dict["privacyGuardOn"] as? Bool { s.privacyGuardOn = p }
+        if let m = dict["smallScoreWin"] as? Bool { s.smallScoreWin = m }
         return s
     }
 }
@@ -125,13 +138,14 @@ struct CatchUp {
 
     var isActive: Bool { level > 0 }
 
-    static func evaluate(bigDiff: Int) -> CatchUp {
+    /// diff 是「归一化后的落后幅度」：大分制下直接是大分差，小分制下按每轮约 3 小分折算
+    static func evaluate(diff: Int) -> CatchUp {
         var c = CatchUp()
-        guard bigDiff >= 2 else { return c }
+        guard diff >= 2 else { return c }
         c.level = 1
         c.extraSeconds = 15
         c.tierDrop = 1
-        if bigDiff >= 3 {
+        if diff >= 3 {
             c.level = 2
             c.extraSkips = 2
         }

@@ -35,7 +35,7 @@ struct VictoryView: View {
                         ForEach(store.teams) { t in
                             VStack(spacing: 4) {
                                 Text("\(t.emoji) \(t.name)").font(.headline)
-                                Text("\(t.score)")
+                                Text("\(store.matchScore(t.id))")
                                     .font(.system(size: 40, weight: .black, design: .rounded))
                             }
                             .foregroundStyle(.white)
