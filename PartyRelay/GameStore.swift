@@ -40,8 +40,10 @@ final class GameStore: ObservableObject {
     @Published var roundWords: [[String]] = [[], []]  // 本轮两队各自出现过的词（按队伍下标）
     @Published var catchUp: CatchUp = CatchUp()
     @Published var lastOutcome: RoundOutcome?
+    @Published var hofNames: [String] = ["", ""]      // 名人堂：两队各自被指定的名人
 
     private var usedWords: [String: Set<Int>] = [:]   // "game-tier" -> 已用下标
+    private var usedHofNames: Set<String> = []        // 名人堂：本局已用过的名字（跨轮不重复）
 
     var playingTeam: Team { teams[playingTeamIndex] }
     var opponentIndex: Int { 1 - playingTeamIndex }
@@ -127,6 +129,7 @@ final class GameStore: ObservableObject {
         firstTeamIndex = 0
         lastOutcome = nil
         usedWords = [:]
+        usedHofNames = []
         beginRound()
         enterGameSelection()
     }
@@ -135,10 +138,15 @@ final class GameStore: ObservableObject {
     private func enterGameSelection() {
         if let only = settings.soleGame {
             gameDecided(only, openBuzz: false)
-            phase = .handoff
+            enterDecidedGame()
         } else {
             phase = .wheel
         }
+    }
+
+    /// 定盘后进入正式流程：同时进行的玩法（名人堂）没有交接页，直接进自己的整局流程
+    func enterDecidedGame() {
+        phase = currentGame.isSimultaneous ? .hallOfFame : .handoff
     }
 
     private func beginRound() {
@@ -155,13 +163,20 @@ final class GameStore: ObservableObject {
         currentGame = game
         self.openBuzz = openBuzz
         playingTeamIndex = firstTeamIndex
-        refreshCatchUp()
+        if game.isSimultaneous {
+            // 两队同时玩：没有先后手，也就没有落后队专属的追分加成
+            self.openBuzz = false
+            catchUp = CatchUp()
+            assignHallOfFameNames()
+        } else {
+            refreshCatchUp()
+        }
     }
 
     /// 落后队直接指定玩法（不转盘、无开放抢答加成）
     func pickGame(_ game: GameKind) {
         gameDecided(game, openBuzz: false)
-        phase = .handoff
+        enterDecidedGame()
     }
 
     /// 追分卡：只在落后队自己那一遍激活
@@ -226,6 +241,48 @@ final class GameStore: ObservableObject {
     }
 
     func proceedToScoreboard() { phase = .scoreboard }
+
+    // MARK: - 名人堂（两队同时进行：各拿一个名人，互猜对方的名人）
+
+    /// 名人堂一局的得分：小分制 +3 小分，大分制 +1 大分
+    static let hallOfFameSmallPoints = 3
+
+    /// 给两队各指定一个名人（当前语言的名字池，同一局内不重复，两队必不相同）
+    func assignHallOfFameNames() {
+        let pool = WordBank.hallOfFameNames()
+        guard pool.count >= 2 else { return }
+        var available = pool.filter { !usedHofNames.contains($0) }
+        if available.count < 2 {      // 名字池用尽后重置
+            usedHofNames = []
+            available = pool
+        }
+        let first = available.randomElement()!
+        let second = available.filter { $0 != first }.randomElement()!
+        usedHofNames.formUnion([first, second])
+        hofNames = [first, second]
+        // 结算页/记分板的「本轮词」回顾即是两队的名人揭晓
+        roundWords = [[first], [second]]
+    }
+
+    /// 名人堂结束：winner 队猜中对方的名人，直接结算本轮
+    func finishHallOfFame(winner: Int) {
+        var small = [0, 0]
+        small[winner] = Self.hallOfFameSmallPoints
+        var awards = [0, 0]
+        awards[winner] = 1
+
+        roundSmall = small
+        if smallScoreWin {
+            teams[winner].smallTotal += Self.hallOfFameSmallPoints
+        } else {
+            teams[winner].score += 1
+        }
+        lastOutcome = RoundOutcome(game: .hallOfFame, openBuzz: false,
+                                   small: small, awards: awards,
+                                   roundNumber: roundNumber, isOvertime: isOvertime,
+                                   words: roundWords)
+        phase = .roundResult
+    }
 
     // MARK: - 主持人手动调分（纠错/裁决用，不影响自动计分流程）
 
@@ -302,6 +359,7 @@ final class GameStore: ObservableObject {
         openBuzz = false
         playIndex = 0
         playingTeamIndex = 0
+        hofNames = ["", ""]
     }
 
     // MARK: - 词库派发（同一轮两队共用去重池，保证不重复）

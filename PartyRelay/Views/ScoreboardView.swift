@@ -189,7 +189,7 @@ private struct RoundWordsRecap: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(L("board.words_label"))
+            Text(L(outcome.game.isSimultaneous ? "board.hof_names_label" : "board.words_label"))
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
             HStack(alignment: .top, spacing: 10) {

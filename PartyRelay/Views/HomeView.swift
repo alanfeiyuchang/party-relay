@@ -116,6 +116,7 @@ struct HomeView: View {
         }
         .onAppear {
             if ScreenshotMode.autoPresents("gametag") { infoGame = .lipRead }
+            if ScreenshotMode.autoPresents("hoftag") { infoGame = .hallOfFame }
         }
     }
 }
@@ -174,8 +175,9 @@ private struct GameInfoOverlay: View {
                     .foregroundStyle(.white.opacity(0.92))
                     .multilineTextAlignment(.center)
 
-                if kind == .quiz {
-                    Text(L("gametag.quiz_note"))
+                if let note = kind == .quiz ? "gametag.quiz_note"
+                            : kind.isSimultaneous ? "gametag.hof_note" : nil {
+                    Text(L(note))
                         .font(.caption.bold())
                         .foregroundStyle(.black)
                         .multilineTextAlignment(.center)

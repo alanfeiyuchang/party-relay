@@ -120,6 +120,23 @@
         }
       }
     },
+    "board.hof_names_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The two names this round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本轮两队的名人"
+          }
+        }
+      }
+    },
     "board.last_round_label": {
       "extractionState": "stale",
       "localizations": {
@@ -902,6 +919,40 @@
         }
       }
     },
+    "game.hallOfFame.rule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each team is secretly given a famous name. Take turns asking yes/no questions to guess the other team's name!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队各拿到一个名人的名字，轮流问是非题，猜出对方队伍的名人！"
+          }
+        }
+      }
+    },
+    "game.hallOfFame.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hall of Fame"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名人堂"
+          }
+        }
+      }
+    },
     "game.lipRead.rule": {
       "extractionState": "stale",
       "localizations": {
@@ -1004,6 +1055,23 @@
         }
       }
     },
+    "gamecard.info_together": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both teams play at the same time — no timer"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队同时进行 · 不计时"
+          }
+        }
+      }
+    },
     "gamecard.openbuzz": {
       "extractionState": "stale",
       "localizations": {
@@ -1017,6 +1085,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "⚡️ 开放抢答：对方抢先答对 = 对方 +1"
+          }
+        }
+      }
+    },
+    "gamecard.together_go": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let's go — both teams!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队一起开始！"
           }
         }
       }
@@ -1051,6 +1136,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "与设置页是同一个开关，普通玩法至少保留 1 个。"
+          }
+        }
+      }
+    },
+    "gametag.hof_note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole-team game: no timer, and it never comes up as an Open Buzz result."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全队一起玩：不计时，也不会成为抢答二次转盘的结果。"
           }
         }
       }
@@ -1255,6 +1357,346 @@
           "stringUnit": {
             "state": "translated",
             "value": "你们先玩，之后对方玩同一个游戏比小分"
+          }
+        }
+      }
+    },
+    "hof.ask_prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guess the other team's name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "猜出对方的名人"
+          }
+        }
+      }
+    },
+    "hof.close_cover": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it — back to the game"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记住了，返回游戏"
+          }
+        }
+      }
+    },
+    "hof.confirm_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only this team may look — everyone else, eyes away!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有本队能看，其他人请回避！"
+          }
+        }
+      }
+    },
+    "hof.confirm_btn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm on %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我是%@的人"
+          }
+        }
+      }
+    },
+    "hof.confirm_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are you sure you're on %@?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你确定你是%@的人吗？"
+          }
+        }
+      }
+    },
+    "hof.next_team": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it — pass to %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记住了，交给 %@"
+          }
+        }
+      }
+    },
+    "hof.pass_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your whole team looks together — don't let the other team see!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全队一起看，别让对方看到！"
+          }
+        }
+      }
+    },
+    "hof.pass_to": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hand the phone to"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把手机交给"
+          }
+        }
+      }
+    },
+    "hof.remember_it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remember it — the other team will try to guess this name."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记住它——对方要猜的就是这个名字。"
+          }
+        }
+      }
+    },
+    "hof.reveal_btn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show our name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看我们的名人"
+          }
+        }
+      }
+    },
+    "hof.score_body_big": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirming ends this round and wins it — 1 match point."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认后本轮结束，本队拿下这一轮（+1 大分）。"
+          }
+        }
+      }
+    },
+    "hof.score_body_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirming ends this round and awards 3 points."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认后本轮结束，本队 +3 小分。"
+          }
+        }
+      }
+    },
+    "hof.score_btn_big": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Score +1"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "得分 +1"
+          }
+        }
+      }
+    },
+    "hof.score_btn_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Score +3"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "得分 +3"
+          }
+        }
+      }
+    },
+    "hof.score_confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm — we got it!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认得分！"
+          }
+        }
+      }
+    },
+    "hof.score_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Did %@ guess the other name?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@猜中对方的名人了吗？"
+          }
+        }
+      }
+    },
+    "hof.see_again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See our name again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再看一次名字"
+          }
+        }
+      }
+    },
+    "hof.split_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take turns asking one yes/no question each. \"Is it ___?\" counts as a question."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队轮流各问一个是非题。「是不是○○○？」也算一个问题。"
+          }
+        }
+      }
+    },
+    "hof.to_questions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both teams ready — start asking!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两队都看完了，开始提问！"
+          }
+        }
+      }
+    },
+    "hof.your_name_is": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@'s famous name:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@的名人是："
           }
         }
       }
@@ -1731,6 +2173,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "抢答！"
+          }
+        }
+      }
+    },
+    "result.hof_winner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ guessed the other name — +1 point"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ 猜中了对方的名人 · +1 大分"
+          }
+        }
+      }
+    },
+    "result.hof_winner_small": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ guessed the other name — +3 points"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏅 %@ 猜中了对方的名人 · +3 小分"
           }
         }
       }

@@ -19,8 +19,15 @@ enum WordBank {
         case .act:
             return en ? [ActWordsEN.tier1, ActWordsEN.tier2, ActWordsEN.tier3][t - 1]
                       : [ActWords.tier1, ActWords.tier2, ActWords.tier3][t - 1]
+        case .hallOfFame:
+            return []   // 名人堂不按难度档位取词，见 hallOfFameNames()
         case .quiz:
             return []   // 抢答是转盘修饰符扇区，从不作为可玩玩法取词
         }
+    }
+
+    /// 名人堂名字池（随当前语言切换，不分难度档位）
+    static func hallOfFameNames() -> [String] {
+        LanguageManager.shared.language == .en ? HallOfFameNamesEN.pool : HallOfFameNames.pool
     }
 }

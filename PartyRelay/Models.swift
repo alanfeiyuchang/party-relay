@@ -22,12 +22,20 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
     case drawGuess       // 你画我猜
     case lipRead         // 唇语
     case act             // 动作
+    case hallOfFame      // 名人堂（两队同时进行，没有交接与计时）
     case quiz            // 开放抢答（修饰符扇区，不是独立游戏）
 
     var id: String { rawValue }
 
     /// 可以实际游玩的玩法（抢答只是转盘上的加成扇区）
     var isPlayable: Bool { self != .quiz }
+
+    /// 两队同时进行、不分先后手的玩法（不走交接页 / 计时 / 两遍比小分）
+    var isSimultaneous: Bool { self == .hallOfFame }
+
+    /// 能否作为开放抢答二次转盘的结果：抢答本身不行，
+    /// 名人堂也不行（两队同时全员参与，没有「对方偷分」的位置）
+    var allowsOpenBuzz: Bool { isPlayable && !isSimultaneous }
 
     var title: String {
         L("game.\(rawValue).title")
@@ -39,6 +47,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
         case .drawGuess:     return "🎨"
         case .lipRead:       return "🤐"
         case .act:           return "🕺"
+        case .hallOfFame:    return "🌟"
         case .quiz:          return "⚡️"
         }
     }
@@ -53,6 +62,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
         case .drawGuess:     return [Color(red: 0.29, green: 0.56, blue: 1.00), Color(red: 0.20, green: 0.84, blue: 0.85)]
         case .lipRead:       return [Color(red: 0.66, green: 0.36, blue: 0.97), Color(red: 0.96, green: 0.45, blue: 0.90)]
         case .act:           return [Color(red: 0.13, green: 0.77, blue: 0.49), Color(red: 0.62, green: 0.90, blue: 0.22)]
+        case .hallOfFame:    return [Color(red: 0.28, green: 0.26, blue: 0.82), Color(red: 0.60, green: 0.36, blue: 0.96)]
         case .quiz:          return [Color(red: 1.00, green: 0.76, blue: 0.12), Color(red: 1.00, green: 0.45, blue: 0.26)]
         }
     }
@@ -85,9 +95,16 @@ struct GameSettings {
         enabledList.filter(\.isPlayable)
     }
 
-    /// 转盘扇区：抢答扇区只有在存在普通玩法时才有意义
+    /// 开放抢答二次转盘的候选池（名人堂不参与抢答）
+    var openBuzzPool: [GameKind] {
+        playableList.filter(\.allowsOpenBuzz)
+    }
+
+    /// 转盘扇区：抢答扇区只有在「二次转盘还有玩法可转」时才有意义
     var wheelList: [GameKind] {
-        playableList.isEmpty ? [] : enabledList
+        if playableList.isEmpty { return [] }
+        if openBuzzPool.isEmpty { return enabledList.filter { $0 != .quiz } }
+        return enabledList
     }
 
     /// 转盘实际只有一种结果时的那个玩法（抢答不算独立玩法，它只会二次转盘回到普通玩法）
@@ -101,6 +118,8 @@ struct GameSettings {
     func save() {
         let dict: [String: Any] = [
             "enabled": enabledList.map(\.rawValue),
+            // 记下这次存档「见过」哪些玩法，新版本新增的玩法默认为开启
+            "known": GameKind.allCases.map(\.rawValue),
             "totalRounds": totalRounds,
             "roundSeconds": roundSeconds,
             "maxSkips": maxSkips,
@@ -115,7 +134,10 @@ struct GameSettings {
         var s = GameSettings()
         guard let dict = UserDefaults.standard.dictionary(forKey: key) else { return s }
         if let raw = dict["enabled"] as? [String] {
-            let set = Set(raw.compactMap(GameKind.init(rawValue:)))
+            var set = Set(raw.compactMap(GameKind.init(rawValue:)))
+            // 老存档里还没有的玩法（版本更新新增的）默认开启
+            let known = Set((dict["known"] as? [String] ?? raw).compactMap(GameKind.init(rawValue:)))
+            set.formUnion(GameKind.allCases.filter { !known.contains($0) })
             if !set.filter(\.isPlayable).isEmpty { s.enabled = set }
         }
         if let r = dict["totalRounds"] as? Int, (3...10).contains(r) { s.totalRounds = r }
@@ -180,6 +202,7 @@ enum Phase: Equatable {
     case wheel       // 转盘（含落后队指定玩法入口）
     case handoff     // 交接遮挡屏
     case playing     // 游戏中（当前队那一遍）
+    case hallOfFame  // 名人堂（两队同时进行的整局流程）
     case roundResult // 本轮小分对比 & 大分结算
     case scoreboard  // 记分板（大分 + 上轮小分）
     case victory     // 终局

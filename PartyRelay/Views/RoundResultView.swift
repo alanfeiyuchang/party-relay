@@ -54,8 +54,10 @@ struct RoundResultView: View {
                             Text(L(store.smallScoreWin ? "result.tie_small" : "result.tie"))
                         } else {
                             let w = o.awards[0] == 1 ? 0 : 1
-                            Text(L(store.smallScoreWin ? "result.winner_small" : "result.winner",
-                                   "\(store.teams[w].emoji) \(store.teams[w].name)"))
+                            let key = o.game.isSimultaneous
+                                ? (store.smallScoreWin ? "result.hof_winner_small" : "result.hof_winner")
+                                : (store.smallScoreWin ? "result.winner_small" : "result.winner")
+                            Text(L(key, "\(store.teams[w].emoji) \(store.teams[w].name)"))
                         }
                     }
                     .multilineTextAlignment(.center)

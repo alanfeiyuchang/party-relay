@@ -11,13 +11,20 @@ Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words
   <img src="Screenshots/9-en-pickmode.png" width="220" alt="Catch-up game picker">
 </p>
 
-More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas) are in [`Screenshots/`](Screenshots).
+<p align="center">
+  <img src="Screenshots/hof-1-reveal-red-zh.png" width="220" alt="Hall of Fame: hand the phone to Red">
+  <img src="Screenshots/hof-3-split-en.png" width="220" alt="Hall of Fame: split screen">
+  <img src="Screenshots/hof-4-cover-confirm-zh.png" width="220" alt="Hall of Fame: identity check before re-showing the name">
+  <img src="Screenshots/hof-5-cover-name-en.png" width="220" alt="Hall of Fame: the assigned name">
+</p>
+
+More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas, Hall of Fame) are in [`Screenshots/`](Screenshots).
 
 ---
 
 ## Gameplay
 
-### The four games
+### The five games
 
 | | Game | How it works |
 |---|---|---|
@@ -25,12 +32,17 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🎨 | **Draw & Guess** | One player sketches the word on an in-app canvas (no letters or numbers), teammates guess from the same screen. |
 | 🤐 | **Lip Reading** | One player mouths the word silently — no sound at all — and the team reads their lips. |
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
+| 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
-Every game pulls from its own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. Words never repeat within the same team's turn.
+The first four pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. Words never repeat within the same team's turn.
 
-### ⚡️ Open Buzz — not a 5th game, a wheel modifier
+### 🌟 Hall of Fame — the whole-team game
 
-The wheel has a 5th sector, **Open Buzz**. Landing on it doesn't start a game by itself — it spins again to pick one of the four real games, but for that round **both teams can steal points**: while the other team is having their turn, your team can jump in and steal a point for a word they missed. There's no separate trivia/quiz mode — it's a rule modifier layered onto whichever game gets picked.
+Hall of Fame breaks the usual turn structure: nobody hands the phone back and forth for a timed turn. Red privately sees their assigned name, then Blue does, then the phone sits on the table showing a **split screen — red on the left, blue on the right**. Each half has *See our name again* (which covers the whole screen in that team's colour, asks "Are you sure you're on the Red team?", then reveals the name) and *Score*, which covers the screen the same way and asks for a confirmation before ending the round. Names come from two separate curated pools — one of names a Chinese audience knows, one for English speakers — and no name repeats within a session.
+
+### ⚡️ Open Buzz — not a game, a wheel modifier
+
+The wheel has an **Open Buzz** sector. Landing on it doesn't start a game by itself — it spins again to pick one of the *timed* games (Hall of Fame is excluded from that re-spin: it's simultaneous and whole-team, so there's nothing to steal), but for that round **both teams can steal points**: while the other team is having their turn, your team can jump in and steal a point for a word they missed. There's no separate trivia/quiz mode — it's a rule modifier layered onto whichever game gets picked.
 
 ### Scoring: small points → 1 big point
 
@@ -58,7 +70,7 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 
 ### Settings
 
-- Toggle any of the 4 games off (Open Buzz always stays available as long as ≥1 game is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
+- Toggle any of the 5 games off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
 - Total rounds: 3–10 (default 6).
 - Turn length: 30–180s in 15s steps.
 - Skips per turn: 0–10 (default 3).
@@ -86,8 +98,9 @@ Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String 
 | Draw & Guess | 1770 | 120 |
 | Lip Reading | 1770 | 120 |
 | Charades | 1769 | 120 |
+| Hall of Fame (names, no tiers) | 91 | 93 |
 
-Each is split across 3 internal difficulty tiers and hand-curated per game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes).
+The word banks are split across 3 internal difficulty tiers and hand-curated per game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes).
 
 ---
 
@@ -108,6 +121,7 @@ PartyRelay/
     ├── HomeView, SettingsView    # Landing page (+ team setup) and settings sheet
     ├── WheelView                 # Spinning wheel, Open Buzz respin, catch-up game picker
     ├── HandoffView                # "pass the phone" hand-off screen between turns
+    ├── HallOfFameView              # Hall of Fame: private name reveals, split screen, cover pages
     ├── PlayView                   # Say & Guess / Lip Reading / Charades turn screen
     ├── DrawView                   # Draw & Guess: word screen ⇄ drawing canvas
     ├── RoundResultView             # Small-score comparison + big-point award reveal

@@ -20,6 +20,8 @@ struct RootView: View {
                 } else {
                     PlayView()
                 }
+            case .hallOfFame:
+                HallOfFameView()
             case .roundResult:
                 RoundResultView()
             case .scoreboard:

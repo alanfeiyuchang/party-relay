@@ -67,6 +67,19 @@ enum ScreenshotMode {
             store.settings.enabled = [.describeGuess, .drawGuess, .act, .quiz]
             store.phase = .home
 
+        case "hofresult", "hofboard":
+            // 名人堂结算：红队猜中 → 走真实计分（大分 +1 / 小分 +3），本轮两个名人在回顾里揭晓
+            store.teams[0].score = 2
+            store.teams[1].score = 1
+            store.roundNumber = 4
+            store.gameDecided(.hallOfFame, openBuzz: false)
+            store.finishHallOfFame(winner: 0)
+            if mode == "hofboard" { store.proceedToScoreboard() }
+
+        case "hoftag":
+            // 主界面「名人堂」标签弹窗（规则 + 加入/移出转盘开关），弹窗由 HomeView 自动打开
+            store.phase = .home
+
         case "exitconfirm":
             // 游戏中页面顶部「返回主页」的二次确认弹窗，由 HomeExitButton 自动打开
             MotionManager.debugOverride = .upright
@@ -132,6 +145,23 @@ enum ScreenshotMode {
             store.currentGame = .drawGuess
             store.playingTeamIndex = 0
             store.phase = .playing
+
+        case "hofsmall", "hofsmallscore":
+            // 小分制下的名人堂：得分按钮与确认页都改成 +3 小分
+            store.settings.smallScoreWin = true
+            store.teams[0].smallTotal = 9
+            store.teams[1].smallTotal = 6
+            store.roundNumber = 4
+            store.gameDecided(.hallOfFame, openBuzz: false)
+            store.phase = .hallOfFame
+
+        case "hof", "hofpeek", "hofsplit", "hofname", "hofreveal", "hofscore":
+            // 名人堂：私下看名字 / 左红右蓝分屏 / 遮罩页（再看一次·揭晓·确认得分）
+            store.teams[0].score = 2
+            store.teams[1].score = 1
+            store.roundNumber = 4
+            store.gameDecided(.hallOfFame, openBuzz: false)
+            store.phase = .hallOfFame
 
         case "scoreboard":
             store.teams[0].score = 3
