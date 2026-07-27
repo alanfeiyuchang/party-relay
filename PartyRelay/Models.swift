@@ -18,8 +18,9 @@ struct Team: Identifiable {
     }
 
     /// 队伍色的浅色版（整页背景用：红队 → 浅红，蓝队 → 浅蓝）
+    /// 只往白里混一半，保证一眼看得出是哪个队，同时上面的文字还读得清
     var tintedBackground: [Color] {
-        colors.map { $0.lightened(0.82) }
+        colors.map { $0.lightened(0.5) }
     }
 }
 
