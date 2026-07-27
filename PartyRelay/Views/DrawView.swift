@@ -152,7 +152,7 @@ struct DrawView: View {
                         Button {
                             FeedbackManager.shared.buzz()
                             stolenPoints += 1
-                            nextDrawing()
+                            nextDrawing(guessed: true)
                         } label: {
                             Label(L("draw.sniped"), systemImage: "bolt.fill")
                         }
@@ -165,7 +165,7 @@ struct DrawView: View {
                 Button {
                     FeedbackManager.shared.skip()
                     skipsLeft -= 1
-                    nextDrawing()
+                    nextDrawing(guessed: false)
                 } label: {
                     Label(L("play.skip_n", skipsLeft), systemImage: "arrow.uturn.right.circle.fill")
                 }
@@ -184,7 +184,7 @@ struct DrawView: View {
         Button {
             FeedbackManager.shared.correct()
             ownPoints += 1
-            nextDrawing()
+            nextDrawing(guessed: true)
         } label: {
             Label(compactLabel ? L("play.correct_us") : L("draw.correct_plain"),
                   systemImage: "checkmark.circle.fill")
@@ -325,8 +325,9 @@ struct DrawView: View {
         return path
     }
 
-    /// 换词：清画布、回到看词界面
-    private func nextDrawing() {
+    /// 换词：结算当前词、清画布、回到看词界面
+    private func nextDrawing(guessed: Bool) {
+        store.markCurrentWord(guessed: guessed)
         word = store.nextWord()
         strokes.removeAll()
         currentStroke = nil

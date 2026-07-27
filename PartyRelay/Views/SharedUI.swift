@@ -106,6 +106,64 @@ struct CatchUpBanner: View {
     }
 }
 
+// MARK: - 出现过的词标签（猜对=正常色，跳过=灰底）
+
+struct PlayedWordChip: View {
+    var word: PlayedWord
+    /// 猜对时的底色（跳过一律灰底，与猜对的一眼区分）
+    var tint: AnyShapeStyle
+    var textColor: Color = .white
+    var font: Font = .caption2.bold()
+
+    var body: some View {
+        Text(word.text)
+            .font(font)
+            .lineLimit(1)
+            .foregroundStyle(word.guessed ? textColor : Color.black.opacity(0.45))
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(word.guessed ? tint : AnyShapeStyle(Color(.systemGray3))))
+    }
+}
+
+/// 简单的自适应换行流式布局（用于词语标签墙）
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 200
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        return CGSize(width: width, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let width = bounds.width
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            view.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y),
+                       anchor: .topLeading, proposal: .unspecified)
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+    }
+}
+
 // MARK: - 得分弹跳徽章
 
 struct ScoreBadge: View {

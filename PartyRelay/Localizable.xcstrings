@@ -1310,6 +1310,40 @@
         }
       }
     },
+    "handoff.recap_legend": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grey = skipped or not guessed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "灰色 = 跳过或没猜出来"
+          }
+        }
+      }
+    },
+    "handoff.recap_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words %@ just had"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 刚刚出现过的词"
+          }
+        }
+      }
+    },
     "handoff.start": {
       "extractionState": "stale",
       "localizations": {

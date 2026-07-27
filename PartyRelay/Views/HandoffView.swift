@@ -58,6 +58,12 @@ struct HandoffView: View {
                         .padding(.horizontal, 20)
                 }
 
+                // 上一队刚打完的词回顾（灰底=跳过），居中放在开始按钮上方
+                if !store.previousTurnWords.isEmpty {
+                    TurnWordsRecap(words: store.previousTurnWords,
+                                   teamName: store.teams[1 - store.playingTeamIndex].name)
+                }
+
                 if store.openBuzz {
                     Text(L("handoff.openbuzz"))
                         .font(.caption.bold())
@@ -110,6 +116,51 @@ struct HandoffView: View {
             guard waitLeft > 0 else { return }
             FeedbackManager.shared.countdownTick()
             withAnimation { waitLeft -= 1 }
+        }
+    }
+}
+
+// MARK: - 上一队刚打完那一遍出现过的词
+
+/// 交接页中央的词语回顾：猜对的正常显示，跳过的灰底
+private struct TurnWordsRecap: View {
+    var words: [PlayedWord]
+    var teamName: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(L("handoff.recap_title", teamName))
+                .font(.caption.bold())
+                .foregroundStyle(.white.opacity(0.9))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+
+            // 词不多时按内容高度展开，词多了才滚动，免得中间留一大块空白
+            if words.count > 9 {
+                ScrollView { chipWall }.frame(maxHeight: 150)
+            } else {
+                chipWall
+            }
+
+            Text(L("handoff.recap_legend"))
+                .font(.caption2.bold())
+                .foregroundStyle(.white.opacity(0.75))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .fill(.black.opacity(0.18)))
+        .padding(.horizontal, 22)
+    }
+
+    private var chipWall: some View {
+        FlowLayout(spacing: 6) {
+            ForEach(words) { w in
+                PlayedWordChip(word: w,
+                               tint: AnyShapeStyle(Color.white),
+                               textColor: .black.opacity(0.8),
+                               font: .footnote.bold())
+            }
         }
     }
 }

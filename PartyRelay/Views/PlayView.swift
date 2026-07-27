@@ -134,7 +134,7 @@ struct PlayView: View {
                         Button {
                             FeedbackManager.shared.correct()
                             ownPoints += 1
-                            advanceWord()
+                            advanceWord(guessed: true)
                         } label: {
                             Label(L("play.correct_us"), systemImage: "checkmark.circle.fill")
                         }
@@ -143,7 +143,7 @@ struct PlayView: View {
                         Button {
                             FeedbackManager.shared.buzz()
                             stolenPoints += 1
-                            advanceWord()
+                            advanceWord(guessed: true)
                         } label: {
                             Label(L("play.sniped_them"), systemImage: "bolt.fill")
                         }
@@ -153,7 +153,7 @@ struct PlayView: View {
                     Button {
                         FeedbackManager.shared.correct()
                         ownPoints += 1
-                        advanceWord()
+                        advanceWord(guessed: true)
                     } label: {
                         Label(L("play.correct"), systemImage: "checkmark.circle.fill")
                     }
@@ -163,7 +163,7 @@ struct PlayView: View {
                 Button {
                     FeedbackManager.shared.skip()
                     skipsLeft -= 1
-                    advanceWord()
+                    advanceWord(guessed: false)
                 } label: {
                     Label(L("play.skip_n", skipsLeft), systemImage: "arrow.uturn.right.circle.fill")
                 }
@@ -216,7 +216,8 @@ struct PlayView: View {
         }
     }
 
-    private func advanceWord() {
+    private func advanceWord(guessed: Bool) {
+        store.markCurrentWord(guessed: guessed)
         word = store.nextWord()
         withAnimation(.spring(response: 0.25, dampingFraction: 0.5)) { wordBounce = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

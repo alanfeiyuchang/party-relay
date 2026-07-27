@@ -37,13 +37,13 @@ final class GameStore: ObservableObject {
     @Published var currentGame: GameKind = .describeGuess
     @Published var openBuzz = false              // 开放抢答加成（对方可抢答偷分）
     @Published var roundSmall: [Int] = [0, 0]    // 本轮两队小分
-    @Published var roundWords: [[String]] = [[], []]  // 本轮两队各自出现过的词（按队伍下标）
+    @Published var roundWords: [[PlayedWord]] = [[], []]  // 本轮两队各自出现过的词（按队伍下标）
     @Published var catchUp: CatchUp = CatchUp()
     @Published var lastOutcome: RoundOutcome?
     @Published var hofNames: [String] = ["", ""]      // 名人堂：两队各自被指定的名人
 
-    private var usedWords: [String: Set<Int>] = [:]   // "game-tier" -> 已用下标
-    private var usedHofNames: Set<String> = []        // 名人堂：本局已用过的名字（跨轮不重复）
+    /// 出词去重历史：常驻 UserDefaults，跨对局 / 跨启动 / 跨 App 更新都不清空
+    private let history = WordHistory.shared
 
     var playingTeam: Team { teams[playingTeamIndex] }
     var opponentIndex: Int { 1 - playingTeamIndex }
@@ -128,8 +128,7 @@ final class GameStore: ObservableObject {
         isOvertime = false
         firstTeamIndex = 0
         lastOutcome = nil
-        usedWords = [:]
-        usedHofNames = []
+        // 出词历史刻意不在开新局时清空：已经出现过的词要一直不再出现，直到整池抽干
         beginRound()
         enterGameSelection()
     }
@@ -247,21 +246,18 @@ final class GameStore: ObservableObject {
     /// 名人堂一局的得分：小分制 +3 小分，大分制 +1 大分
     static let hallOfFameSmallPoints = 3
 
-    /// 给两队各指定一个名人（当前语言的名字池，同一局内不重复，两队必不相同）
+    /// 给两队各指定一个名人：一次性从名字池取两个，两队必不相同、两个都没出现过，
+    /// 且两个都会写进常驻历史（中英名字池各记各的）
     func assignHallOfFameNames() {
         let pool = WordBank.hallOfFameNames()
         guard pool.count >= 2 else { return }
-        var available = pool.filter { !usedHofNames.contains($0) }
-        if available.count < 2 {      // 名字池用尽后重置
-            usedHofNames = []
-            available = pool
-        }
-        let first = available.randomElement()!
-        let second = available.filter { $0 != first }.randomElement()!
-        usedHofNames.formUnion([first, second])
-        hofNames = [first, second]
+        let key = WordHistory.hallOfFameKey(language: LanguageManager.shared.language)
+        let picked = history.take(2, from: pool, key: key)
+        guard picked.count == 2 else { return }
+        hofNames = picked
         // 结算页/记分板的「本轮词」回顾即是两队的名人揭晓
-        roundWords = [[first], [second]]
+        roundWords = [[PlayedWord(text: picked[0], guessed: true)],
+                      [PlayedWord(text: picked[1], guessed: true)]]
     }
 
     /// 名人堂结束：winner 队猜中对方的名人，直接结算本轮
@@ -362,20 +358,28 @@ final class GameStore: ObservableObject {
         hofNames = ["", ""]
     }
 
-    // MARK: - 词库派发（同一轮两队共用去重池，保证不重复）
+    // MARK: - 词库派发（去重历史常驻，出现过的词整池抽干前不再出现）
 
     func nextWord() -> String {
         let tier = effectiveTier
         let pool = WordBank.words(for: currentGame, tier: tier)
-        let key = "\(LanguageManager.shared.language.rawValue)-\(currentGame.rawValue)-\(tier)"
-        var used = usedWords[key] ?? []
-        if used.count >= pool.count { used = [] }   // 词库用尽后重置
-        var idx = Int.random(in: 0..<pool.count)
-        while used.contains(idx) { idx = Int.random(in: 0..<pool.count) }
-        used.insert(idx)
-        usedWords[key] = used
-        let w = pool[idx]
-        roundWords[playingTeamIndex].append(w)
+        guard !pool.isEmpty else { return "" }
+        let key = WordHistory.wordKey(game: currentGame, tier: tier,
+                                      language: LanguageManager.shared.language)
+        let w = history.take(1, from: pool, key: key).first ?? pool[0]
+        // 先按「没猜出来」记账，猜对 / 被抢答时再由 markCurrentWord 改写
+        roundWords[playingTeamIndex].append(PlayedWord(text: w))
         return w
+    }
+
+    /// 结算当前（最后发出的）词：猜对 / 跳过。供交接页与记分板的词语回顾区分显示
+    func markCurrentWord(guessed: Bool) {
+        guard let last = roundWords[playingTeamIndex].indices.last else { return }
+        roundWords[playingTeamIndex][last].guessed = guessed
+    }
+
+    /// 上一队刚打完那一遍出现过的词（交接页回顾用；只在换手时有意义）
+    var previousTurnWords: [PlayedWord] {
+        playIndex == 1 ? roundWords[1 - playingTeamIndex] : []
     }
 }

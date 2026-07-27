@@ -34,7 +34,12 @@ struct WheelView: View {
 
     var body: some View {
         ZStack {
-            PartyBackground()
+            // 落后队行使指定玩法特权时，整页背景换成该队队色的浅色版
+            if let picker = pickMode {
+                PartyBackground(colors: store.teams[picker].tintedBackground)
+            } else {
+                PartyBackground()
+            }
             VStack(spacing: 12) {
                 HomeExitBar()
 

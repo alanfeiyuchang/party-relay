@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - 队伍
 
@@ -13,6 +16,34 @@ struct Team: Identifiable {
     var gradient: LinearGradient {
         LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
+
+    /// 队伍色的浅色版（整页背景用：红队 → 浅红，蓝队 → 浅蓝）
+    var tintedBackground: [Color] {
+        colors.map { $0.lightened(0.82) }
+    }
+}
+
+extension Color {
+    /// 与白色混合得到浅色版本（0 = 原色，1 = 纯白）
+    func lightened(_ amount: Double) -> Color {
+        #if canImport(UIKit)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a) else { return self }
+        let mix = { (c: CGFloat) in c + (1 - c) * CGFloat(amount) }
+        return Color(red: mix(r), green: mix(g), blue: mix(b))
+        #else
+        return self.opacity(1 - amount)
+        #endif
+    }
+}
+
+// MARK: - 出现过的词（附猜对 / 跳过状态，供交接页与记分板回顾）
+
+struct PlayedWord: Identifiable, Equatable {
+    let id = UUID()
+    var text: String
+    /// true = 被猜对（含被对方抢答猜对）；false = 跳过，或时间到时还没猜出来
+    var guessed: Bool = false
 }
 
 // MARK: - 玩法
@@ -192,7 +223,7 @@ struct RoundOutcome {
     var awards: [Int]       // 两队本轮获得的大分（0或1；平小分则双方各1）
     var roundNumber: Int
     var isOvertime: Bool
-    var words: [[String]]   // 两队本轮各自出现过的词（按队伍下标）
+    var words: [[PlayedWord]]   // 两队本轮各自出现过的词（按队伍下标）
 }
 
 // MARK: - 流程状态机

@@ -207,7 +207,7 @@ private struct RoundWordsRecap: View {
 }
 
 private struct WordChipColumn: View {
-    var words: [String]
+    var words: [PlayedWord]
     var team: Team
 
     var body: some View {
@@ -224,13 +224,8 @@ private struct WordChipColumn: View {
             } else {
                 ScrollView {
                     FlowLayout(spacing: 5) {
-                        ForEach(Array(words.enumerated()), id: \.offset) { _, w in
-                            Text(w)
-                                .font(.caption2.bold())
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Capsule().fill(team.gradient))
+                        ForEach(words) { w in
+                            PlayedWordChip(word: w, tint: AnyShapeStyle(team.gradient))
                         }
                     }
                 }
@@ -238,43 +233,5 @@ private struct WordChipColumn: View {
             }
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-/// 简单的自适应换行流式布局（用于词语标签墙）
-private struct FlowLayout: Layout {
-    var spacing: CGFloat = 6
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 200
-        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > width, x > 0 {
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        return CGSize(width: width, height: y + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let width = bounds.width
-        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > width, x > 0 {
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            view.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y),
-                       anchor: .topLeading, proposal: .unspecified)
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
     }
 }

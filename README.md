@@ -8,7 +8,12 @@ Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words
   <img src="Screenshots/3-en-home.png" width="220" alt="Home screen">
   <img src="Screenshots/4-en-wheel.png" width="220" alt="Spin the wheel">
   <img src="Screenshots/7-en-scoreboard.png" width="220" alt="Scoreboard with recap">
-  <img src="Screenshots/9-en-pickmode.png" width="220" alt="Catch-up game picker">
+  <img src="Screenshots/9-en-pickmode.png" width="220" alt="Catch-up game picker, tinted in the picking team's colour">
+</p>
+
+<p align="center">
+  <img src="Screenshots/recap-handoff-en.png" width="220" alt="Handoff screen with a recap of the words just played">
+  <img src="Screenshots/recap-handoff-zh.png" width="220" alt="Handoff screen with a recap of the words just played (Chinese)">
 </p>
 
 <p align="center">
@@ -34,11 +39,11 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
-The first four pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. Words never repeat within the same team's turn.
+The first four pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
 
 ### 🌟 Hall of Fame — the whole-team game
 
-Hall of Fame breaks the usual turn structure: nobody hands the phone back and forth for a timed turn. Red privately sees their assigned name, then Blue does, then the phone sits on the table showing a **split screen — red on the left, blue on the right**. Each half has *See our name again* (which covers the whole screen in that team's colour, asks "Are you sure you're on the Red team?", then reveals the name) and *Score*, which covers the screen the same way and asks for a confirmation before ending the round. Names come from two separate curated pools — one of names a Chinese audience knows, one for English speakers — and no name repeats within a session.
+Hall of Fame breaks the usual turn structure: nobody hands the phone back and forth for a timed turn. Red privately sees their assigned name, then Blue does, then the phone sits on the table showing a **split screen — red on the left, blue on the right**. Each half has *See our name again* (which covers the whole screen in that team's colour, asks "Are you sure you're on the Red team?", then reveals the name) and *Score*, which covers the screen the same way and asks for a confirmation before ending the round. Names come from two separate curated pools — one of names a Chinese audience knows, one for English speakers — and both names are drawn together from the pool of names that have never come up on this phone, so the two teams always get different names and neither has been used before.
 
 ### ⚡️ Open Buzz — not a game, a wheel modifier
 
@@ -52,13 +57,17 @@ Each round, **both teams play the same game**, one after the other — the **Red
 
 Flip **"Decide the winner by small score"** in Settings and big points disappear entirely: every correct guess adds to that team's running total, the scoreboard just shows those two totals, and after the configured number of rounds the highest total wins (a tie still goes to overtime). The host's +/− buttons adjust the running totals directly, and the catch-up system works off the point gap the same way.
 
-### Handoff countdown
+### Handoff countdown + word recap
 
-When one team's turn ends and the phone passes to the other team, the handoff screen's start button stays disabled for 5 seconds — enough of a beat that nobody starts their turn while the phone is still in the air.
+When one team's turn ends and the phone passes to the other team, the handoff screen's start button stays disabled for 5 seconds — enough of a beat that nobody starts their turn while the phone is still in the air. The middle of that screen shows every word the team that just played had: the ones they got in normal colour, the ones they skipped (or ran out of time on) on a grey background.
+
+### Never the same word twice
+
+Every word bank and both Hall of Fame name pools keep an "already appeared" set that lives in `UserDefaults` and is **never reset** — not between turns, not between matches, not between app launches, and not by an app update (the storage key carries no version and nothing migrates or clears it; only a fresh install starts empty). A word comes back only once its whole pool has been used up, and even then the reshuffle holds back the most recently seen entries so nothing repeats back-to-back. Chinese and English pools track their history separately, and the history stores the words themselves rather than positions, so adding words in a later release doesn't scramble it.
 
 ### Catch-up system (invisible to players)
 
-If a team falls behind, their turn quietly gets a boost — more time, a couple of extra skips, and internally easier words. **None of this is shown in the UI** (no difficulty labels, no "-1 tier" badges) — only a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips), never anything about word difficulty. Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above.
+If a team falls behind, their turn quietly gets a boost — more time, a couple of extra skips, and internally easier words. **None of this is shown in the UI** (no difficulty labels, no "-1 tier" badges) — only a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips), never anything about word difficulty. Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above. While that picker is up, the whole page takes on a lightened version of the picking team's colour (light red for Red, light blue for Blue), so it's obvious whose privilege is being spent.
 
 ### After every round: word recap + reset
 
@@ -114,13 +123,14 @@ PartyRelay/
 ├── Localization.swift           # AppLanguage + LanguageManager (loads the right .lproj bundle)
 ├── Localizable.xcstrings        # All user-facing strings, en + zh-Hans
 ├── MotionManager.swift          # CoreMotion posture detection (upright/flat) for the privacy guard
+├── WordHistory.swift            # Persistent "already appeared" sets for every word bank + name pool
 ├── FeedbackManager.swift        # Centralized haptics + sound effects, gated by the settings switch
 ├── ScreenshotMode.swift         # SCREENSHOT_MODE env var → jump straight to any screen (for automation)
 ├── Words/                       # Per-game word banks, zh + en, 3 tiers each
 └── Views/
     ├── HomeView, SettingsView    # Landing page (+ team setup) and settings sheet
     ├── WheelView                 # Spinning wheel, Open Buzz respin, catch-up game picker
-    ├── HandoffView                # "pass the phone" hand-off screen between turns
+    ├── HandoffView                # "pass the phone" screen: countdown + recap of the words just played
     ├── HallOfFameView              # Hall of Fame: private name reveals, split screen, cover pages
     ├── PlayView                   # Say & Guess / Lip Reading / Charades turn screen
     ├── DrawView                   # Draw & Guess: word screen ⇄ drawing canvas

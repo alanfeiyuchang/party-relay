@@ -27,7 +27,7 @@ enum ScreenshotMode {
             store.phase = .wheel
 
         case "handoff":
-            // 换手交接页：「开始」按钮带 5 秒倒计时，倒计时结束前不可按
+            // 换手交接页：「开始」按钮带 5 秒倒计时，中间是上一队刚出现过的词（灰底=跳过）
             store.teams[0].score = 2
             store.teams[1].score = 1
             store.roundNumber = 4
@@ -35,6 +35,7 @@ enum ScreenshotMode {
             store.roundSmall = [4, 0]
             store.playIndex = 1
             store.playingTeamIndex = 1
+            store.roundWords = [demoTurnWords(), []]
             store.phase = .handoff
 
         case "smallboard":
@@ -47,9 +48,7 @@ enum ScreenshotMode {
             store.lastOutcome = RoundOutcome(game: .lipRead, openBuzz: false,
                                              small: [5, 3], awards: [1, 0],
                                              roundNumber: 4, isOvertime: false,
-                                             words: LanguageManager.shared.language == .en
-                                                ? [["mom", "cheers", "yummy"], ["thank you", "good night"]]
-                                                : [["妈妈", "干杯", "真好吃"], ["谢谢你", "晚安"]])
+                                             words: demoRoundWords())
             store.phase = .scoreboard
 
         case "onegame":
@@ -130,7 +129,8 @@ enum ScreenshotMode {
             store.phase = .playing
 
         case "pick":
-            // 决胜阶段：落后队可指定玩法
+            // 决胜阶段：落后队可指定玩法，整页背景换成落后队队色的浅色版（这里是红队）
+            store.settings.smallScoreWin = false   // 落后判定要看大分，不受上次截图残留的设置影响
             store.teams[0].score = 1
             store.teams[1].score = 4
             store.roundNumber = 6
@@ -171,9 +171,7 @@ enum ScreenshotMode {
             store.lastOutcome = RoundOutcome(game: .lipRead, openBuzz: false,
                                              small: [6, 4], awards: [1, 0],
                                              roundNumber: 5, isOvertime: false,
-                                             words: LanguageManager.shared.language == .en
-                                                ? [["mom", "cheers", "yummy"], ["thank you", "good night"]]
-                                                : [["妈妈", "干杯", "真好吃"], ["谢谢你", "晚安"]])
+                                             words: demoRoundWords())
             store.phase = .scoreboard
 
         case "result":
@@ -182,9 +180,7 @@ enum ScreenshotMode {
             store.lastOutcome = RoundOutcome(game: .act, openBuzz: true,
                                              small: [5, 5], awards: [1, 1],
                                              roundNumber: 4, isOvertime: false,
-                                             words: LanguageManager.shared.language == .en
-                                                ? [["brush teeth", "dance"], ["cook", "photographer"]]
-                                                : [["刷牙", "跳舞"], ["炒菜", "摄影师"]])
+                                             words: demoRoundWords())
             store.phase = .roundResult
 
         case "settings":
@@ -214,6 +210,30 @@ enum ScreenshotMode {
 
     /// 截图模式下需要自动弹出的弹窗（simctl 无法注入点击）
     static func autoPresents(_ name: String) -> Bool { mode == name }
+
+    // MARK: - 演示用的「出现过的词」（混入跳过的词，展示灰底样式）
+
+    private static func played(_ pairs: [(String, Bool)]) -> [PlayedWord] {
+        pairs.map { PlayedWord(text: $0.0, guessed: $0.1) }
+    }
+
+    /// 一队打完一遍出现过的词（交接页回顾用）
+    static func demoTurnWords() -> [PlayedWord] {
+        played(LanguageManager.shared.language == .en
+               ? [("brush teeth", true), ("astronaut", false), ("dance", true), ("juggling", true),
+                  ("tug of war", false), ("photographer", true), ("sneeze", true)]
+               : [("刷牙", true), ("宇航员", false), ("跳舞", true), ("杂技", true),
+                  ("拔河", false), ("摄影师", true), ("打喷嚏", true)])
+    }
+
+    /// 一轮里两队各自出现过的词（记分板 / 结算页回顾用）
+    static func demoRoundWords() -> [[PlayedWord]] {
+        LanguageManager.shared.language == .en
+            ? [played([("mom", true), ("cheers", true), ("good night", false), ("yummy", true)]),
+               played([("thank you", true), ("see you", false), ("good night", true)])]
+            : [played([("妈妈", true), ("干杯", true), ("晚安", false), ("真好吃", true)]),
+               played([("谢谢你", true), ("再见", false), ("晚安", true)])]
+    }
 
     /// 画板演示笔画：一个雪人 ⛄️
     static func demoStrokes() -> [Stroke] {
