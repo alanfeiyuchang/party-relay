@@ -17,9 +17,9 @@ Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words
 </p>
 
 <p align="center">
-  <img src="Screenshots/emoji-1-compose-zh.png" width="220" alt="Emoji Code: the word plus the emoji-only input field">
-  <img src="Screenshots/emoji-2-guess-zh.png" width="220" alt="Emoji Code: word hidden, the screen frozen down to just the emoji">
-  <img src="Screenshots/emoji-3-compose-en.png" width="220" alt="Emoji Code in English">
+  <img src="Screenshots/emoji-1-compose-zh.png" width="220" alt="Emoji Manager: the word plus the emoji-only input field">
+  <img src="Screenshots/emoji-2-guess-zh.png" width="220" alt="Emoji Manager: word hidden, the screen frozen down to just the emoji">
+  <img src="Screenshots/emoji-3-compose-en.png" width="220" alt="Emoji Manager in English">
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@ Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words
   <img src="Screenshots/hof-5-cover-name-en.png" width="220" alt="Hall of Fame: the assigned name">
 </p>
 
-More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas, Emoji Code, Hall of Fame) are in [`Screenshots/`](Screenshots).
+More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas, Emoji Manager, Hall of Fame) are in [`Screenshots/`](Screenshots).
 
 ---
 
@@ -43,20 +43,18 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🎨 | **Draw & Guess** | One player sketches the word on an in-app canvas (no letters or numbers), teammates guess from the same screen. |
 | 🤐 | **Lip Reading** | One player mouths the word silently — no sound at all — and the team reads their lips. |
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
-| 😜 | **Emoji Code** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. Spelling each word is on its own clock (30s by default, adjustable); the guessing runs on the normal per-turn clock. |
+| 😜 | **Emoji Manager** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
 The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
 
-### 😜 Emoji Code — spell it in emoji
+### 😜 Emoji Manager — spell it in emoji
 
-Emoji Code is Draw & Guess turned inside out. Instead of drawing in front of everyone, the player holding the phone privately sees the word (a name, an idiom, or a movie / TV / cartoon title) and spells it out in emoji on the **system emoji keyboard** — so emoji *search* is right there, which beats scrolling a hand-rolled grid. The input field itself is the rule: it accepts nothing but emoji (typing, pasting and dictation are all filtered out, up to 12 emoji per word), so there's no way to sneak the answer in as text. Every time an emoji lands in the field the keyboard is rebuilt (a same-runloop resign/become, so it never animates away), which clears the emoji keyboard's search box — otherwise iOS keeps the last query around and you'd have to delete it by hand before searching for the next one.
+Emoji Manager is Draw & Guess turned inside out. Instead of drawing in front of everyone, the player holding the phone privately sees the word (a name, an idiom, or a movie / TV / cartoon title) and spells it out in emoji on the **system emoji keyboard** — so emoji *search* is right there, which beats scrolling a hand-rolled grid. The input field itself is the rule: it accepts nothing but emoji (typing, pasting and dictation are all filtered out, up to 12 emoji per word), so there's no way to sneak the answer in as text. Every time an emoji lands in the field the keyboard is rebuilt (a same-runloop resign/become, so it never animates away), which clears the emoji keyboard's search box — otherwise iOS keeps the last query around and you'd have to delete it by hand before searching for the next one.
 
 Tapping *Show the team* hides the word and freezes the screen into nothing but the emoji — no keyboard, no editing, no scoring buttons, so the phone can sit on the table or face the room without anything to fiddle with. To change the code you have to take the phone back and tap the one button there is, which returns to the word screen where the scoring buttons (correct / sniped / skip) live — the same split Draw & Guess uses.
 
-Emoji Code runs **two separate clocks**, and only one of them ticks at a time. Composing is on a per-word clock: the encoder gets that long to build the emoji for the word in front of them, and when it runs out the word is dropped and the next one comes up — no skip is spent. That clock resets for every word and never counts toward the turn. Guessing is on the ordinary per-turn clock, the same *Time per turn* every other game uses: it starts when *Show the team* is tapped, accumulates across every word the team gets through, and ends the turn when it hits zero. Take the phone back to edit the code and the turn clock stops where it is while the composing clock picks up again.
-
-So the word screen shows the composing ring plus a small paused chip for the turn time being held in reserve, and the display screen shows the turn ring. Composing length is its own setting — **😜 Emoji Code — spelling time** under Match, 10–90s in steps of 5, default 30 — independent of *Time per turn*.
+Timing is the same single clock every other game uses: one *Time per turn* countdown for the whole turn, running from the moment the team takes the phone until it hits zero. Hunting for emoji spends that clock like anything else does — dawdle on the keyboard and there is less time left to guess — so the same ring shows on both the word screen and the display screen. Because that makes Emoji Manager the slowest game per word, *Time per turn* goes up to 10 minutes (see Settings below).
 
 ### 🌟 Hall of Fame — the whole-team game
 
@@ -98,7 +96,7 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 
 - Toggle any of the 6 games off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
 - Total rounds: 3–10 (default 6).
-- Turn length: 30–180s in 15s steps.
+- Turn length: 30–600s in 30s steps.
 - Skips per turn: 0–10 (default 3).
 - Small-score win mode on/off (see above).
 - Privacy guard on/off.
@@ -124,7 +122,7 @@ Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String 
 | Draw & Guess | 1770 | 120 |
 | Lip Reading | 1770 | 120 |
 | Charades | 1769 | 120 |
-| Emoji Code | 215 | 135 |
+| Emoji Manager | 215 | 135 |
 | Hall of Fame (names, no tiers) | 91 | 93 |
 
 The word banks are split across 3 internal difficulty tiers and hand-curated per game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes, emoji-spellable names/idioms/titles).
@@ -152,7 +150,7 @@ PartyRelay/
     ├── HallOfFameView              # Hall of Fame: private name reveals, split screen, cover pages
     ├── PlayView                   # Say & Guess / Lip Reading / Charades turn screen
     ├── DrawView                   # Draw & Guess: word screen ⇄ drawing canvas
-    ├── EmojiCodeView + EmojiField     # Emoji Code: word + emoji-only input ⇄ frozen emoji display
+    ├── EmojiCodeView + EmojiField     # Emoji Manager: word + emoji-only input ⇄ frozen emoji display
     ├── RoundResultView             # Small-score comparison + big-point award reveal
     ├── ScoreboardView               # Big scores, last round's words recap, Reset Game
     ├── VictoryView + ConfettiView    # Match end screen with confetti
@@ -195,5 +193,5 @@ SIMCTL_CHILD_SCREENSHOT_MODE=<mode> SIMCTL_CHILD_SCREENSHOT_LANG=<zh|en> \
   xcrun simctl launch booted com.partyrelay.app
 ```
 
-`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `pick`, `openbuzz`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `scoreboard`, `result`, `settings`, `emojitime`, `victory`.
+`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `pick`, `openbuzz`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `scoreboard`, `result`, `settings`, `victory`.
 `SCREENSHOT_LANG` forces `zh` or `en` regardless of the simulator's system language.

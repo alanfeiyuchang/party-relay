@@ -4,12 +4,8 @@ struct SettingsView: View {
     @EnvironmentObject var store: GameStore
     @Environment(\.dismiss) private var dismiss
 
-    /// 截图模式要能直接滚到表情密码那一项（玩法开关占满了首屏）
-    private static let emojiSecondsRow = "settings.emojiWordSeconds"
-
     var body: some View {
         NavigationStack {
-            ScrollViewReader { proxy in
             List {
                 // 玩法开关
                 Section {
@@ -50,7 +46,9 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    Stepper(value: $store.settings.roundSeconds, in: 30...180, step: 15) {
+                    Stepper(value: $store.settings.roundSeconds,
+                            in: GameSettings.roundSecondsRange,
+                            step: GameSettings.roundSecondsStep) {
                         HStack {
                             Text(L("settings.turn_length"))
                             Spacer()
@@ -66,23 +64,6 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    // 表情密码的每词时长：独立于上面的单局时长，只作用于这一个玩法
-                    Stepper(value: $store.settings.emojiWordSeconds,
-                            in: GameSettings.emojiWordRange,
-                            step: GameSettings.emojiWordStep) {
-                        HStack {
-                            Text(L("settings.emoji_seconds"))
-                            Spacer()
-                            Text(L("settings.seconds_value", store.settings.emojiWordSeconds))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .id(Self.emojiSecondsRow)
-
-                    Text(L("settings.emoji_seconds_footer"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
                     VStack(alignment: .leading, spacing: 4) {
                         Text(L("settings.rules_title")).font(.subheadline.bold())
                         Text(L(store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"))
@@ -128,13 +109,6 @@ struct SettingsView: View {
                     Button(L("settings.done")) { dismiss() }
                         .bold()
                 }
-            }
-            .onAppear {
-                guard ScreenshotMode.autoPresents("emojitime") else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation { proxy.scrollTo(Self.emojiSecondsRow, anchor: .center) }
-                }
-            }
             }
         }
         .onChange(of: store.settings.feedbackOn) {

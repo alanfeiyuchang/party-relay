@@ -1,6 +1,6 @@
 import Foundation
 
-// Emoji Code (English): titles, names and sayings you can spell out in emoji
+// Emoji Manager (English): titles, names and sayings you can spell out in emoji
 // Picked for "breaks into a few concrete images" — abstract phrases don't work here
 enum EmojiWordsEN {
 

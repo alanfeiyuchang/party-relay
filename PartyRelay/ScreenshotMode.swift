@@ -193,8 +193,7 @@ enum ScreenshotMode {
                                              words: demoRoundWords())
             store.phase = .roundResult
 
-        case "settings", "emojitime":
-            // emojitime = 设置页滚到「表情密码 每词时长」那一项（见 SettingsView）
+        case "settings":
             store.phase = .home
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 showSettings.wrappedValue = true

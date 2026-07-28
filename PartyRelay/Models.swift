@@ -54,7 +54,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
     case drawGuess       // 你画我猜
     case lipRead         // 唇语
     case act             // 动作
-    case emojiCode       // 表情密码（只用 emoji 拼出词语）
+    case emojiCode       // 表情管理（只用 emoji 拼出词语；rawValue 保持不变，别动存档）
     case hallOfFame      // 名人堂（两队同时进行，没有交接与计时）
     case quiz            // 开放抢答（修饰符扇区，不是独立游戏）
 
@@ -113,9 +113,6 @@ struct GameSettings {
     var enabled: Set<GameKind> = Set(GameKind.allCases)
     var totalRounds: Int = 6          // 总轮数 3~10（每轮两队同玩比小分）
     var roundSeconds: Int = 60        // 每队单局时长
-    /// 表情密码专用：每个词单独的倒计时。和 roundSeconds 完全无关——
-    /// 表情密码不吃单局总时长，拼表情不计时，展示给队友后每个词各跑这么久
-    var emojiWordSeconds: Int = 30
     var maxSkips: Int = 3             // 每局可跳过次数（可调）
     var feedbackOn: Bool = true       // 震动+音效总开关
     var privacyGuardOn: Bool = false  // 防偷窥模式（姿态感应隐词），默认关闭
@@ -124,9 +121,9 @@ struct GameSettings {
     static let skipsRange = 0...10
     static let handoffCountdown = 5   // 交接页「开始」按钮的等待秒数
 
-    /// 表情密码每词时长的可调范围（步进 5 秒）
-    static let emojiWordRange = 10...90
-    static let emojiWordStep = 5
+    /// 每队单局时长的可调范围：最长 10 分钟，步进 30 秒（不然从 30 调到 600 要按到手酸）
+    static let roundSecondsRange = 30...600
+    static let roundSecondsStep = 30
 
     var enabledList: [GameKind] {
         GameKind.allCases.filter { enabled.contains($0) }
@@ -164,7 +161,6 @@ struct GameSettings {
             "known": GameKind.allCases.map(\.rawValue),
             "totalRounds": totalRounds,
             "roundSeconds": roundSeconds,
-            "emojiWordSeconds": emojiWordSeconds,
             "maxSkips": maxSkips,
             "feedbackOn": feedbackOn,
             "privacyGuardOn": privacyGuardOn,
@@ -184,9 +180,7 @@ struct GameSettings {
             if !set.filter(\.isPlayable).isEmpty { s.enabled = set }
         }
         if let r = dict["totalRounds"] as? Int, (3...10).contains(r) { s.totalRounds = r }
-        if let t = dict["roundSeconds"] as? Int, (30...180).contains(t) { s.roundSeconds = t }
-        // 老存档里没有这项（这个设置是后加的）→ 保持默认 30 秒
-        if let e = dict["emojiWordSeconds"] as? Int, emojiWordRange.contains(e) { s.emojiWordSeconds = e }
+        if let t = dict["roundSeconds"] as? Int, roundSecondsRange.contains(t) { s.roundSeconds = t }
         if let k = dict["maxSkips"] as? Int, skipsRange.contains(k) { s.maxSkips = k }
         if let f = dict["feedbackOn"] as? Bool { s.feedbackOn = f }
         if let p = dict["privacyGuardOn"] as? Bool { s.privacyGuardOn = p }
