@@ -43,7 +43,7 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🎨 | **Draw & Guess** | One player sketches the word on an in-app canvas (no letters or numbers), teammates guess from the same screen. |
 | 🤐 | **Lip Reading** | One player mouths the word silently — no sound at all — and the team reads their lips. |
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
-| 😜 | **Emoji Code** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. Spelling is untimed; each word gets its own 30 seconds once it is shown. |
+| 😜 | **Emoji Code** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. Spelling is untimed; each word gets its own clock (30s by default, adjustable) once it is shown. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
 The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
@@ -54,7 +54,7 @@ Emoji Code is Draw & Guess turned inside out. Instead of drawing in front of eve
 
 Tapping *Show the team* hides the word and freezes the screen into nothing but the emoji — no keyboard, no editing, no scoring buttons, so the phone can sit on the table or face the room without anything to fiddle with. To change the code you have to take the phone back and tap the one button there is, which returns to the word screen where the scoring buttons (correct / sniped / skip) live — the same split Draw & Guess uses.
 
-Emoji Code is also the one game that does **not** spend the shared per-turn clock. Hunting for the right emoji is slow by nature, and timing it just punishes the encoder for how long the keyboard search takes — so the word screen has no countdown at all, only a badge saying so. Each word instead carries its own 30 seconds, and that clock only runs while the emoji are actually facing the team: it starts when *Show the team* is tapped, pauses if the phone is taken back to edit the code, and resumes on the next reveal. Guessing right, getting sniped or skipping all move on to a fresh 30 seconds; if a word's 30 seconds run out, that team's turn ends there.
+Emoji Code is also the one game that does **not** spend the shared per-turn clock. Hunting for the right emoji is slow by nature, and timing it just punishes the encoder for how long the keyboard search takes — so the word screen has no countdown at all, only a badge saying so. Each word instead carries its own clock, and it only runs while the emoji are actually facing the team: it starts when *Show the team* is tapped, pauses if the phone is taken back to edit the code, and resumes on the next reveal. Guessing right, getting sniped or skipping all move on to a fresh full clock; if a word's time runs out, that team's turn ends there. The length is its own setting — **😜 Emoji Code — per word** under Match, 10–90s in steps of 5, default 30 — entirely separate from *Time per turn*, which this game never touches.
 
 ### 🌟 Hall of Fame — the whole-team game
 
@@ -193,5 +193,5 @@ SIMCTL_CHILD_SCREENSHOT_MODE=<mode> SIMCTL_CHILD_SCREENSHOT_LANG=<zh|en> \
   xcrun simctl launch booted com.partyrelay.app
 ```
 
-`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `pick`, `openbuzz`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `scoreboard`, `result`, `settings`, `victory`.
+`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `pick`, `openbuzz`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `scoreboard`, `result`, `settings`, `emojitime`, `victory`.
 `SCREENSHOT_LANG` forces `zh` or `en` regardless of the simulator's system language.

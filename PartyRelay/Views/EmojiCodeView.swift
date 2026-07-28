@@ -9,7 +9,8 @@ import Combine
 ///
 /// 计时也和别的玩法不一样：这里不吃 store.roundDuration 那份全局单局时间。
 /// 拼表情本来就是慢工，翻键盘、搜表情的时间全部不计时；只有把屏幕转给队友（展示界面）
-/// 之后，这个词才开始走自己那 30 秒。换词就重新给 30 秒，收起回来改表情时暂停。
+/// 之后，这个词才开始走自己那一份倒计时（设置里单独可调，默认 30 秒，与单局时长无关）。
+/// 换词就重新给满，收起回来改表情时暂停。
 struct EmojiCodeView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject private var motion = MotionManager.shared
@@ -19,7 +20,7 @@ struct EmojiCodeView: View {
     @State private var ownPoints = 0
     @State private var stolenPoints = 0
     @State private var skipsLeft = 0
-    @State private var remaining = EmojiCodeView.wordSeconds   // 本词还剩几秒（只在展示界面走表）
+    @State private var remaining = GameSettings().emojiWordSeconds  // 本词还剩几秒（只在展示界面走表）
     @State private var showDisplay = false     // 按键切换：看词界面 / 展示界面
     @State private var keyboardUp = false      // 输入框是否持有第一响应者
     @State private var forceShow = false       // 连点三次强制显词（防偷窥模式下）
@@ -28,8 +29,8 @@ struct EmojiCodeView: View {
     /// 一条密码最多几个表情：再多队友一眼读不完，展示屏也放不下
     static let maxEmojis = 12
 
-    /// 每个词单独一份倒计时，和全局单局时长（settings.roundSeconds）无关
-    static let wordSeconds = 30
+    /// 每个词单独一份倒计时（设置里可调 10~90 秒），和全局单局时长（settings.roundSeconds）无关
+    private var wordSeconds: Int { store.settings.emojiWordSeconds }
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var game: GameKind { .emojiCode }
@@ -44,7 +45,7 @@ struct EmojiCodeView: View {
     }
 
     /// 本词展示过、又被收回来改表情：倒计时停在原地，回到展示界面接着走
-    private var timerPaused: Bool { remaining < Self.wordSeconds }
+    private var timerPaused: Bool { remaining < wordSeconds }
 
     var body: some View {
         ZStack {
@@ -56,7 +57,7 @@ struct EmojiCodeView: View {
             }
         }
         .onAppear {
-            remaining = Self.wordSeconds
+            remaining = wordSeconds
             skipsLeft = store.skipAllowance
             if word.isEmpty { word = store.nextWord() }
             if store.settings.privacyGuardOn { motion.start() }
@@ -65,7 +66,8 @@ struct EmojiCodeView: View {
                 code = "🦁👑🌍"
                 ownPoints = 2
                 showDisplay = m == "emojiguess"
-                if showDisplay { remaining = 24 }   // 截图里让本词的 30 秒倒计时正在走
+                // 截图里让本词的倒计时正在走（留 4/5）
+                if showDisplay { remaining = max(1, wordSeconds * 4 / 5) }
             }
             keyboardUp = !showDisplay
         }
@@ -75,7 +77,7 @@ struct EmojiCodeView: View {
             guard showDisplay, remaining > 0 else { return }
             remaining -= 1
             if remaining == 0 {
-                // 这个词 30 秒没猜出来 → 这一遍到此为止（当前词按没猜出来记账）
+                // 这个词的时间走完还没猜出来 → 这一遍到此为止（当前词按没猜出来记账）
                 FeedbackManager.shared.timeUp()
                 store.finishPlay(own: ownPoints, stolen: stolenPoints)
             } else if remaining <= 5 {
@@ -274,7 +276,7 @@ struct EmojiCodeView: View {
         VStack(spacing: 14) {
             HStack(spacing: 10) {
                 HomeExitButton()
-                TimerRing(remaining: remaining, total: Self.wordSeconds, size: 48)
+                TimerRing(remaining: remaining, total: wordSeconds, size: 48)
                 Text("+\(ownPoints)")
                     .font(.title3.weight(.black))
                     .foregroundStyle(game.colors[0])
@@ -298,7 +300,7 @@ struct EmojiCodeView: View {
                     Text(L("emoji.guess_title"))
                         .font(.subheadline.bold())
                         .foregroundStyle(.white.opacity(0.85))
-                    Text(L("emoji.word_timer", Self.wordSeconds))
+                    Text(L("emoji.word_timer", wordSeconds))
                         .font(.caption2.bold())
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -338,7 +340,7 @@ struct EmojiCodeView: View {
         store.markCurrentWord(guessed: guessed)
         word = store.nextWord()
         code = ""
-        remaining = Self.wordSeconds
+        remaining = wordSeconds
         showDisplay = false
         keyboardUp = true
         forceShow = false

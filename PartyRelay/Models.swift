@@ -113,6 +113,9 @@ struct GameSettings {
     var enabled: Set<GameKind> = Set(GameKind.allCases)
     var totalRounds: Int = 6          // 总轮数 3~10（每轮两队同玩比小分）
     var roundSeconds: Int = 60        // 每队单局时长
+    /// 表情密码专用：每个词单独的倒计时。和 roundSeconds 完全无关——
+    /// 表情密码不吃单局总时长，拼表情不计时，展示给队友后每个词各跑这么久
+    var emojiWordSeconds: Int = 30
     var maxSkips: Int = 3             // 每局可跳过次数（可调）
     var feedbackOn: Bool = true       // 震动+音效总开关
     var privacyGuardOn: Bool = false  // 防偷窥模式（姿态感应隐词），默认关闭
@@ -120,6 +123,10 @@ struct GameSettings {
 
     static let skipsRange = 0...10
     static let handoffCountdown = 5   // 交接页「开始」按钮的等待秒数
+
+    /// 表情密码每词时长的可调范围（步进 5 秒）
+    static let emojiWordRange = 10...90
+    static let emojiWordStep = 5
 
     var enabledList: [GameKind] {
         GameKind.allCases.filter { enabled.contains($0) }
@@ -157,6 +164,7 @@ struct GameSettings {
             "known": GameKind.allCases.map(\.rawValue),
             "totalRounds": totalRounds,
             "roundSeconds": roundSeconds,
+            "emojiWordSeconds": emojiWordSeconds,
             "maxSkips": maxSkips,
             "feedbackOn": feedbackOn,
             "privacyGuardOn": privacyGuardOn,
@@ -177,6 +185,8 @@ struct GameSettings {
         }
         if let r = dict["totalRounds"] as? Int, (3...10).contains(r) { s.totalRounds = r }
         if let t = dict["roundSeconds"] as? Int, (30...180).contains(t) { s.roundSeconds = t }
+        // 老存档里没有这项（这个设置是后加的）→ 保持默认 30 秒
+        if let e = dict["emojiWordSeconds"] as? Int, emojiWordRange.contains(e) { s.emojiWordSeconds = e }
         if let k = dict["maxSkips"] as? Int, skipsRange.contains(k) { s.maxSkips = k }
         if let f = dict["feedbackOn"] as? Bool { s.feedbackOn = f }
         if let p = dict["privacyGuardOn"] as? Bool { s.privacyGuardOn = p }
