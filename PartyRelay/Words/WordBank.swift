@@ -19,6 +19,9 @@ enum WordBank {
         case .act:
             return en ? [ActWordsEN.tier1, ActWordsEN.tier2, ActWordsEN.tier3][t - 1]
                       : [ActWords.tier1, ActWords.tier2, ActWords.tier3][t - 1]
+        case .emojiCode:
+            return en ? [EmojiWordsEN.tier1, EmojiWordsEN.tier2, EmojiWordsEN.tier3][t - 1]
+                      : [EmojiWords.tier1, EmojiWords.tier2, EmojiWords.tier3][t - 1]
         case .hallOfFame:
             return []   // 名人堂不按难度档位取词，见 hallOfFameNames()
         case .quiz:

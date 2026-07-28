@@ -54,6 +54,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
     case drawGuess       // 你画我猜
     case lipRead         // 唇语
     case act             // 动作
+    case emojiCode       // 表情密码（只用 emoji 拼出词语）
     case hallOfFame      // 名人堂（两队同时进行，没有交接与计时）
     case quiz            // 开放抢答（修饰符扇区，不是独立游戏）
 
@@ -79,6 +80,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
         case .drawGuess:     return "🎨"
         case .lipRead:       return "🤐"
         case .act:           return "🕺"
+        case .emojiCode:     return "😜"
         case .hallOfFame:    return "🌟"
         case .quiz:          return "⚡️"
         }
@@ -94,6 +96,7 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
         case .drawGuess:     return [Color(red: 0.29, green: 0.56, blue: 1.00), Color(red: 0.20, green: 0.84, blue: 0.85)]
         case .lipRead:       return [Color(red: 0.66, green: 0.36, blue: 0.97), Color(red: 0.96, green: 0.45, blue: 0.90)]
         case .act:           return [Color(red: 0.13, green: 0.77, blue: 0.49), Color(red: 0.62, green: 0.90, blue: 0.22)]
+        case .emojiCode:     return [Color(red: 0.96, green: 0.27, blue: 0.47), Color(red: 0.55, green: 0.25, blue: 0.90)]
         case .hallOfFame:    return [Color(red: 0.28, green: 0.26, blue: 0.82), Color(red: 0.60, green: 0.36, blue: 0.96)]
         case .quiz:          return [Color(red: 1.00, green: 0.76, blue: 0.12), Color(red: 1.00, green: 0.45, blue: 0.26)]
         }

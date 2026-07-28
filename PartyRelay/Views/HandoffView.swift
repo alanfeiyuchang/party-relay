@@ -75,8 +75,8 @@ struct HandoffView: View {
                         .padding(.horizontal, 16)
                 }
 
-                if store.currentGame == .drawGuess {
-                    Text(L("handoff.draw_flow"))
+                if store.currentGame == .drawGuess || store.currentGame == .emojiCode {
+                    Text(L(store.currentGame == .drawGuess ? "handoff.draw_flow" : "handoff.emoji_flow"))
                         .font(.caption.bold())
                         .foregroundStyle(.white.opacity(0.85))
                         .multilineTextAlignment(.center)

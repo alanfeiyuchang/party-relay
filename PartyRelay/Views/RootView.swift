@@ -15,10 +15,10 @@ struct RootView: View {
             case .handoff:
                 HandoffView()
             case .playing:
-                if store.currentGame == .drawGuess {
-                    DrawView()
-                } else {
-                    PlayView()
+                switch store.currentGame {
+                case .drawGuess:  DrawView()
+                case .emojiCode:  EmojiCodeView()
+                default:          PlayView()
                 }
             case .hallOfFame:
                 HallOfFameView()

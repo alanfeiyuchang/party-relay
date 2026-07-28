@@ -21,16 +21,6 @@
         }
       }
     },
-    "%@ %lld : %lld %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ %2$lld : %3$lld %4$@"
-          }
-        }
-      }
-    },
     "%@ · %@%@": {
       "localizations": {
         "en": {
@@ -51,8 +41,29 @@
         }
       }
     },
+    "%@%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@%2$lld"
+          }
+        }
+      }
+    },
     "%lld": {},
+    "%lld/%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "+%lld": {},
+    ":": {},
     "app.title": {
       "extractionState": "stale",
       "localizations": {
@@ -71,6 +82,7 @@
       }
     },
     "board.adjust_hint": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -766,6 +778,159 @@
         }
       }
     },
+    "emoji.back_to_word": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take it back — hide the emoji"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收起，把手机拿回来"
+          }
+        }
+      }
+    },
+    "emoji.encoder_only": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "😜 Encoder's eyes only!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "😜 只许出题人看！"
+          }
+        }
+      }
+    },
+    "emoji.guess_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teammates, what is it?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "队友快猜，这是什么？"
+          }
+        }
+      }
+    },
+    "emoji.only_emoji_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emoji only — the keyboard blocks everything else"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只收表情，打字会被挡下来"
+          }
+        }
+      }
+    },
+    "emoji.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap here to spell it in emoji"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点这里，用表情拼出来"
+          }
+        }
+      }
+    },
+    "emoji.start_guess": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the team"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拼好了，展示给队友"
+          }
+        }
+      }
+    },
+    "emoji.timer_paused": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏸ Paused · %ds left on this word"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏸ 已暂停 · 本词还剩 %d 秒"
+          }
+        }
+      }
+    },
+    "emoji.untimed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏸ Coding is not timed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏸ 拼表情不计时"
+          }
+        }
+      }
+    },
+    "emoji.word_timer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d seconds for this word alone"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个词单独计时 %d 秒"
+          }
+        }
+      }
+    },
     "exit.confirm_action": {
       "extractionState": "manual",
       "localizations": {
@@ -915,6 +1080,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "你画我猜"
+          }
+        }
+      }
+    },
+    "game.emojiCode.rule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One player spells the word out in emoji only — no typing. Spelling it takes as long as it takes; once it is shown, teammates get 30 seconds per word!"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1人只用 emoji 把词拼出来（不能打字），拼的时候不计时；展示给队友后，每个词 30 秒！"
+          }
+        }
+      }
+    },
+    "game.emojiCode.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emoji Code"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表情密码"
           }
         }
       }
@@ -1238,6 +1437,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "📱 看词后按「开始作画」进入画布，队友看同屏猜"
+          }
+        }
+      }
+    },
+    "handoff.emoji_flow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📱 See the word, spell it out on the emoji keyboard — that part is untimed — then tap “Show the team”: the word hides, only the emoji stay, and this word gets its own 30 seconds"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📱 看词后用表情键盘拼出来，这段不计时；按「展示给队友」把词藏起来，屏幕上只剩表情，这个词单独跑 30 秒"
           }
         }
       }
@@ -2960,9 +3176,11 @@
       }
     },
     "⚡️": {},
+    "🌟": {},
     "🎉": {},
     "🏆": {},
-    "🙈": {}
+    "🙈": {},
+    "🤫": {}
   },
   "version": "1.0"
 }

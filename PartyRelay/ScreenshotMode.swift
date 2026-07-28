@@ -146,6 +146,16 @@ enum ScreenshotMode {
             store.playingTeamIndex = 0
             store.phase = .playing
 
+        case "emoji", "emojiguess":
+            // emoji = 编码界面（看词 + 表情键盘）；emojiguess = 猜词界面（词已隐藏，只剩表情）
+            store.settings.privacyGuardOn = false
+            store.teams[0].score = 2
+            store.teams[1].score = 2
+            store.roundNumber = 3
+            store.currentGame = .emojiCode
+            store.playingTeamIndex = 0
+            store.phase = .playing
+
         case "hofsmall", "hofsmallscore":
             // 小分制下的名人堂：得分按钮与确认页都改成 +3 小分
             store.settings.smallScoreWin = true
