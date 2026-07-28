@@ -7,10 +7,13 @@ import Combine
 /// 展示屏上除了表情什么都没有，要改表情就得把手机拿回来（按「收起」回到看词界面）。
 /// 计分按钮全部留在看词界面，跟你画我猜一致。
 ///
-/// 计时也和别的玩法不一样：这里不吃 store.roundDuration 那份全局单局时间。
-/// 拼表情本来就是慢工，翻键盘、搜表情的时间全部不计时；只有把屏幕转给队友（展示界面）
-/// 之后，这个词才开始走自己那一份倒计时（设置里单独可调，默认 30 秒，与单局时长无关）。
-/// 换词就重新给满，收起回来改表情时暂停。
+/// 计时是两套各走各的，任一时刻只有一套在动：
+/// - 看词界面（拼表情）：每个词单独一份，长度是设置里的「拼表情时长」（emojiWordSeconds，
+///   默认 30，可调 10~90）。出题人只有这么久拼 emoji，走完这个词就作废换下一个（不扣跳过次数）。
+///   这份不计入单局时长。
+/// - 展示界面（队友猜）：走 store.roundDuration，也就是主设置里的每队单局时长，和别的玩法一样，
+///   跨词累计，走完这一遍就结束。
+/// 换句话说：拼的时候单局时钟停着，展示的时候拼表情时钟停着。
 struct EmojiCodeView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject private var motion = MotionManager.shared
@@ -20,7 +23,8 @@ struct EmojiCodeView: View {
     @State private var ownPoints = 0
     @State private var stolenPoints = 0
     @State private var skipsLeft = 0
-    @State private var remaining = GameSettings().emojiWordSeconds  // 本词还剩几秒（只在展示界面走表）
+    @State private var composeLeft = GameSettings().emojiWordSeconds  // 本词拼表情还剩几秒（只在看词界面走表）
+    @State private var turnLeft = GameSettings().roundSeconds         // 本遍单局时长还剩几秒（只在展示界面走表）
     @State private var showDisplay = false     // 按键切换：看词界面 / 展示界面
     @State private var keyboardUp = false      // 输入框是否持有第一响应者
     @State private var forceShow = false       // 连点三次强制显词（防偷窥模式下）
@@ -29,8 +33,8 @@ struct EmojiCodeView: View {
     /// 一条密码最多几个表情：再多队友一眼读不完，展示屏也放不下
     static let maxEmojis = 12
 
-    /// 每个词单独一份倒计时（设置里可调 10~90 秒），和全局单局时长（settings.roundSeconds）无关
-    private var wordSeconds: Int { store.settings.emojiWordSeconds }
+    /// 拼表情：每个词单独一份（设置里可调 10~90 秒），不计入单局时长
+    private var composeSeconds: Int { store.settings.emojiWordSeconds }
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var game: GameKind { .emojiCode }
@@ -44,8 +48,8 @@ struct EmojiCodeView: View {
         store.settings.privacyGuardOn && !forceShow && motion.posture == .flat
     }
 
-    /// 本词展示过、又被收回来改表情：倒计时停在原地，回到展示界面接着走
-    private var timerPaused: Bool { remaining < wordSeconds }
+    /// 已经猜过一阵、这会儿回到看词界面：单局时钟停在原地，下次展示接着走
+    private var turnClockStarted: Bool { turnLeft < store.roundDuration }
 
     var body: some View {
         ZStack {
@@ -57,7 +61,8 @@ struct EmojiCodeView: View {
             }
         }
         .onAppear {
-            remaining = wordSeconds
+            composeLeft = composeSeconds
+            turnLeft = store.roundDuration
             skipsLeft = store.skipAllowance
             if word.isEmpty { word = store.nextWord() }
             if store.settings.privacyGuardOn { motion.start() }
@@ -66,22 +71,34 @@ struct EmojiCodeView: View {
                 code = "🦁👑🌍"
                 ownPoints = 2
                 showDisplay = m == "emojiguess"
-                // 截图里让本词的倒计时正在走（留 4/5）
-                if showDisplay { remaining = max(1, wordSeconds * 4 / 5) }
+                // 截图里两块表都摆成「正在走」的样子
+                composeLeft = max(1, composeSeconds * 4 / 5)
+                turnLeft = max(1, store.roundDuration * 3 / 4)
             }
             keyboardUp = !showDisplay
         }
         .onDisappear { motion.stop() }
         .onReceive(timer) { _ in
-            // 只有词摆在队友面前时才走表：看词界面拼表情的时间一秒都不算
-            guard showDisplay, remaining > 0 else { return }
-            remaining -= 1
-            if remaining == 0 {
-                // 这个词的时间走完还没猜出来 → 这一遍到此为止（当前词按没猜出来记账）
-                FeedbackManager.shared.timeUp()
-                store.finishPlay(own: ownPoints, stolen: stolenPoints)
-            } else if remaining <= 5 {
-                FeedbackManager.shared.countdownTick()
+            if showDisplay {
+                // 队友在猜：走单局时长，跨词累计，和别的玩法一样
+                guard turnLeft > 0 else { return }
+                turnLeft -= 1
+                if turnLeft == 0 {
+                    FeedbackManager.shared.timeUp()
+                    store.finishPlay(own: ownPoints, stolen: stolenPoints)
+                } else if turnLeft <= 5 {
+                    FeedbackManager.shared.countdownTick()
+                }
+            } else {
+                // 出题人在拼表情：走本词自己那份，走完这个词就作废换下一个（不扣跳过次数）
+                guard composeLeft > 0 else { return }
+                composeLeft -= 1
+                if composeLeft == 0 {
+                    FeedbackManager.shared.timeUp()
+                    nextRiddle(guessed: false)
+                } else if composeLeft <= 5 {
+                    FeedbackManager.shared.countdownTick()
+                }
             }
         }
     }
@@ -92,7 +109,7 @@ struct EmojiCodeView: View {
         VStack(spacing: 10) {
             HStack(spacing: 10) {
                 HomeExitButton()
-                untimedBadge
+                TimerRing(remaining: composeLeft, total: composeSeconds, size: 46)
                 Text("+\(ownPoints)")
                     .font(.title3.weight(.black))
                     .foregroundStyle(game.colors[0])
@@ -103,6 +120,7 @@ struct EmojiCodeView: View {
                         .foregroundStyle(.red)
                 }
                 Spacer()
+                pausedTurnChip
                 if store.openBuzz { OpenBuzzBadge(compact: true) }
                 if store.settings.privacyGuardOn {
                     ForceRevealButton(forceShow: $forceShow, taps: $forceTaps)
@@ -134,11 +152,11 @@ struct EmojiCodeView: View {
         }
     }
 
-    /// 看词界面没有倒计时圈：这里不计时，只说明这件事（收回来改表情时顺带报一下本词还剩多少）
-    private var untimedBadge: some View {
-        Text(timerPaused ? L("emoji.timer_paused", remaining) : L("emoji.untimed"))
+    /// 看词界面上那圈是「拼表情」的表；单局那块表这会儿停着，用小胶囊报一下还剩多少
+    private var pausedTurnChip: some View {
+        Text(L(turnClockStarted ? "emoji.turn_paused" : "emoji.turn_pending", turnLeft))
             .font(.caption2.bold())
-            .foregroundStyle(timerPaused ? Color.orange : .secondary)
+            .foregroundStyle(.secondary)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
             .padding(.horizontal, 10)
@@ -276,7 +294,7 @@ struct EmojiCodeView: View {
         VStack(spacing: 14) {
             HStack(spacing: 10) {
                 HomeExitButton()
-                TimerRing(remaining: remaining, total: wordSeconds, size: 48)
+                TimerRing(remaining: turnLeft, total: store.roundDuration, size: 48)
                 Text("+\(ownPoints)")
                     .font(.title3.weight(.black))
                     .foregroundStyle(game.colors[0])
@@ -300,7 +318,7 @@ struct EmojiCodeView: View {
                     Text(L("emoji.guess_title"))
                         .font(.subheadline.bold())
                         .foregroundStyle(.white.opacity(0.85))
-                    Text(L("emoji.word_timer", wordSeconds))
+                    Text(L("emoji.guess_timer"))
                         .font(.caption2.bold())
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -340,7 +358,7 @@ struct EmojiCodeView: View {
         store.markCurrentWord(guessed: guessed)
         word = store.nextWord()
         code = ""
-        remaining = wordSeconds
+        composeLeft = composeSeconds   // 下一个词重新拿满拼表情时间；单局时钟不动
         showDisplay = false
         keyboardUp = true
         forceShow = false

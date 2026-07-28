@@ -812,6 +812,23 @@
         }
       }
     },
+    "emoji.guess_timer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the turn clock"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "计时用每队单局时长"
+          }
+        }
+      }
+    },
     "emoji.guess_title": {
       "extractionState": "manual",
       "localizations": {
@@ -880,53 +897,36 @@
         }
       }
     },
-    "emoji.timer_paused": {
+    "emoji.turn_paused": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "⏸ Paused · %ds left on this word"
+            "value": "⏸ Turn: %ds left"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "⏸ 已暂停 · 本词还剩 %d 秒"
+            "value": "⏸ 单局剩 %d 秒"
           }
         }
       }
     },
-    "emoji.untimed": {
+    "emoji.turn_pending": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "⏸ Coding is not timed"
+            "value": "⏸ Turn %ds"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "⏸ 拼表情不计时"
-          }
-        }
-      }
-    },
-    "emoji.word_timer": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d seconds for this word alone"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这个词单独计时 %d 秒"
+            "value": "⏸ 单局 %d 秒"
           }
         }
       }
@@ -1090,13 +1090,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "One player spells the word out in emoji only — no typing. Spelling it takes as long as it takes; once it is shown, every word is on its own clock!"
+            "value": "One player spells the word out in emoji only — no typing, against a per-word clock — teammates read the emoji and guess!"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "1人只用 emoji 把词拼出来（不能打字），拼的时候不计时；展示给队友后，每个词单独计时！"
+            "value": "1人只用 emoji 把词拼出来（不能打字，每个词限时），队友看表情猜！"
           }
         }
       }
@@ -1447,13 +1447,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "📱 See the word, spell it out on the emoji keyboard — that part is untimed — then tap “Show the team”: the word hides, only the emoji stay, and this word gets its own %d seconds"
+            "value": "📱 See the word and spell it on the emoji keyboard — %ds per word — then tap “Show the team”: the word hides, only the emoji stay, and the guessing runs on the turn clock"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "📱 看词后用表情键盘拼出来，这段不计时；按「展示给队友」把词藏起来，屏幕上只剩表情，这个词单独跑 %d 秒"
+            "value": "📱 看词后用表情键盘拼出来，每个词限时 %d 秒；按「展示给队友」把词藏起来，只剩表情，队友猜的时间走每队单局时长"
           }
         }
       }
@@ -2620,13 +2620,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "😜 Emoji Code — per word"
+            "value": "😜 Emoji Code — spelling time"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "😜 表情密码 每词时长"
+            "value": "😜 表情密码 拼表情时长"
           }
         }
       }
@@ -2637,13 +2637,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Emoji Code does not spend the turn clock at all: spelling the emoji is untimed, and each word gets this long on its own once it is shown to the team."
+            "value": "Only for Emoji Code's spelling step: each word gives the encoder this long to build the emoji, and the word is dropped when it runs out. That time does not count toward the turn — the guessing part runs on Time per turn above."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "表情密码不吃上面的单局时长：拼表情完全不计时，展示给队友后每个词各跑这么久。"
+            "value": "只作用于表情密码的拼表情环节：每个词给出题人这么久拼 emoji，时间到这个词就作废换下一个。这段不计入单局时长；队友猜的那部分走上面的「每队单局时长」。"
           }
         }
       }

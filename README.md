@@ -43,7 +43,7 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🎨 | **Draw & Guess** | One player sketches the word on an in-app canvas (no letters or numbers), teammates guess from the same screen. |
 | 🤐 | **Lip Reading** | One player mouths the word silently — no sound at all — and the team reads their lips. |
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
-| 😜 | **Emoji Code** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. Spelling is untimed; each word gets its own clock (30s by default, adjustable) once it is shown. |
+| 😜 | **Emoji Code** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. Spelling each word is on its own clock (30s by default, adjustable); the guessing runs on the normal per-turn clock. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
 The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
@@ -54,7 +54,9 @@ Emoji Code is Draw & Guess turned inside out. Instead of drawing in front of eve
 
 Tapping *Show the team* hides the word and freezes the screen into nothing but the emoji — no keyboard, no editing, no scoring buttons, so the phone can sit on the table or face the room without anything to fiddle with. To change the code you have to take the phone back and tap the one button there is, which returns to the word screen where the scoring buttons (correct / sniped / skip) live — the same split Draw & Guess uses.
 
-Emoji Code is also the one game that does **not** spend the shared per-turn clock. Hunting for the right emoji is slow by nature, and timing it just punishes the encoder for how long the keyboard search takes — so the word screen has no countdown at all, only a badge saying so. Each word instead carries its own clock, and it only runs while the emoji are actually facing the team: it starts when *Show the team* is tapped, pauses if the phone is taken back to edit the code, and resumes on the next reveal. Guessing right, getting sniped or skipping all move on to a fresh full clock; if a word's time runs out, that team's turn ends there. The length is its own setting — **😜 Emoji Code — per word** under Match, 10–90s in steps of 5, default 30 — entirely separate from *Time per turn*, which this game never touches.
+Emoji Code runs **two separate clocks**, and only one of them ticks at a time. Composing is on a per-word clock: the encoder gets that long to build the emoji for the word in front of them, and when it runs out the word is dropped and the next one comes up — no skip is spent. That clock resets for every word and never counts toward the turn. Guessing is on the ordinary per-turn clock, the same *Time per turn* every other game uses: it starts when *Show the team* is tapped, accumulates across every word the team gets through, and ends the turn when it hits zero. Take the phone back to edit the code and the turn clock stops where it is while the composing clock picks up again.
+
+So the word screen shows the composing ring plus a small paused chip for the turn time being held in reserve, and the display screen shows the turn ring. Composing length is its own setting — **😜 Emoji Code — spelling time** under Match, 10–90s in steps of 5, default 30 — independent of *Time per turn*.
 
 ### 🌟 Hall of Fame — the whole-team game
 
