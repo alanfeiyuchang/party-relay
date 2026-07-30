@@ -31,7 +31,8 @@ final class GameStore: ObservableObject {
     // 当前轮状态：每轮转一次盘，两队先后玩同一个游戏，各得小分
     @Published var roundNumber: Int = 1          // 1-based，可超过 totalRounds（加时）
     @Published var isOvertime = false
-    @Published var firstTeamIndex: Int = 0       // 本轮先手队：红队恒定先手（不再轮换）
+    /// 本轮先手队：默认红队先手（不轮换）；落后队行使指定玩法特权时改成该队，只影响那一轮
+    @Published var firstTeamIndex: Int = 0
     @Published var playIndex: Int = 0            // 0=先手那一遍，1=后手那一遍
     @Published var playingTeamIndex: Int = 0     // 当前执机队
     @Published var currentGame: GameKind = .describeGuess
@@ -149,6 +150,8 @@ final class GameStore: ObservableObject {
     }
 
     private func beginRound() {
+        // 每轮都先复位成红队先手；上一轮的「指定玩法者先手」不带到下一轮
+        firstTeamIndex = 0
         playIndex = 0
         roundSmall = [0, 0]
         roundWords = [[], []]
@@ -172,8 +175,11 @@ final class GameStore: ObservableObject {
         }
     }
 
-    /// 落后队直接指定玩法（不转盘、无开放抢答加成）
-    func pickGame(_ game: GameKind) {
+    /// 落后队直接指定玩法（不转盘、无开放抢答加成）。
+    /// 行使特权的队伍本轮抢到先手，压过平时的红队先手——只在这一轮有效，
+    /// 下轮 beginRound() 会把先手复位回红队。
+    func pickGame(_ game: GameKind, by teamIndex: Int) {
+        firstTeamIndex = teamIndex
         gameDecided(game, openBuzz: false)
         enterDecidedGame()
     }
@@ -191,7 +197,10 @@ final class GameStore: ObservableObject {
     func startPlaying() { phase = .playing }
 
     var roundDuration: Int {
-        settings.roundSeconds + (catchUp.isActive ? catchUp.extraSeconds : 0)
+        settings.roundSeconds
+            + (catchUp.isActive ? catchUp.extraSeconds : 0)
+            // 表情管理要先在键盘里翻表情，补一份加时（设置里可调，0 = 不加）
+            + (currentGame == .emojiCode ? settings.emojiBonusSeconds : 0)
     }
 
     var skipAllowance: Int {

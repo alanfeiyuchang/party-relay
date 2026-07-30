@@ -113,6 +113,9 @@ struct GameSettings {
     var enabled: Set<GameKind> = Set(GameKind.allCases)
     var totalRounds: Int = 6          // 总轮数 3~10（每轮两队同玩比小分）
     var roundSeconds: Int = 60        // 每队单局时长
+    /// 表情管理专用加时：这个玩法要先在键盘里翻表情，同样的单局时长能猜的词更少，
+    /// 所以轮到它时在单局时长上再加这么多秒。调到 0 就是不加时
+    var emojiBonusSeconds: Int = 30
     var maxSkips: Int = 3             // 每局可跳过次数（可调）
     var feedbackOn: Bool = true       // 震动+音效总开关
     var privacyGuardOn: Bool = false  // 防偷窥模式（姿态感应隐词），默认关闭
@@ -124,6 +127,10 @@ struct GameSettings {
     /// 每队单局时长的可调范围：最长 10 分钟，步进 30 秒（不然从 30 调到 600 要按到手酸）
     static let roundSecondsRange = 30...600
     static let roundSecondsStep = 30
+
+    /// 表情管理加时的可调范围（步进 10 秒，0 = 不加时）
+    static let emojiBonusRange = 0...120
+    static let emojiBonusStep = 10
 
     var enabledList: [GameKind] {
         GameKind.allCases.filter { enabled.contains($0) }
@@ -161,6 +168,7 @@ struct GameSettings {
             "known": GameKind.allCases.map(\.rawValue),
             "totalRounds": totalRounds,
             "roundSeconds": roundSeconds,
+            "emojiBonusSeconds": emojiBonusSeconds,
             "maxSkips": maxSkips,
             "feedbackOn": feedbackOn,
             "privacyGuardOn": privacyGuardOn,
@@ -181,6 +189,8 @@ struct GameSettings {
         }
         if let r = dict["totalRounds"] as? Int, (3...10).contains(r) { s.totalRounds = r }
         if let t = dict["roundSeconds"] as? Int, roundSecondsRange.contains(t) { s.roundSeconds = t }
+        // 老存档里没有这项（后加的设置）→ 保持默认 30 秒
+        if let e = dict["emojiBonusSeconds"] as? Int, emojiBonusRange.contains(e) { s.emojiBonusSeconds = e }
         if let k = dict["maxSkips"] as? Int, skipsRange.contains(k) { s.maxSkips = k }
         if let f = dict["feedbackOn"] as? Bool { s.feedbackOn = f }
         if let p = dict["privacyGuardOn"] as? Bool { s.privacyGuardOn = p }

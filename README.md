@@ -46,7 +46,7 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 😜 | **Emoji Manager** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
-The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
+The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. Emoji Manager draws from 530 Chinese / 540 English entries, and Hall of Fame from 709 Chinese / 558 English names — big enough pools that a full evening barely dents them. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
 
 ### 😜 Emoji Manager — spell it in emoji
 
@@ -54,7 +54,7 @@ Emoji Manager is Draw & Guess turned inside out. Instead of drawing in front of 
 
 Tapping *Show the team* hides the word and freezes the screen into nothing but the emoji — no keyboard, no editing, no scoring buttons, so the phone can sit on the table or face the room without anything to fiddle with. To change the code you have to take the phone back and tap the one button there is, which returns to the word screen where the scoring buttons (correct / sniped / skip) live — the same split Draw & Guess uses.
 
-Timing is the same single clock every other game uses: one *Time per turn* countdown for the whole turn, running from the moment the team takes the phone until it hits zero. Hunting for emoji spends that clock like anything else does — dawdle on the keyboard and there is less time left to guess — so the same ring shows on both the word screen and the display screen. Because that makes Emoji Manager the slowest game per word, *Time per turn* goes up to 10 minutes (see Settings below).
+Timing is the same single clock every other game uses: one *Time per turn* countdown for the whole turn, running from the moment the team takes the phone until it hits zero. Hunting for emoji spends that clock like anything else does — dawdle on the keyboard and there is less time left to guess — so the same ring shows on both the word screen and the display screen. Because that makes Emoji Manager the slowest game per word, *Time per turn* goes up to 10 minutes, and this one game gets a bonus on top of it: *Emoji Manager bonus time* (0–120s, default 30) is added to the turn whenever the wheel lands here, so hunting for emoji doesn't come straight out of the guessing time (see Settings below).
 
 ### 🌟 Hall of Fame — the whole-team game
 
@@ -66,7 +66,7 @@ The wheel has an **Open Buzz** sector. Landing on it doesn't start a game by its
 
 ### Scoring: small points → 1 big point
 
-Each round, **both teams play the same game**, one after the other — the **Red team always goes first**. Whoever gets more correct guesses (small points) in their turn wins the round and earns **+1 big point**. Tie on small points → both teams get the big point. First to the most big points after all rounds wins; a tied match goes to a sudden-death overtime round.
+Each round, **both teams play the same game**, one after the other — the **Red team goes first**, except in a round where the trailing team spends its pick-the-game privilege, in which case that team goes first (see [Catch-up system](#catch-up-system-invisible-to-players)). Whoever gets more correct guesses (small points) in their turn wins the round and earns **+1 big point**. Tie on small points → both teams get the big point. First to the most big points after all rounds wins; a tied match goes to a sudden-death overtime round.
 
 ### Small-score mode (optional)
 
@@ -82,7 +82,7 @@ Every word bank and both Hall of Fame name pools keep an "already appeared" set 
 
 ### Catch-up system (invisible to players)
 
-If a team falls behind, their turn quietly gets a boost — more time, a couple of extra skips, and internally easier words. **None of this is shown in the UI** (no difficulty labels, no "-1 tier" badges) — only a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips), never anything about word difficulty. Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above. While that picker is up, the whole page takes on a lightened version of the picking team's colour (light red for Red, light blue for Blue), so it's obvious whose privilege is being spent.
+If a team falls behind, their turn quietly gets a boost — more time, a couple of extra skips, and internally easier words. **None of this is shown in the UI** (no difficulty labels, no "-1 tier" badges) — only a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips), never anything about word difficulty. Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above. While that picker is up, the whole page takes on a lightened version of the picking team's colour (light red for Red, light blue for Blue), so it's obvious whose privilege is being spent. Spending it also buys the turn order: the picking team plays that round **first**, overriding the usual Red-first order — just for that round, since the next round resets to Red-first.
 
 ### After every round: word recap + reset
 
@@ -97,6 +97,7 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 - Toggle any of the 6 games off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
 - Total rounds: 3–10 (default 6).
 - Turn length: 30–600s in 30s steps.
+- Emoji Manager bonus time: 0–120s in 10s steps (default 30). Added on top of the turn length, for that game only.
 - Skips per turn: 0–10 (default 3).
 - Small-score win mode on/off (see above).
 - Privacy guard on/off.

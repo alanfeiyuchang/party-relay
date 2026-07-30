@@ -9,6 +9,8 @@ import Combine
 ///
 /// 计时和别的玩法一样：整遍就一块表，走 store.roundDuration（每队单局时长），
 /// 从上场那一刻起一直走到 0——拼表情花掉的时间同样算在里面，翻键盘翻久了就是没时间猜。
+/// 只是 roundDuration 轮到这个玩法时会多加一份「表情管理加时」（settings.emojiBonusSeconds，
+/// 默认 30 秒），补上翻键盘那段——加时是 store 那边算好的，这里照常读 roundDuration 就行。
 struct EmojiCodeView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject private var motion = MotionManager.shared
@@ -18,7 +20,8 @@ struct EmojiCodeView: View {
     @State private var ownPoints = 0
     @State private var stolenPoints = 0
     @State private var skipsLeft = 0
-    @State private var remaining = GameSettings().roundSeconds  // 本遍还剩几秒（拼表情和猜词共用这一块表）
+    // 本遍还剩几秒（拼表情和猜词共用这一块表）；真正的长度 onAppear 时从 store.roundDuration 取
+    @State private var remaining = GameSettings().roundSeconds + GameSettings().emojiBonusSeconds
     @State private var showDisplay = false     // 按键切换：看词界面 / 展示界面
     @State private var keyboardUp = false      // 输入框是否持有第一响应者
     @State private var forceShow = false       // 连点三次强制显词（防偷窥模式下）

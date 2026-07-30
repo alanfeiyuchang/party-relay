@@ -199,7 +199,7 @@ private struct PickGamePanel: View {
                 ForEach(store.settings.playableList) { kind in
                     Button {
                         FeedbackManager.shared.tap()
-                        store.pickGame(kind)
+                        store.pickGame(kind, by: teamIndex)
                     } label: {
                         HStack(spacing: 14) {
                             Text(kind.emoji).font(.system(size: 30))

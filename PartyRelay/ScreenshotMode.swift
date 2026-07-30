@@ -137,6 +137,18 @@ enum ScreenshotMode {
             store.firstTeamIndex = 0
             store.phase = .wheel
 
+        case "pickfirst":
+            // 行使指定玩法特权的队伍本轮先手：这里让蓝队落后（平时恒定红队先手），
+            // 蓝队在指定面板里选了比手画脚 → 交接页应该交给蓝队，而不是红队
+            store.settings.smallScoreWin = false
+            store.teams[0].score = 4
+            store.teams[1].score = 1
+            store.roundNumber = 6
+            store.firstTeamIndex = 0
+            if let picker = store.pickEligibleTeam {
+                store.pickGame(.act, by: picker)
+            }
+
         case "draw", "drawcanvas":
             // draw = 看词界面（开始作画/答对/换一个）；drawcanvas = 画布界面（收起画布）
             store.teams[0].score = 2

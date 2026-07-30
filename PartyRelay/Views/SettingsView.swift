@@ -56,6 +56,22 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    // 表情管理的加时：只作用于这一个玩法，加在上面的单局时长上
+                    Stepper(value: $store.settings.emojiBonusSeconds,
+                            in: GameSettings.emojiBonusRange,
+                            step: GameSettings.emojiBonusStep) {
+                        HStack {
+                            Text(L("settings.emoji_bonus"))
+                            Spacer()
+                            Text(L("settings.bonus_seconds_value", store.settings.emojiBonusSeconds))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    Text(L("settings.emoji_bonus_footer"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
                     Stepper(value: $store.settings.maxSkips, in: GameSettings.skipsRange) {
                         HStack {
                             Text(L("settings.max_skips"))
