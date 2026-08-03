@@ -1,5 +1,12 @@
-支持网址 Support URL: https://github.com/alanfeiyuchang/party-relay/issues
+支持网址 Support URL: https://alanfeiyuchang.github.io/party-relay/
 营销网址 Marketing URL（可选）: https://github.com/alanfeiyuchang/party-relay
+隐私政策网址 Privacy Policy URL: https://alanfeiyuchang.github.io/party-relay/#privacy
 
-说明：如果不想直接使用 GitHub Issues 作为支持入口，请替换成真实的客服联系方式
-（例如一个简单的支持页面或 mailto: 邮箱链接）。App Store 审核要求 Support URL 必须可正常访问。
+支持页面由 GitHub Pages 托管，源文件是 main 分支的 docs/index.html，
+包含联系邮箱（并注明回复时限）、常见问题和隐私政策——这正是审核指南 1.5 要求的内容。
+
+请勿再使用 https://github.com/alanfeiyuchang/party-relay/issues 作为支持网址：
+1.0 (4) 版本就是因为这个被以指南 1.5 驳回（issue 列表不算面向用户的支持页面）。
+
+发布方式：GitHub 仓库 → Settings → Pages → Source 选 "Deploy from a branch"，
+Branch 选 main，Folder 选 /docs → Save。等约 1 分钟后确认网址可以正常打开。

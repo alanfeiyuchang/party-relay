@@ -1,6 +1,14 @@
-Support URL: https://github.com/alanfeiyuchang/party-relay/issues
+Support URL: https://alanfeiyuchang.github.io/party-relay/
 Marketing URL (optional): https://github.com/alanfeiyuchang/party-relay
+Privacy Policy URL: https://alanfeiyuchang.github.io/party-relay/#privacy
 
-Note: fill these in with a real support contact if you'd rather not point directly
-to GitHub Issues (e.g. a simple support page or a mailto: link). Apple requires a
-working Support URL before the app can go to review.
+The Support URL is served by GitHub Pages from the `docs/` folder on the `main` branch
+(source file: docs/index.html). It contains a contact email with a stated response time,
+a FAQ, and the privacy policy — which is what Apple looks for under guideline 1.5.
+
+Do NOT use https://github.com/alanfeiyuchang/party-relay/issues as the Support URL:
+that was rejected in the 1.0 (4) review (guideline 1.5) because an issue tracker is not
+a support page for end users.
+
+To publish: GitHub repo -> Settings -> Pages -> Source: "Deploy from a branch",
+Branch: main, Folder: /docs -> Save. Wait ~1 minute, then confirm the URL loads.
