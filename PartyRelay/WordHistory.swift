@@ -28,9 +28,9 @@ final class WordHistory {
 
     // MARK: - 取词
 
-    /// 词库键：同一玩法同一档位、按语言各自独立
-    static func wordKey(game: GameKind, tier: Int, language: AppLanguage) -> String {
-        "\(language.rawValue)|\(game.rawValue)|\(tier)"
+    /// 词库键：同一玩法按语言各自独立
+    static func wordKey(game: GameKind, language: AppLanguage) -> String {
+        "\(language.rawValue)|\(game.rawValue)"
     }
 
     /// 名人堂名字池键：中英两套名字各自独立

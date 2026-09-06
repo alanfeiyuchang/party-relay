@@ -10,7 +10,7 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             PartyBackground()
-            VStack(spacing: 18) {
+            VStack(spacing: 12) {
                 // 顶栏：语言切换按钮（右上角）
                 HStack {
                     Spacer()
@@ -35,9 +35,9 @@ struct HomeView: View {
                 .padding(.top, 6)
 
                 Text("🎉")
-                    .font(.system(size: 50))
+                    .font(.system(size: 38))
                 Text(L("app.title"))
-                    .font(.system(size: 46, weight: .black, design: .rounded))
+                    .font(.system(size: 40, weight: .black, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(colors: [.pink, .orange, .purple],
                                        startPoint: .leading, endPoint: .trailing)
@@ -55,7 +55,6 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 4)
 
                 HStack(spacing: 18) {
                     Label(L("home.rounds", store.settings.totalRounds),
@@ -85,7 +84,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                VStack(spacing: 12) {
+                VStack(spacing: 10) {
                     Button {
                         FeedbackManager.shared.tap()
                         store.startMatch()
@@ -93,6 +92,19 @@ struct HomeView: View {
                         Label(L("home.start"), systemImage: "play.fill")
                     }
                     .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))
+
+                    Button {
+                        FeedbackManager.shared.tap()
+                        store.startSolo()
+                    } label: {
+                        Label(L("home.solo"), systemImage: "bolt.fill")
+                    }
+                    .buttonStyle(BigButtonStyle(colors: [.teal, .cyan], font: .headline))
+
+                    Text(L("home.solo_hint"))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
 
                     Button {
                         FeedbackManager.shared.tap()

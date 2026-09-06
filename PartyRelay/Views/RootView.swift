@@ -22,6 +22,8 @@ struct RootView: View {
                 }
             case .hallOfFame:
                 HallOfFameView()
+            case .soloResult:
+                SoloResultView()
             case .roundResult:
                 RoundResultView()
             case .scoreboard:

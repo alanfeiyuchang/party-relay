@@ -1203,6 +1203,23 @@
         }
       }
     },
+    "gamecard.info_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One round, no teams"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只打一局，不分队"
+          }
+        }
+      }
+    },
     "gamecard.info_together": {
       "extractionState": "manual",
       "localizations": {
@@ -1233,6 +1250,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "⚡️ 开放抢答：对方抢先答对 = 对方 +1"
+          }
+        }
+      }
+    },
+    "gamecard.solo_go": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let's go →"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始 →"
           }
         }
       }
@@ -1947,6 +1981,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "设置"
+          }
+        }
+      }
+    },
+    "home.solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速局"
+          }
+        }
+      }
+    },
+    "home.solo_hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No teams, no scores — one spin, one round."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不分队、不记分：转一次盘只打一局"
           }
         }
       }
@@ -2937,6 +3005,91 @@
         }
       }
     },
+    "solo.again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再来一局"
+          }
+        }
+      }
+    },
+    "solo.handoff_body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whoever holds the phone gives the clues — everyone else guesses."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拿手机的人出题，其他人一起猜"
+          }
+        }
+      }
+    },
+    "solo.handoff_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone plays together"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大家一起玩"
+          }
+        }
+      }
+    },
+    "solo.result_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "words guessed"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "个词猜对了"
+          }
+        }
+      }
+    },
+    "solo.words_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words this round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这一局出现过的词"
+          }
+        }
+      }
+    },
     "team.blue": {
       "extractionState": "stale",
       "localizations": {
@@ -3154,6 +3307,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 小分 %d"
+          }
+        }
+      }
+    },
+    "wheel.solo_subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spin for the game you'll play"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转出这一局玩什么"
+          }
+        }
+      }
+    },
+    "wheel.solo_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速局"
           }
         }
       }

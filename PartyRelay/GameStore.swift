@@ -42,6 +42,8 @@ final class GameStore: ObservableObject {
     @Published var catchUp: CatchUp = CatchUp()
     @Published var lastOutcome: RoundOutcome?
     @Published var hofNames: [String] = ["", ""]      // 名人堂：两队各自被指定的名人
+    /// 不分队模式：不分红蓝、不记大分，转一次盘打一局就结束
+    @Published var soloMode = false
 
     /// 出词去重历史：常驻 UserDefaults，跨对局 / 跨启动 / 跨 App 更新都不清空
     private let history = WordHistory.shared
@@ -79,6 +81,7 @@ final class GameStore: ObservableObject {
     /// 平衡策略：已进行轮数达到总轮数 2/3 后，落后队可直接指定玩法（不转盘）
     /// 只有一个玩法时没有可选项，直接不给这个特权
     var pickEligibleTeam: Int? {
+        guard !soloMode else { return nil }
         guard settings.soleGame == nil else { return nil }
         guard Double(completedRounds) >= Double(totalRounds) * 2.0 / 3.0 else { return nil }
         return trailingIndex
@@ -104,23 +107,10 @@ final class GameStore: ObservableObject {
         }
     }
 
-    // MARK: - 难度档位（随轮次爬升）
-
-    var baseTier: Int {
-        let third = max(1, totalRounds / 3)
-        let r = min(roundNumber, totalRounds)
-        if r <= third { return 1 }
-        if r <= third * 2 { return 2 }
-        return 3
-    }
-
-    var effectiveTier: Int {
-        max(1, baseTier - (catchUp.isActive ? catchUp.tierDrop : 0))
-    }
-
     // MARK: - 流程
 
     func startMatch() {
+        soloMode = false
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0
@@ -132,6 +122,35 @@ final class GameStore: ObservableObject {
         // 出词历史刻意不在开新局时清空：已经出现过的词要一直不再出现，直到整池抽干
         beginRound()
         enterGameSelection()
+    }
+
+    /// 不分队快速局的可选玩法：名人堂要两队同时进行，这个模式里用不了。
+    /// 设置里把普通玩法全关只留名人堂时，退回到全部单队玩法，免得没得玩
+    var soloGamePool: [GameKind] {
+        let enabled = settings.playableList.filter { !$0.isSimultaneous }
+        return enabled.isEmpty
+            ? GameKind.allCases.filter { $0.isPlayable && !$0.isSimultaneous }
+            : enabled
+    }
+
+    /// 不分队快速局：转一次盘，一局打完直接看成绩，没有队伍 / 大分 / 交接对手
+    func startSolo() {
+        soloMode = true
+        for i in teams.indices {
+            teams[i].score = 0
+            teams[i].smallTotal = 0
+        }
+        roundNumber = 1
+        isOvertime = false
+        lastOutcome = nil
+        beginRound()
+        let pool = soloGamePool
+        if pool.count == 1 {
+            gameDecided(pool[0], openBuzz: false)
+            enterDecidedGame()
+        } else {
+            phase = .wheel
+        }
     }
 
     /// 进入玩法选择：转盘只有一种结果时（只开了一个普通玩法）直接进那个游戏，不转盘
@@ -209,6 +228,16 @@ final class GameStore: ObservableObject {
 
     /// 一遍游戏结束：own=己方猜对数，stolen=开放抢答中被对方偷走的分
     func finishPlay(own: Int, stolen: Int) {
+        if soloMode {
+            // 不分队：一局就是全部，直接进成绩页
+            roundSmall = [own, 0]
+            lastOutcome = RoundOutcome(game: currentGame, openBuzz: false,
+                                       small: [own, 0], awards: [0, 0],
+                                       roundNumber: 1, isOvertime: false,
+                                       words: roundWords)
+            phase = .soloResult
+            return
+        }
         roundSmall[playingTeamIndex] += own
         roundSmall[opponentIndex] += stolen
 
@@ -350,6 +379,7 @@ final class GameStore: ObservableObject {
 
     func resetToHome() {
         phase = .home
+        soloMode = false
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0
@@ -370,10 +400,9 @@ final class GameStore: ObservableObject {
     // MARK: - 词库派发（去重历史常驻，出现过的词整池抽干前不再出现）
 
     func nextWord() -> String {
-        let tier = effectiveTier
-        let pool = WordBank.words(for: currentGame, tier: tier)
+        let pool = WordBank.words(for: currentGame)
         guard !pool.isEmpty else { return "" }
-        let key = WordHistory.wordKey(game: currentGame, tier: tier,
+        let key = WordHistory.wordKey(game: currentGame,
                                       language: LanguageManager.shared.language)
         let w = history.take(1, from: pool, key: key).first ?? pool[0]
         // 先按「没猜出来」记账，猜对 / 被抢答时再由 markCurrentWord 改写

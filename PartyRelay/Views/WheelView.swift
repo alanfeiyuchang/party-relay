@@ -12,7 +12,8 @@ struct WheelView: View {
 
     /// 第一次转：全部启用扇区；二次转：只在「可被抢答」的普通玩法里转（名人堂不参与抢答）
     private var games: [GameKind] {
-        isRespin ? store.settings.openBuzzPool : store.settings.wheelList
+        if store.soloMode { return store.soloGamePool }
+        return isRespin ? store.settings.openBuzzPool : store.settings.wheelList
     }
 
     /// 落后队可跳过转盘、直接指定玩法（抢答二次转盘期间不适用）
@@ -21,6 +22,7 @@ struct WheelView: View {
     }
 
     private var titleText: String {
+        if store.soloMode { return L("wheel.solo_subtitle") }
         if let picker = pickMode {
             return L("wheel.pick_title", "\(store.teams[picker].emoji) \(store.teams[picker].name)")
         }
@@ -45,9 +47,11 @@ struct WheelView: View {
 
                 // 顶部：轮次信息
                 VStack(spacing: 6) {
-                    Text(store.isOvertime ? L("wheel.overtime") : L("wheel.round", store.roundNumber, store.totalRounds))
+                    Text(store.soloMode ? L("wheel.solo_title")
+                         : store.isOvertime ? L("wheel.overtime")
+                         : L("wheel.round", store.roundNumber, store.totalRounds))
                         .font(.subheadline.bold())
-                        .foregroundStyle(store.isOvertime ? .orange : .secondary)
+                        .foregroundStyle(store.soloMode ? .teal : store.isOvertime ? .orange : .secondary)
                     Text(titleText)
                         .font(.system(size: pickMode != nil ? 20 : 26, weight: .black, design: .rounded))
                         .foregroundStyle(titleColor)
@@ -98,9 +102,9 @@ struct WheelView: View {
 
                 Spacer(minLength: 4)
 
-                // 大分横条
+                // 大分横条（不分队快速局没有比分）
                 HStack(spacing: 10) {
-                    ForEach(store.teams) { team in
+                    ForEach(store.soloMode ? [] : store.teams) { team in
                         Text(L(store.smallScoreWin ? "wheel.score_chip_small" : "wheel.score_chip",
                                "\(team.emoji) \(team.name)", store.matchScore(team.id)))
                             .font(.subheadline.bold())
@@ -366,7 +370,8 @@ private struct GameCardOverlay: View {
                         .multilineTextAlignment(.center)
                 }
 
-                Text(L(game.isSimultaneous ? "gamecard.info_together" : "gamecard.info_plain"))
+                Text(L(store.soloMode ? "gamecard.info_solo"
+                       : game.isSimultaneous ? "gamecard.info_together" : "gamecard.info_plain"))
                     .font(.caption.bold())
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12)
@@ -377,8 +382,8 @@ private struct GameCardOverlay: View {
                     FeedbackManager.shared.tap()
                     onContinue()
                 } label: {
-                    Text(game.isSimultaneous
-                         ? L("gamecard.together_go")
+                    Text(store.soloMode ? L("gamecard.solo_go")
+                         : game.isSimultaneous ? L("gamecard.together_go")
                          : L("gamecard.first_go", store.teams[store.firstTeamIndex].name))
                 }
                 .buttonStyle(BigButtonStyle(colors: [.white.opacity(0.95), .white],

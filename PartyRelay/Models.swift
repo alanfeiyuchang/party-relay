@@ -92,8 +92,9 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
 
     var colors: [Color] {
         switch self {
-        case .describeGuess: return [Color(red: 1.00, green: 0.42, blue: 0.42), Color(red: 1.00, green: 0.65, blue: 0.31)]
-        case .drawGuess:     return [Color(red: 0.29, green: 0.56, blue: 1.00), Color(red: 0.20, green: 0.84, blue: 0.85)]
+        // 前两个玩法刻意避开红/橙与蓝/青：那两套是红队和蓝队的队色，撞色会让人以为转盘在指定队伍
+        case .describeGuess: return [Color(red: 0.06, green: 0.71, blue: 0.65), Color(red: 0.31, green: 0.89, blue: 0.72)]
+        case .drawGuess:     return [Color(red: 0.34, green: 0.08, blue: 0.42), Color(red: 0.65, green: 0.21, blue: 0.76)]
         case .lipRead:       return [Color(red: 0.66, green: 0.36, blue: 0.97), Color(red: 0.96, green: 0.45, blue: 0.90)]
         case .act:           return [Color(red: 0.13, green: 0.77, blue: 0.49), Color(red: 0.62, green: 0.90, blue: 0.22)]
         case .emojiCode:     return [Color(red: 0.96, green: 0.27, blue: 0.47), Color(red: 0.55, green: 0.25, blue: 0.90)]
@@ -204,7 +205,6 @@ struct GameSettings {
 struct CatchUp {
     var level: Int = 0          // 0=未激活
     var extraSeconds: Int = 0   // 时间加成
-    var tierDrop: Int = 0       // 词库难度降档
     var extraSkips: Int = 0     // 额外跳过次数
 
     var isActive: Bool { level > 0 }
@@ -215,7 +215,6 @@ struct CatchUp {
         guard diff >= 2 else { return c }
         c.level = 1
         c.extraSeconds = 15
-        c.tierDrop = 1
         if diff >= 3 {
             c.level = 2
             c.extraSkips = 2
@@ -223,7 +222,7 @@ struct CatchUp {
         return c
     }
 
-    /// 玩家可见的加成提示（词库降档是内部平衡机制，不对外展示）
+    /// 玩家可见的加成提示
     var perks: [String] {
         var p: [String] = []
         if extraSeconds > 0 { p.append(L("catchup.time", extraSeconds)) }
@@ -252,6 +251,7 @@ enum Phase: Equatable {
     case handoff     // 交接遮挡屏
     case playing     // 游戏中（当前队那一遍）
     case hallOfFame  // 名人堂（两队同时进行的整局流程）
+    case soloResult  // 不分队快速局的成绩页
     case roundResult // 本轮小分对比 & 大分结算
     case scoreboard  // 记分板（大分 + 上轮小分）
     case victory     // 终局

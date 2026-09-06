@@ -92,7 +92,9 @@ struct PlayView: View {
             HStack(spacing: 10) {
                 HomeExitButton()
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(store.playingTeam.emoji) \(store.playingTeam.name)")
+                    Text(store.soloMode
+                         ? "\(game.emoji) \(game.title)"
+                         : "\(store.playingTeam.emoji) \(store.playingTeam.name)")
                         .font(.headline)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)

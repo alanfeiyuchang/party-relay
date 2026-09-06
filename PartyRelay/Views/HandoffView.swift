@@ -16,7 +16,7 @@ struct HandoffView: View {
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(store.playingTeam.gradient)
+                .fill(store.soloMode ? store.currentGame.gradient : store.playingTeam.gradient)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
@@ -30,17 +30,34 @@ struct HandoffView: View {
                     .font(.title2.bold())
                     .foregroundStyle(.white.opacity(0.9))
 
-                Text(L("handoff.pass_to"))
-                    .font(.title3.bold())
-                    .foregroundStyle(.white.opacity(0.9))
-                Text("\(store.playingTeam.emoji) \(store.playingTeam.name)")
-                    .font(.system(size: 50, weight: .black, design: .rounded))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                    .padding(.horizontal, 20)
+                if store.soloMode {
+                    // 不分队：没有对手、没有交接，只提示这一局的玩法
+                    Text(L("solo.handoff_title"))
+                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .padding(.horizontal, 20)
+                    Text(L("solo.handoff_body"))
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                } else {
+                    Text(L("handoff.pass_to"))
+                        .font(.title3.bold())
+                        .foregroundStyle(.white.opacity(0.9))
+                    Text("\(store.playingTeam.emoji) \(store.playingTeam.name)")
+                        .font(.system(size: 50, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .padding(.horizontal, 20)
+                }
 
-                if store.playIndex == 1 {
+                if store.soloMode {
+                    EmptyView()
+                } else if store.playIndex == 1 {
                     Text(L(store.smallScoreWin ? "handoff.beat_them_small" : "handoff.beat_them",
                            store.roundSmall[1 - store.playingTeamIndex]))
                         .font(.headline.bold())
