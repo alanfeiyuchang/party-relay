@@ -7,9 +7,20 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                // 快速模式：不分队、只打一局。放在最上面，它决定下面显示哪些玩法
+                Section {
+                    Toggle(isOn: Binding(get: { store.settings.soloMode },
+                                         set: { store.setSoloMode($0) })) {
+                        Label(L("settings.solo_mode"), systemImage: "bolt.fill")
+                    }
+                    .tint(.teal)
+                } footer: {
+                    Text(L("settings.solo_footer"))
+                }
+
                 // 玩法开关
                 Section {
-                    ForEach(GameKind.allCases) { kind in
+                    ForEach(store.settings.relevantGames) { kind in
                         Toggle(isOn: store.gameEnabledBinding(for: kind)) {
                             HStack(spacing: 12) {
                                 Text(kind.emoji)
@@ -33,44 +44,50 @@ struct SettingsView: View {
                 } header: {
                     Text(L("settings.games_header"))
                 } footer: {
-                    Text(L("settings.games_footer"))
+                    Text(L(store.settings.soloMode ? "settings.games_footer_solo" : "settings.games_footer"))
                 }
 
                 // 赛制
                 Section(L("settings.match_header")) {
-                    Stepper(value: $store.settings.totalRounds, in: 3...10) {
-                        HStack {
-                            Text(L("settings.total_rounds"))
-                            Spacer()
-                            Text(L("settings.rounds_value", store.settings.totalRounds))
-                                .foregroundStyle(.secondary)
+                    // 快速模式只打一局，总轮数用不上
+                    if !store.settings.soloMode {
+                        Stepper(value: $store.settings.totalRounds, in: 3...10) {
+                            HStack {
+                                Text(L("settings.total_rounds"))
+                                Spacer()
+                                Text(L("settings.rounds_value", store.settings.totalRounds))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                     Stepper(value: $store.settings.roundSeconds,
                             in: GameSettings.roundSecondsRange,
                             step: GameSettings.roundSecondsStep) {
                         HStack {
-                            Text(L("settings.turn_length"))
+                            Text(L(store.settings.soloMode ? "settings.turn_length_solo" : "settings.turn_length"))
                             Spacer()
                             Text(L("settings.seconds_value", store.settings.roundSeconds))
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    // 表情管理的加时：只作用于这一个玩法，加在上面的单局时长上
-                    Stepper(value: $store.settings.emojiBonusSeconds,
-                            in: GameSettings.emojiBonusRange,
-                            step: GameSettings.emojiBonusStep) {
-                        HStack {
-                            Text(L("settings.emoji_bonus"))
-                            Spacer()
-                            Text(L("settings.bonus_seconds_value", store.settings.emojiBonusSeconds))
-                                .foregroundStyle(.secondary)
+                    // 表情管理的加时：只作用于这一个玩法，加在上面的单局时长上。
+                    // 玩法下架时这一项也跟着藏起来
+                    if !GameKind.emojiCode.isHidden {
+                        Stepper(value: $store.settings.emojiBonusSeconds,
+                                in: GameSettings.emojiBonusRange,
+                                step: GameSettings.emojiBonusStep) {
+                            HStack {
+                                Text(L("settings.emoji_bonus"))
+                                Spacer()
+                                Text(L("settings.bonus_seconds_value", store.settings.emojiBonusSeconds))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                    }
 
-                    Text(L("settings.emoji_bonus_footer"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Text(L("settings.emoji_bonus_footer"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
                     Stepper(value: $store.settings.maxSkips, in: GameSettings.skipsRange) {
                         HStack {
@@ -82,20 +99,23 @@ struct SettingsView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(L("settings.rules_title")).font(.subheadline.bold())
-                        Text(L(store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"))
+                        Text(L(store.settings.soloMode ? "settings.rules_body_solo"
+                               : store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                // 计分制：小分制（无大分，累计小分定胜负）
-                Section {
-                    Toggle(isOn: $store.settings.smallScoreWin) {
-                        Label(L("settings.small_score_win"), systemImage: "sum")
+                // 计分制：小分制（无大分，累计小分定胜负）。快速模式不记分，藏起来
+                if !store.settings.soloMode {
+                    Section {
+                        Toggle(isOn: $store.settings.smallScoreWin) {
+                            Label(L("settings.small_score_win"), systemImage: "sum")
+                        }
+                        .tint(.teal)
+                    } footer: {
+                        Text(L("settings.small_score_footer"))
                     }
-                    .tint(.teal)
-                } footer: {
-                    Text(L("settings.small_score_footer"))
                 }
 
                 // 防偷窥模式（默认关闭）

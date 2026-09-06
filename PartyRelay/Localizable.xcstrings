@@ -1968,6 +1968,23 @@
         }
       }
     },
+    "home.seconds_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d sec per round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每局 %d 秒"
+          }
+        }
+      }
+    },
     "home.settings": {
       "extractionState": "stale",
       "localizations": {
@@ -1985,36 +2002,19 @@
         }
       }
     },
-    "home.solo": {
+    "home.solo_badge": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Round"
+            "value": "Quick Mode"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "快速局"
-          }
-        }
-      }
-    },
-    "home.solo_hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No teams, no scores — one spin, one round."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不分队、不记分：转一次盘只打一局"
+            "value": "快速模式"
           }
         }
       }
@@ -2066,6 +2066,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "两队同玩比小分 · 累计小分最高者胜"
+          }
+        }
+      }
+    },
+    "home.subtitle_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No teams, no scores — one spin, one round"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不分队、不记分 · 转一次盘只打一局"
           }
         }
       }
@@ -2733,6 +2750,23 @@
         }
       }
     },
+    "settings.games_footer_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep at least one game on. Changes apply to the wheel immediately. Hall of Fame and Open Buzz are hidden because Quick Mode has no opposing team."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少保留 1 个玩法，修改立即反映到转盘。名人堂和抢答需要对手，快速模式下不显示。"
+          }
+        }
+      }
+    },
     "settings.games_header": {
       "extractionState": "stale",
       "localizations": {
@@ -2869,6 +2903,23 @@
         }
       }
     },
+    "settings.rules_body_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spin once, play one round, done. Everyone plays together — whoever holds the phone gives the clues."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转一次盘，打一局就结束。大家一起玩，拿手机的人出题。"
+          }
+        }
+      }
+    },
     "settings.rules_title": {
       "extractionState": "stale",
       "localizations": {
@@ -2954,6 +3005,40 @@
         }
       }
     },
+    "settings.solo_footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On: no teams, no scores — Start Game spins once and plays a single round, then shows how many you got. Hall of Fame and Open Buzz both need an opposing team, so they sit this mode out. Off: everything works exactly as before."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启后：不分队、不记分，「开始游戏」转一次盘只打一局，打完直接看猜对了几个。名人堂和抢答都要有对手，这个模式里不出现。关闭则完全恢复原来的玩法。"
+          }
+        }
+      }
+    },
+    "settings.solo_mode": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Mode"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速模式"
+          }
+        }
+      }
+    },
     "settings.title": {
       "extractionState": "stale",
       "localizations": {
@@ -3001,6 +3086,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "每队单局时长"
+          }
+        }
+      }
+    },
+    "settings.turn_length_solo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round length"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "单局时长"
           }
         }
       }

@@ -19,6 +19,8 @@ struct BigButtonStyle: ButtonStyle {
     var font: Font = .title2.bold()
     /// 加高按钮（得分 / 被抢答用）：高度约为普通大按钮的两倍
     var tall: Bool = false
+    /// 白字压在饱和底色上时给一层暗投影，把对比度补回来（队色按钮用）
+    var shadowedText: Bool = false
 
     /// 普通大按钮的实际高度约 58~64pt，加高档给两倍
     private var minHeight: CGFloat? { tall ? 120 : nil }
@@ -27,6 +29,7 @@ struct BigButtonStyle: ButtonStyle {
         configuration.label
             .font(font)
             .foregroundStyle(textColor)
+            .shadow(color: .black.opacity(shadowedText ? 0.4 : 0), radius: 3, y: 1)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
             .frame(minHeight: minHeight)

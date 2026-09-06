@@ -94,12 +94,21 @@ struct HallOfFameView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                 }
-                .buttonStyle(BigButtonStyle(colors: [.white, .white.opacity(0.92)],
-                                            textColor: team.colors[0]))
+                .buttonStyle(BigButtonStyle(colors: handoffTeam(from: index, revealed: revealed)?.colors
+                                                    ?? [.white, .white.opacity(0.92)],
+                                            textColor: handoffTeam(from: index, revealed: revealed) == nil
+                                                    ? team.colors[0] : .white,
+                                            shadowedText: handoffTeam(from: index, revealed: revealed) != nil))
                 .padding(.horizontal, 32)
                 .padding(.bottom, 36)
             }
         }
+    }
+
+    /// 「记住了，交给 X 队」这一步按钮点名了下一支队，就穿那支队的队色；
+    /// 其余按钮不点名队伍，留白底（整页本来就是当前队的队色，白底才看得见）
+    private func handoffTeam(from index: Int, revealed: Bool) -> Team? {
+        (revealed && index == 0) ? store.teams[1] : nil
     }
 
     private func buttonTitle(team index: Int, revealed: Bool) -> String {

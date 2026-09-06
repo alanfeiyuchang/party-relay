@@ -42,11 +42,13 @@ final class GameStore: ObservableObject {
     @Published var catchUp: CatchUp = CatchUp()
     @Published var lastOutcome: RoundOutcome?
     @Published var hofNames: [String] = ["", ""]      // 名人堂：两队各自被指定的名人
-    /// 不分队模式：不分红蓝、不记大分，转一次盘打一局就结束
-    @Published var soloMode = false
 
     /// 出词去重历史：常驻 UserDefaults，跨对局 / 跨启动 / 跨 App 更新都不清空
     private let history = WordHistory.shared
+
+    /// 快速模式：不分红蓝、不记大分，转一次盘打一局就结束。跟着设置走，
+    /// 不再是独立的运行时状态——设置只能在主页改，不会打到一半变模式
+    var soloMode: Bool { settings.soloMode }
 
     var playingTeam: Team { teams[playingTeamIndex] }
     var opponentIndex: Int { 1 - playingTeamIndex }
@@ -98,7 +100,7 @@ final class GameStore: ObservableObject {
             if on {
                 FeedbackManager.shared.tap()
                 self.settings.enabled.insert(kind)
-            } else if kind == .quiz || self.settings.playableList.count > 1 {
+            } else if kind == .quiz || self.settings.requiredPool.count > 1 {
                 FeedbackManager.shared.tap()
                 self.settings.enabled.remove(kind)
             } else {
@@ -107,10 +109,29 @@ final class GameStore: ObservableObject {
         }
     }
 
+    /// 快速模式开关。打开时如果一个单队玩法都没开（比如只留了名人堂），
+    /// 补上「你说我猜」，不然进去会没有玩法可转
+    func setSoloMode(_ on: Bool) {
+        FeedbackManager.shared.tap()
+        settings.soloMode = on
+        ensurePlayableGame()
+    }
+
     // MARK: - 流程
 
+    /// 主页「开始游戏」：按设置里的快速模式开关分流
+    func startGame() {
+        settings.soloMode ? startSolo() : startMatch()
+    }
+
+    /// 兜底：当前模式下一个可玩玩法都没有时补上「你说我猜」。
+    /// 老存档可能只开着某个后来被下架的玩法，或「快速模式 + 只留名人堂」
+    private func ensurePlayableGame() {
+        if settings.requiredPool.isEmpty { settings.enabled.insert(.describeGuess) }
+    }
+
     func startMatch() {
-        soloMode = false
+        ensurePlayableGame()
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0
@@ -124,18 +145,12 @@ final class GameStore: ObservableObject {
         enterGameSelection()
     }
 
-    /// 不分队快速局的可选玩法：名人堂要两队同时进行，这个模式里用不了。
-    /// 设置里把普通玩法全关只留名人堂时，退回到全部单队玩法，免得没得玩
-    var soloGamePool: [GameKind] {
-        let enabled = settings.playableList.filter { !$0.isSimultaneous }
-        return enabled.isEmpty
-            ? GameKind.allCases.filter { $0.isPlayable && !$0.isSimultaneous }
-            : enabled
-    }
+    /// 快速模式的可选玩法：就是设置里开着的那些单队玩法，不做任何兜底替换
+    var soloGamePool: [GameKind] { settings.soloPool }
 
-    /// 不分队快速局：转一次盘，一局打完直接看成绩，没有队伍 / 大分 / 交接对手
+    /// 快速局：转一次盘，一局打完直接看成绩，没有队伍 / 大分 / 交接对手
     func startSolo() {
-        soloMode = true
+        ensurePlayableGame()
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0
@@ -379,7 +394,6 @@ final class GameStore: ObservableObject {
 
     func resetToHome() {
         phase = .home
-        soloMode = false
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0

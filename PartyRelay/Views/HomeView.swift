@@ -42,33 +42,46 @@ struct HomeView: View {
                         LinearGradient(colors: [.pink, .orange, .purple],
                                        startPoint: .leading, endPoint: .trailing)
                     )
-                Text(L(store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
+                Text(L(store.soloMode ? "home.subtitle_solo"
+                       : store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
-                // 两支队伍（可编辑队名）
-                VStack(spacing: 14) {
-                    ForEach($store.teams) { $team in
-                        TeamCard(team: $team)
+                // 两支队伍（可编辑队名）。快速模式不分队，队名卡和总轮数都没有意义
+                if !store.soloMode {
+                    VStack(spacing: 14) {
+                        ForEach($store.teams) { $team in
+                            TeamCard(team: $team)
+                        }
                     }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
 
                 HStack(spacing: 18) {
-                    Label(L("home.rounds", store.settings.totalRounds),
-                          systemImage: "arrow.triangle.2.circlepath")
-                    Label(L("home.seconds_per_turn", store.settings.roundSeconds),
+                    if store.soloMode {
+                        Label(L("home.solo_badge"), systemImage: "bolt.fill")
+                            .foregroundStyle(.teal)
+                    } else {
+                        Label(L("home.rounds", store.settings.totalRounds),
+                              systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    Label(L(store.soloMode ? "home.seconds_solo" : "home.seconds_per_turn",
+                            store.settings.roundSeconds),
                           systemImage: "timer")
                 }
                 .font(.subheadline.bold())
                 .foregroundStyle(.secondary)
 
+                // 不分队时上面少了两张队名卡，补个弹簧把玩法一览顶回视觉中心
+                if store.soloMode { Spacer(minLength: 0) }
+
                 // 玩法一览（点标签看规则并加入/移出转盘；已排除的置灰）
                 VStack(spacing: 6) {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 8)], spacing: 8) {
-                        ForEach(GameKind.allCases) { kind in
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                              spacing: 8) {
+                        ForEach(store.settings.relevantGames) { kind in
                             GameTagChip(kind: kind,
                                         included: store.settings.enabled.contains(kind)) {
                                 FeedbackManager.shared.tap()
@@ -80,31 +93,19 @@ struct HomeView: View {
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
-                .padding(.horizontal, 20)
+                // 与下面「开始游戏」按钮同宽，两块左右对齐
+                .padding(.horizontal, 28)
 
                 Spacer()
 
                 VStack(spacing: 10) {
                     Button {
                         FeedbackManager.shared.tap()
-                        store.startMatch()
+                        store.startGame()
                     } label: {
                         Label(L("home.start"), systemImage: "play.fill")
                     }
                     .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))
-
-                    Button {
-                        FeedbackManager.shared.tap()
-                        store.startSolo()
-                    } label: {
-                        Label(L("home.solo"), systemImage: "bolt.fill")
-                    }
-                    .buttonStyle(BigButtonStyle(colors: [.teal, .cyan], font: .headline))
-
-                    Text(L("home.solo_hint"))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
 
                     Button {
                         FeedbackManager.shared.tap()

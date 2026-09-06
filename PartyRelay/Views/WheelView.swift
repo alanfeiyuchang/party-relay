@@ -345,6 +345,13 @@ private struct GameCardOverlay: View {
     var openBuzz: Bool
     var onContinue: () -> Void
 
+    /// 按钮文案点名了哪支队，按钮就穿那支队的队色——白底按钮会让人以为
+    /// 颜色代表玩法。两队一起上和不分队快速局没有「那支队」，仍旧白底。
+    private var goingTeam: Team? {
+        guard !store.soloMode, !game.isSimultaneous else { return nil }
+        return store.teams[store.firstTeamIndex]
+    }
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
@@ -386,8 +393,10 @@ private struct GameCardOverlay: View {
                          : game.isSimultaneous ? L("gamecard.together_go")
                          : L("gamecard.first_go", store.teams[store.firstTeamIndex].name))
                 }
-                .buttonStyle(BigButtonStyle(colors: [.white.opacity(0.95), .white],
-                                            textColor: game.colors[0], font: .title3.bold()))
+                .buttonStyle(BigButtonStyle(colors: goingTeam?.colors ?? [.white.opacity(0.95), .white],
+                                            textColor: goingTeam == nil ? game.colors[0] : .white,
+                                            font: .title3.bold(),
+                                            shadowedText: goingTeam != nil))
             }
             .padding(26)
             .background(

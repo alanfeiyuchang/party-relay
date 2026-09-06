@@ -60,6 +60,12 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
+    /// 暂时下架的玩法：转盘、主页标签、设置列表里都不出现。
+    /// 代码、词库、本地化文案全部原样留着——想放回去，把它从这个集合里删掉就行
+    static let hidden: Set<GameKind> = [.emojiCode]
+
+    var isHidden: Bool { Self.hidden.contains(self) }
+
     /// 可以实际游玩的玩法（抢答只是转盘上的加成扇区）
     var isPlayable: Bool { self != .quiz }
 
@@ -121,6 +127,9 @@ struct GameSettings {
     var feedbackOn: Bool = true       // 震动+音效总开关
     var privacyGuardOn: Bool = false  // 防偷窥模式（姿态感应隐词），默认关闭
     var smallScoreWin: Bool = false   // 小分制：不设大分，累计小分高者胜
+    /// 快速模式：不分队、不记分，转一次盘只打一局。
+    /// 开着的时候名人堂和抢答都用不上（两个都要有对手），玩法列表里直接不出现
+    var soloMode: Bool = false
 
     static let skipsRange = 0...10
     static let handoffCountdown = 5   // 交接页「开始」按钮的等待秒数
@@ -134,12 +143,31 @@ struct GameSettings {
     static let emojiBonusStep = 10
 
     var enabledList: [GameKind] {
-        GameKind.allCases.filter { enabled.contains($0) }
+        GameKind.allCases.filter { enabled.contains($0) && !$0.isHidden }
     }
 
     /// 可实际游玩的已启用玩法
     var playableList: [GameKind] {
         enabledList.filter(\.isPlayable)
+    }
+
+    /// 快速模式下能玩的玩法：名人堂要两队同时进行，这个模式里没有对手
+    var soloPool: [GameKind] {
+        playableList.filter { !$0.isSimultaneous }
+    }
+
+    /// 当前模式下真正用得上的玩法（列表和开关都只显示这些）：
+    /// 快速模式里名人堂和抢答都需要对手，直接不出现
+    var relevantGames: [GameKind] {
+        GameKind.allCases.filter {
+            guard !$0.isHidden else { return false }
+            return soloMode ? ($0.isPlayable && !$0.isSimultaneous) : true
+        }
+    }
+
+    /// 当前模式下「至少要留一个」的那批玩法：关到只剩一个时不许再关
+    var requiredPool: [GameKind] {
+        soloMode ? soloPool : playableList
     }
 
     /// 开放抢答二次转盘的候选池（名人堂不参与抢答）
@@ -174,6 +202,7 @@ struct GameSettings {
             "feedbackOn": feedbackOn,
             "privacyGuardOn": privacyGuardOn,
             "smallScoreWin": smallScoreWin,
+            "soloMode": soloMode,
         ]
         UserDefaults.standard.set(dict, forKey: Self.key)
     }
@@ -196,6 +225,7 @@ struct GameSettings {
         if let f = dict["feedbackOn"] as? Bool { s.feedbackOn = f }
         if let p = dict["privacyGuardOn"] as? Bool { s.privacyGuardOn = p }
         if let m = dict["smallScoreWin"] as? Bool { s.smallScoreWin = m }
+        if let q = dict["soloMode"] as? Bool { s.soloMode = q }
         return s
     }
 }
