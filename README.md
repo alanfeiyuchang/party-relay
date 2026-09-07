@@ -2,7 +2,7 @@
 
 A local, offline, pass-the-phone party game for two teams. SwiftUI · iOS 17+ · zero dependencies, zero network calls.
 
-Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words before the timer runs out, and let the built-in catch-up system quietly keep a blowout from turning into a boring rest of the night.
+Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words before the timer runs out, and let the built-in catch-up system quietly keep a blowout from turning into a boring rest of the night. Short on people? **Quick Mode** drops the teams and scoring entirely and plays a single round.
 
 <p align="center">
   <img src="Screenshots/3-en-home.png" width="220" alt="Home screen">
@@ -35,7 +35,7 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 
 ## Gameplay
 
-### The six games
+### The games
 
 | | Game | How it works |
 |---|---|---|
@@ -43,10 +43,16 @@ More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas
 | 🎨 | **Draw & Guess** | One player sketches the word on an in-app canvas (no letters or numbers), teammates guess from the same screen. |
 | 🤐 | **Lip Reading** | One player mouths the word silently — no sound at all — and the team reads their lips. |
 | 🕺 | **Charades** | One player acts the word out with gestures only, no sound. |
-| 😜 | **Emoji Manager** | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. |
+| 😜 | **Emoji Manager** *(shelved — see below)* | One player spells the word out in emoji (emoji-only input field, system emoji keyboard), then hides the word and shows the team nothing but the emoji. |
 | 🌟 | **Hall of Fame** | Both teams play at once, no timer: each team is secretly assigned a famous name (celebrity or fictional character), then they take turns asking each other yes/no questions until someone guesses the other team's name. |
 
-The first five pull from their own hand-written word list (not machine translated), split into 3 internal difficulty tiers that quietly get harder as the match progresses. Emoji Manager draws from 530 Chinese / 540 English entries, and Hall of Fame from 709 Chinese / 558 English names — big enough pools that a full evening barely dents them. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
+Each game pulls from its own hand-written word list (not machine translated) — one flat pool per game, no difficulty tiers. Hall of Fame draws from 709 Chinese / 558 English names. A word that has come up once never comes up again — see [Never the same word twice](#never-the-same-word-twice) below.
+
+> **😜 Emoji Manager is shelved in the shipping build.** `GameKind.hidden` in `Models.swift` takes it out of the wheel, the home tags, the settings list and its bonus-time row. Its view, both word banks and every string it uses are untouched — emptying that set brings it straight back:
+> ```swift
+> static let hidden: Set<GameKind> = [.emojiCode]
+> ```
+> Everything written about it below still describes working code.
 
 ### 😜 Emoji Manager — spell it in emoji
 
@@ -72,6 +78,12 @@ Each round, **both teams play the same game**, one after the other — the **Red
 
 Flip **"Decide the winner by small score"** in Settings and big points disappear entirely: every correct guess adds to that team's running total, the scoreboard just shows those two totals, and after the configured number of rounds the highest total wins (a tie still goes to overtime). The host's +/− buttons adjust the running totals directly, and the catch-up system works off the point gap the same way.
 
+### Quick Mode — no teams, one round
+
+Flip **Quick Mode** on in Settings and the match structure goes away: *Start Game* spins once, plays a single round, and shows how many words the group got plus a recap of what came up. There are no teams, no scores and no handoff to an opponent, so the home screen drops the team cards, the round count, and the small-score toggle while it's on.
+
+Hall of Fame and Open Buzz both need an opposing team, so Quick Mode hides them from the wheel, the home tags and the settings list — the pool is exactly the single-team games you have switched on. If that would leave nothing to play (say you had only Hall of Fame enabled), Say & Guess is switched back on so the wheel is never empty. Turning Quick Mode off restores the full two-team match exactly as it was.
+
 ### Handoff countdown + word recap
 
 When one team's turn ends and the phone passes to the other team, the handoff screen's start button stays disabled for 5 seconds — enough of a beat that nobody starts their turn while the phone is still in the air. The middle of that screen shows every word the team that just played had: the ones they got in normal colour, the ones they skipped (or ran out of time on) on a grey background.
@@ -82,7 +94,7 @@ Every word bank and both Hall of Fame name pools keep an "already appeared" set 
 
 ### Catch-up system (invisible to players)
 
-If a team falls behind, their turn quietly gets a boost — more time, a couple of extra skips, and internally easier words. **None of this is shown in the UI** (no difficulty labels, no "-1 tier" badges) — only a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips), never anything about word difficulty. Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above. While that picker is up, the whole page takes on a lightened version of the picking team's colour (light red for Red, light blue for Blue), so it's obvious whose privilege is being spent. Spending it also buys the turn order: the picking team plays that round **first**, overriding the usual Red-first order — just for that round, since the next round resets to Red-first.
+If a team falls behind, their turn quietly gets a boost — more time and a couple of extra skips. **None of this is announced as a handicap** — just a friendly "🔥 Comeback boost" banner with the concrete perks (+15s, +2 skips). Deep into a lopsided match, the trailing team can also skip the wheel entirely and pick their game directly from a list — see the picker screenshot above. While that picker is up, the whole page takes on a lightened version of the picking team's colour (light red for Red, light blue for Blue), so it's obvious whose privilege is being spent. Spending it also buys the turn order: the picking team plays that round **first**, overriding the usual Red-first order — just for that round, since the next round resets to Red-first.
 
 ### After every round: word recap + reset
 
@@ -94,12 +106,13 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 
 ### Settings
 
-- Toggle any of the 6 games off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
-- Total rounds: 3–10 (default 6).
+- **Quick Mode** on/off (see above) — sits at the top because it decides which of the rows below are even shown.
+- Toggle any game off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
+- Total rounds: 3–10 (default 6). *Hidden in Quick Mode — it only ever plays one round.*
 - Turn length: 30–600s in 30s steps.
-- Emoji Manager bonus time: 0–120s in 10s steps (default 30). Added on top of the turn length, for that game only.
+- Emoji Manager bonus time: 0–120s in 10s steps (default 30). Added on top of the turn length, for that game only. *Hidden while Emoji Manager is shelved.*
 - Skips per turn: 0–10 (default 3).
-- Small-score win mode on/off (see above).
+- Small-score win mode on/off (see above). *Hidden in Quick Mode — nothing is scored.*
 - Privacy guard on/off.
 - Haptics + sound effects on/off (global switch).
 
@@ -117,16 +130,20 @@ Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String 
 
 ## Word banks
 
-| Game | Chinese entries | English entries |
-|---|---:|---:|
-| Say & Guess | 1778 | 120 |
-| Draw & Guess | 1770 | 120 |
-| Lip Reading | 1770 | 120 |
-| Charades | 1769 | 120 |
-| Emoji Manager | 215 | 135 |
-| Hall of Fame (names, no tiers) | 91 | 93 |
+One flat pool per game — no difficulty tiers.
 
-The word banks are split across 3 internal difficulty tiers and hand-curated per game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes, emoji-spellable names/idioms/titles).
+| Game | Chinese | English |
+|---|---:|---:|
+| 🗣️ Say & Guess | 1758 | 1157 |
+| 🎨 Draw & Guess | 1409 | 842 |
+| 🕺 Charades | 954 | 554 |
+| 🤐 Lip Reading | 631 | 451 |
+| 😜 Emoji Manager *(shelved)* | 459 | 422 |
+| 🌟 Hall of Fame (names) | 709 | 558 |
+
+**Pool sizes run opposite to difficulty.** An easier game gets guessed faster, so it burns through more words per turn and needs a bigger pool to stay fresh: Say & Guess ⟩ Draw & Guess ⟩ Charades ⟩ Lip Reading ⟩ Emoji Manager. Words that suit a harder game usually suit an easier one too, so the harder pools feed the easier ones — every emoji-spellable idiom is also a perfectly good Say & Guess word.
+
+Everything is hand-curated against each game's constraints (describable nouns/idioms, concretely drawable things, short high-visibility-mouth-shape phrases, physically actable verbs/scenes, emoji-spellable names/idioms/titles). Each entry has to be a **real fixed expression** — a word, a common idiom, a well-known saying, or a title people recognise. Obscure literary idioms, hard-to-place names and made-up descriptive phrases were removed rather than kept for difficulty's sake.
 
 ---
 
@@ -143,7 +160,7 @@ PartyRelay/
 ├── WordHistory.swift            # Persistent "already appeared" sets for every word bank + name pool
 ├── FeedbackManager.swift        # Centralized haptics + sound effects, gated by the settings switch
 ├── ScreenshotMode.swift         # SCREENSHOT_MODE env var → jump straight to any screen (for automation)
-├── Words/                       # Per-game word banks, zh + en, 3 tiers each
+├── Words/                       # Per-game word banks, zh + en, one pool each
 └── Views/
     ├── HomeView, SettingsView    # Landing page (+ team setup) and settings sheet
     ├── WheelView                 # Spinning wheel, Open Buzz respin, catch-up game picker
@@ -152,6 +169,7 @@ PartyRelay/
     ├── PlayView                   # Say & Guess / Lip Reading / Charades turn screen
     ├── DrawView                   # Draw & Guess: word screen ⇄ drawing canvas
     ├── EmojiCodeView + EmojiField     # Emoji Manager: word + emoji-only input ⇄ frozen emoji display
+    ├── SoloResultView               # Quick Mode: one round's tally + word recap
     ├── RoundResultView             # Small-score comparison + big-point award reveal
     ├── ScoreboardView               # Big scores, last round's words recap, Reset Game
     ├── VictoryView + ConfettiView    # Match end screen with confetti
@@ -170,10 +188,20 @@ xcodebuild -project PartyRelay.xcodeproj -target PartyRelay \
   CODE_SIGNING_ALLOWED=NO SYMROOT=build
 ```
 
-If you only have an Xcode beta installed and no stable Xcode selected via `xcode-select`, prefix the command with:
+If `xcode-select` points at an Xcode beta, prefix the command to pick a specific toolchain:
 
 ```bash
 export DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
+```
+
+For a **release archive**, use a stable Xcode instead — Apple's upload validation rejects beta-toolchain builds:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  xcodebuild -project PartyRelay.xcodeproj -scheme PartyRelay \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath "$HOME/Library/Developer/Xcode/Archives/$(date +%Y-%m-%d)/PartyRelay.xcarchive" \
+  archive
 ```
 
 Then install and launch on a booted simulator:
@@ -194,5 +222,5 @@ SIMCTL_CHILD_SCREENSHOT_MODE=<mode> SIMCTL_CHILD_SCREENSHOT_LANG=<zh|en> \
   xcrun simctl launch booted com.partyrelay.app
 ```
 
-`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `pick`, `openbuzz`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `scoreboard`, `result`, `settings`, `victory`.
+`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `handoff`, `pick`, `pickfirst`, `openbuzz`, `act`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `hof`, `hofpeek`, `hofsplit`, `hofname`, `hofreveal`, `hofscore`, `scoreboard`, `smallboard`, `result`, `settings`, `gametag`, `exitconfirm`, `victory`, `smallvictory`.
 `SCREENSHOT_LANG` forces `zh` or `en` regardless of the simulator's system language.

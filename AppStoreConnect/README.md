@@ -41,9 +41,14 @@ screenshot of the app inside a phone mockup — nothing here shows mocked-up or 
   characters + confetti around a phone showing the home screen / wheel / a game in progress).
   These are deliberately redundant with each other — **review them and pick the one (or two)
   you like best** for screenshot slot #1; you don't need to use all 4.
-- **`feature/`** — 5 slides, one per major feature (the 4 games + wheel, Open Buzz, the
+- **`feature/`** — 5 slides, one per major feature (the games + wheel, Open Buzz, the
   catch-up/comeback system, the privacy guard, the round recap), meant to fill screenshot
   slots #2–6 in order.
+
+> **Check before uploading for 1.1:** Emoji Manager is shelved in this release, so drop
+> any slide that shows it. The `whats_new.txt` / `description.txt` / `promotional_text.txt`
+> files in `en/` and `zh-Hans/` are already updated for 1.1 and are generated from
+> `SUBMISSION.md` — edit there, not here, so the two never drift apart.
 
 If Apple's current upload portal asks for a different largest-device size (e.g. 6.9" /
 1320×2868 for the newest Pro Max), bump `W, H` in `scripts/gen_promo.py` and re-run

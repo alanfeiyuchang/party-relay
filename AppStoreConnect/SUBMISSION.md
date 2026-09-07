@@ -6,13 +6,23 @@ in yourself (not derivable from the code) is marked **⬜ FILL IN**.
 
 ---
 
-## 0. Before you start: build toolchain blocker
+## 0. Before you start: which Xcode to archive with
 
-Your Mac is on macOS 27 beta with only Xcode 27 beta installed. Apple's upload
-validation currently rejects beta-toolchain builds ("Unsupported SDK or Xcode
-version") until Xcode 27 reaches a Release Candidate. Either wait for that RC, or
-build/archive from a Mac on a stable macOS + stable Xcode. This blocks the *upload*
-step only — everything else below can be prepared right now.
+`xcode-select` on this Mac points at **Xcode 27 beta**, and Apple's upload validation
+rejects beta-toolchain builds ("Unsupported SDK or Xcode version"). Xcode 26.6 is also
+installed, so archive with that instead — no need to change `xcode-select`:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+  xcodebuild -project PartyRelay.xcodeproj -scheme PartyRelay \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath "$HOME/Library/Developer/Xcode/Archives/$(date +%Y-%m-%d)/PartyRelay 1.1 (6).xcarchive" \
+  archive
+```
+
+Archiving to that path makes it show up in Xcode → Window → Organizer, where
+**Distribute App** re-signs it with the distribution certificate (the command line
+signs with the development one, which is expected).
 
 ---
 
@@ -55,8 +65,8 @@ code — nothing to fill in here.
 
 | Field | Value |
 |---|---|
-| Version number | `1.0` (already set as `MARKETING_VERSION` in the Xcode project) |
-| Build number | `1` (already set as `CURRENT_PROJECT_VERSION`) |
+| Version number | `1.1` (set as `MARKETING_VERSION` in the Xcode project) |
+| Build number | `6` (set as `CURRENT_PROJECT_VERSION`) — 1.0 shipped as build 4 |
 | Copyright | `© 2026 [YOUR NAME OR COMPANY]` ⬜ **FILL IN** the legal name |
 | Routing App Coverage File | Not applicable |
 | Export compliance (encryption) | **No** — app uses no non-exempt encryption (no networking at all) |
@@ -97,7 +107,7 @@ Charades, Draw & Guess & more
 
 **Promotional Text** *(170 char max, editable anytime without a new build)*
 ```
-Two teams, one phone, zero setup. Spin for Say & Guess, Draw & Guess, Lip Reading, or Charades — plus an Open Buzz twist that lets the other team steal points.
+Two teams, one phone, zero setup. Spin for Say & Guess, Draw & Guess, Lip Reading, Charades or Hall of Fame — or switch on Quick Mode for one round with no teams.
 ```
 
 **Description** *(4000 char max)*
@@ -107,14 +117,18 @@ Two teams, one phone, zero setup. Spin for Say & Guess, Draw & Guess, Lip Readin
 HOW IT WORKS
 Spin the wheel to pick a game. Both teams play the exact same round, one after the other — whoever guesses more words wins the round and takes the point. Simple to explain in ten seconds, chaotic and hilarious in practice.
 
-FOUR WAYS TO PLAY
+FIVE WAYS TO PLAY
 🗣️ Say & Guess — describe the word out loud (without saying the word itself) while your team shouts out guesses.
 🎨 Draw & Guess — sketch it on the in-app canvas, no letters or numbers allowed, teammates guess from your doodle.
 🤐 Lip Reading — mouth the word with zero sound and see if your team can read your lips.
 🕺 Charades — act it out with gestures alone.
+🌟 Hall of Fame — both teams play at once with no timer: each team is secretly given a famous name, then you take turns asking yes/no questions until someone cracks the other team's name.
 
 ⚡️ OPEN BUZZ
-Land on this wheel sector and things get spicy: it picks one of the four games above, but now the OTHER team can jump in and steal a point for anything your team misses. Nobody gets to zone out on their turn.
+Land on this wheel sector and things get spicy: it picks one of the timed games above, but now the OTHER team can jump in and steal a point for anything your team misses. Nobody gets to zone out on their turn.
+
+⚡️ QUICK MODE
+Not enough people to split into two teams? Turn on Quick Mode: no teams, no scores — one spin, one round, then a tally of how many you got. Turn it back off and everything returns to the full two-team match.
 
 BUILT FOR CLOSE, FUN MATCHES
 PartyRelay quietly keeps blowouts from ruining the night — a team that falls behind gets a friendly boost (more time, extra skips) so the game stays fun for everyone until the last round, without ever feeling unfair or obvious about it.
@@ -123,7 +137,7 @@ THOUGHTFUL EXTRAS
 • A recap after every round shows exactly which words came up, so arguments about "wait, was that really the word?" settle themselves.
 • Optional privacy guard: hold the phone up to see the word, lay it flat to hide it automatically — perfect for passing hand to hand mid-round.
 • Fully bilingual: switch between English and Simplified Chinese instantly, with word lists written natively for each language (not machine-translated).
-• Thousands of hand-picked words across three difficulty tiers per game, so matches stay fresh for group after group.
+• Thousands of hand-picked words per game — every entry is a real word, idiom, saying or title, so nobody gets stuck on something that isn't actually a thing.
 • Customize team names and emoji, round count, turn length, haptics, and sound — all from one settings screen.
 
 NO CATCH
@@ -137,16 +151,20 @@ Perfect for family game night, parties, icebreakers, road trips, and any time tw
 party,charades,pictionary,drawing,guess,team,family,friends,offline,group,words,icebreaker,board
 ```
 
-**What's New in This Version**
+**What's New in This Version** *(1.1)*
 ```
-🎉 Welcome to PartyRelay!
+NEW: QUICK MODE
+Not enough people for two teams? Turn on Quick Mode in Settings — no teams, no scores, just one spin and one round, then a tally of how many words you got.
 
-• Four party games in one wheel: Say & Guess, Draw & Guess, Lip Reading, and Charades
-• Open Buzz wheel modifier lets the opposing team steal points
-• Smart catch-up system keeps close matches close, without ever calling it out
-• Round-by-round word recap on the scoreboard
-• Optional privacy guard using motion sensing
-• Full English and Simplified Chinese localization
+REBUILT WORD BANKS
+• Every word bank was rewritten and cleaned out. Obscure idioms, hard-to-place names and odd descriptive phrases that were never really "words" are gone — what's left is real words, common idioms, well-known sayings, and titles people actually recognise.
+• The hidden difficulty ramp is gone too. Each game now draws from a single pool, sized to how fast that game plays, so easier games have far more words and matches stay fresh much longer.
+• The English word banks grew from 120 entries per game to as many as 1,157.
+
+POLISH
+• Two games got new colours so the wheel never looks like it's naming a team.
+• Buttons that call out a team now wear that team's colour.
+• Tidier home screen.
 ```
 
 **Support URL**
@@ -176,7 +194,7 @@ https://github.com/alanfeiyuchang/party-relay
 
 **Promotional Text**
 ```
-两队对战，一部手机轮流玩，无需任何准备。转动转盘挑战你说我猜、你画我猜、唇语猜词和肢体模仿，还有能让对方偷分的"开放抢答"玩法。
+两队对战，一部手机轮流玩，无需任何准备。转盘挑战你说我猜、你画我猜、唇语猜词、肢体模仿和名人堂；人不够分队？打开快速模式，一局定胜负。
 ```
 
 **Description**
@@ -186,14 +204,18 @@ https://github.com/alanfeiyuchang/party-relay
 玩法很简单
 转动转盘随机决定本轮玩法，两队依次挑战同一个玩法——猜对更多词的一方赢下本轮得分。十秒就能讲明白规则，玩起来却笑到停不下来。
 
-四种玩法任你转
+五种玩法任你转
 🗣️ 你说我猜——用语言描述词语（不能说出词语本身），队友抢答。
 🎨 你画我猜——在画板上画出词语（不能写字、数字），队友根据画面猜。
 🤐 唇语猜词——完全不出声，只靠口型让队友读出词语。
 🕺 肢体模仿——只用动作和表情表演，不能发出声音。
+🌟 名人堂——两队同时进行、不计时：各自拿到一个名人的名字，轮流互相提问，先猜中对方名字的一队获胜。
 
 ⚡️ 开放抢答
-转到这个特殊扇区会更刺激：系统会再转一次选出一个真实玩法，但这一轮对方队伍也能随时抢答偷分——谁都别想在自己回合里划水。
+转到这个特殊扇区会更刺激：系统会再转一次选出一个计时玩法，但这一轮对方队伍也能随时抢答偷分——谁都别想在自己回合里划水。
+
+⚡️ 快速模式
+人不够分成两队？在设置里打开快速模式：不分队、不记分，转一次盘只打一局，打完直接看猜对了几个。关掉就恢复成完整的两队赛制。
 
 始终势均力敌，比赛更好玩
 派对接力会悄悄帮落后的一方"追分"——多给一点时间、多几次跳过机会，让比赛在最后一轮前都保持悬念，而且完全不会让人察觉是系统在刻意调整。
@@ -202,7 +224,7 @@ https://github.com/alanfeiyuchang/party-relay
 • 每轮结束后的记分板会回顾双方本轮出现过的所有词语，"这个真的是这个词吗"的争论从此终结。
 • 可选防偷看模式：手机立起来才显示词语，放平自动隐藏，非常适合手机在人群中传递时使用。
 • 中英文双语完整支持，随时一键切换，词库均为各语言原创手写，而非机器翻译。
-• 每种玩法都有上千条精选词语，分为三档内部难度，场次再多也不会腻。
+• 每种玩法都有上千条精选词语，全部是真实存在的词、成语、俗语或作品名，不会冒出让人一脸问号的怪东西。
 • 队伍名称、表情、总轮数、每轮时长、震动和音效都可以在设置里自由调整。
 
 没有套路
@@ -216,16 +238,20 @@ https://github.com/alanfeiyuchang/party-relay
 派对,聚会,你画我猜,你说我猜,猜词,团队,家庭,朋友,离线,破冰,桌游,组队,聚会游戏
 ```
 
-**What's New in This Version**
+**What's New in This Version** *(1.1)*
 ```
-🎉 欢迎来到派对接力！
+新增：快速模式
+人不够分成两队？在设置里打开快速模式——不分队、不记分，转一次盘只打一局，打完直接看这一局猜对了几个。
 
-• 一个转盘四种玩法：你说我猜、你画我猜、唇语猜词、肢体模仿
-• "开放抢答"转盘修饰符，让对方也能偷分
-• 智能追分机制悄悄让比赛保持悬念，绝不明说
-• 记分板新增每轮词语回顾
-• 可选的运动感应防偷看模式
-• 完整支持中文和英文双语
+词库重做
+• 所有词库整体重写清洗。生僻成语、不好联想的人名，还有那些其实算不上"词"的描述性短句，全部删掉；留下的都是固定词、常见成语、广为人知的俗语和作品名。
+• 去掉了随轮次悄悄爬升的难度分档。每个玩法现在只有一个词池，按这个玩法过词的快慢来定大小——越好猜的玩法词越多，玩很多场也不容易重复。
+• 英文词库从每个玩法 120 条扩到最多 1157 条。
+
+细节打磨
+• 两个玩法换了配色，转盘不会再看起来像在指定某一队。
+• 点名了队伍的按钮会穿上那支队的队色。
+• 主页排版更清爽。
 ```
 
 **Support URL**
@@ -256,8 +282,12 @@ https://github.com/alanfeiyuchang/party-relay
 PartyRelay is an offline, pass-the-phone party game for two teams — there is no
 account/sign-in, no network access, and no server component to test. To see the core
 loop: tap "Start Game" on the home screen, spin the wheel, then tap through the
-handoff screen to play a round (Say & Guess / Draw & Guess / Lip Reading / Charades).
-All word content is bundled locally in the app; nothing is fetched remotely.
+handoff screen to play a round (Say & Guess / Draw & Guess / Lip Reading / Charades /
+Hall of Fame). All word content is bundled locally in the app; nothing is fetched
+remotely.
+
+New in 1.1: a "Quick Mode" toggle in Settings turns the match into a single no-teams
+round — flip it on and tap "Start Game" to see it.
 ```
 
 ## 8. Version Release
@@ -269,14 +299,31 @@ All word content is bundled locally in the app; nothing is fetched remotely.
 
 ---
 
-## Quick pre-submit checklist
+## Pre-submit checklist — 1.1 update
 
-- [ ] Xcode 27 reaches RC (or switch to a stable Mac/Xcode) so the archive actually uploads
-- [ ] Fill in Copyright holder name (`other_metadata.txt` placeholder, both languages)
-- [ ] Fill in App Review contact name/phone/email
-- [ ] Decide on Support URL (GitHub Issues is fine, or swap for something else)
-- [ ] Pick your screenshot set from `PromoImages/` (tilt/ recommended) — 3–10 per language
-- [ ] Confirm SKU doesn't collide with a prior app in your account
-- [ ] Double check age rating questionnaire answers match "no objectionable content" above
-- [ ] `PrivacyInfo.xcprivacy` — already added to the project, no action needed
-- [ ] App icon — already present at 1024×1024, no action needed
+Sections 1–3 (app info, pricing, privacy) carry over from 1.0 untouched. For an
+update you only need:
+
+- [ ] Archive with **Xcode 26.6**, not the 27 beta (see section 0) — build `1.1 (6)`
+- [ ] Paste the new **What's New** text, both languages (section 5 / 6)
+- [ ] Update the **Description** in both languages — it now lists five games, adds Quick
+      Mode, and no longer claims three difficulty tiers
+- [ ] Update the **Promotional Text** in both languages (editable without a new build)
+- [ ] Screenshots: the current set still matches the app. Emoji Manager is shelved in
+      1.1, so **drop any screenshot showing it** if your uploaded set includes one
+- [ ] Reviewer notes now mention Quick Mode — paste the updated text (section 7)
+
+Unchanged from 1.0, nothing to do: age rating, `PrivacyInfo.xcprivacy`, app icon, SKU,
+bundle ID, pricing, privacy answers.
+
+### Shelved in 1.1: Emoji Manager
+
+😜 Emoji Manager is hidden in this release — one line in `Models.swift`:
+
+```swift
+static let hidden: Set<GameKind> = [.emojiCode]   // empty this set to bring it back
+```
+
+Its view, both word banks and all its strings are still in the app, so it can come back
+in a later version without any rework. The support page at `docs/index.html` no longer
+lists it either. If you re-enable it, put it back on both.

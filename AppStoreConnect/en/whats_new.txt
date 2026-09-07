@@ -1,8 +1,12 @@
-🎉 Welcome to PartyRelay!
+NEW: QUICK MODE
+Not enough people for two teams? Turn on Quick Mode in Settings — no teams, no scores, just one spin and one round, then a tally of how many words you got.
 
-• Four party games in one wheel: Say & Guess, Draw & Guess, Lip Reading, and Charades
-• Open Buzz wheel modifier lets the opposing team steal points
-• Smart catch-up system keeps close matches close, without ever calling it out
-• Round-by-round word recap on the scoreboard
-• Optional privacy guard using motion sensing
-• Full English and Simplified Chinese localization
+REBUILT WORD BANKS
+• Every word bank was rewritten and cleaned out. Obscure idioms, hard-to-place names and odd descriptive phrases that were never really "words" are gone — what's left is real words, common idioms, well-known sayings, and titles people actually recognise.
+• The hidden difficulty ramp is gone too. Each game now draws from a single pool, sized to how fast that game plays, so easier games have far more words and matches stay fresh much longer.
+• The English word banks grew from 120 entries per game to as many as 1,157.
+
+POLISH
+• Two games got new colours so the wheel never looks like it's naming a team.
+• Buttons that call out a team now wear that team's colour.
+• Tidier home screen.
