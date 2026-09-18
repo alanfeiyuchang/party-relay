@@ -14,4 +14,9 @@ xcuserdata/
 
 # Scratch output for AppStoreConnect promo image generation (regenerate with scripts/build_all.py)
 AppStoreConnect/_build/
+
+# iPhone Duo layout sweeps — 20MB+ of before/after verification shots, regenerated in
+# a couple of minutes by the loop in docs/iphone-duo.md. Screenshots/ itself is the
+# App Store set and stays tracked.
+Screenshots/duo-check/
 __pycache__/

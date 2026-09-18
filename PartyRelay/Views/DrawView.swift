@@ -5,9 +5,25 @@ import Combine
 
 struct Stroke: Identifiable {
     let id = UUID()
+    /// 归一化坐标：原点在画布中心，单位是画布短边。画布尺寸变了（折叠 / 展开 / 分屏）笔迹也不会错位或变形
     var points: [CGPoint]
     var color: Color
     var lineWidth: CGFloat
+}
+
+/// 画布坐标与归一化坐标之间的换算
+enum CanvasSpace {
+    static func normalize(_ p: CGPoint, in size: CGSize) -> CGPoint {
+        let unit = max(min(size.width, size.height), 1)
+        return CGPoint(x: (p.x - size.width / 2) / unit,
+                       y: (p.y - size.height / 2) / unit)
+    }
+
+    static func denormalize(_ p: CGPoint, in size: CGSize) -> CGPoint {
+        let unit = min(size.width, size.height)
+        return CGPoint(x: size.width / 2 + p.x * unit,
+                       y: size.height / 2 + p.y * unit)
+    }
 }
 
 /// 你画我猜（按键流程）：看词界面 ⇄「开始作画/收起画布」⇄ 画布界面
@@ -281,46 +297,50 @@ struct DrawView: View {
     }
 
     private var drawingCanvas: some View {
-        Canvas { context, _ in
-            for stroke in strokes {
-                context.stroke(Self.path(for: stroke.points),
-                               with: .color(stroke.color),
-                               style: StrokeStyle(lineWidth: stroke.lineWidth,
-                                                  lineCap: .round, lineJoin: .round))
+        GeometryReader { geo in
+            Canvas { context, size in
+                for stroke in strokes {
+                    context.stroke(Self.path(for: stroke.points, in: size),
+                                   with: .color(stroke.color),
+                                   style: StrokeStyle(lineWidth: stroke.lineWidth,
+                                                      lineCap: .round, lineJoin: .round))
+                }
+                if let s = currentStroke {
+                    context.stroke(Self.path(for: s.points, in: size),
+                                   with: .color(s.color),
+                                   style: StrokeStyle(lineWidth: s.lineWidth,
+                                                      lineCap: .round, lineJoin: .round))
+                }
             }
-            if let s = currentStroke {
-                context.stroke(Self.path(for: s.points),
-                               with: .color(s.color),
-                               style: StrokeStyle(lineWidth: s.lineWidth,
-                                                  lineCap: .round, lineJoin: .round))
-            }
-        }
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    if currentStroke == nil {
-                        currentStroke = Stroke(points: [value.location],
-                                               color: selectedColor,
-                                               lineWidth: selectedWidth)
-                    } else {
-                        currentStroke?.points.append(value.location)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        // 落点按画布尺寸归一化后再存，画布变形时已经画好的线不会跟着歪
+                        let p = CanvasSpace.normalize(value.location, in: geo.size)
+                        if currentStroke == nil {
+                            currentStroke = Stroke(points: [p],
+                                                   color: selectedColor,
+                                                   lineWidth: selectedWidth)
+                        } else {
+                            currentStroke?.points.append(p)
+                        }
                     }
-                }
-                .onEnded { _ in
-                    if let s = currentStroke { strokes.append(s) }
-                    currentStroke = nil
-                }
-        )
+                    .onEnded { _ in
+                        if let s = currentStroke { strokes.append(s) }
+                        currentStroke = nil
+                    }
+            )
+        }
     }
 
-    static func path(for points: [CGPoint]) -> Path {
+    static func path(for points: [CGPoint], in size: CGSize) -> Path {
         var path = Path()
-        guard let first = points.first else { return path }
+        guard let first = points.first.map({ CanvasSpace.denormalize($0, in: size) }) else { return path }
         path.move(to: first)
         if points.count == 1 {
             path.addLine(to: CGPoint(x: first.x + 0.1, y: first.y + 0.1))
         } else {
-            for p in points.dropFirst() { path.addLine(to: p) }
+            for p in points.dropFirst() { path.addLine(to: CanvasSpace.denormalize(p, in: size)) }
         }
         return path
     }

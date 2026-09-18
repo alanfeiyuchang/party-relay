@@ -265,3 +265,20 @@ struct HomeExitBar: View {
         .padding(.top, 10)
     }
 }
+
+// MARK: - 垂直空间不够时可滚动
+
+/// 高度够时和普通 VStack 一样（Spacer 照常把内容撑开），高度不够时整页可以滚。
+/// iPhone Duo 内屏是横着的，只有 669pt 高，按手机竖屏排的页面会溢出，顶部或底部的控件会被推出屏幕。
+struct FittingScroll<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        GeometryReader { geo in
+            ScrollView {
+                content.frame(minHeight: geo.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+}

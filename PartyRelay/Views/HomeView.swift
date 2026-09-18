@@ -6,118 +6,13 @@ struct HomeView: View {
     @ObservedObject var langManager = LanguageManager.shared
     @Binding var showSettings: Bool
     @State private var infoGame: GameKind?
+    @Environment(\.horizontalSizeClass) private var hSize
 
     var body: some View {
         ZStack {
             PartyBackground()
-            VStack(spacing: 12) {
-                // 顶栏：语言切换按钮（右上角）
-                HStack {
-                    Spacer()
-                    Button {
-                        FeedbackManager.shared.tap()
-                        langManager.toggle()
-                        store.syncTeamNamesToLanguage()
-                    } label: {
-                        Label(langManager.language.toggleLabel, systemImage: "globe")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule().fill(LinearGradient(colors: [.indigo, .purple],
-                                                              startPoint: .leading, endPoint: .trailing))
-                                    .shadow(color: .purple.opacity(0.35), radius: 5, y: 2)
-                            )
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 6)
-
-                Text("🎉")
-                    .font(.system(size: 38))
-                Text(L("app.title"))
-                    .font(.system(size: 40, weight: .black, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.pink, .orange, .purple],
-                                       startPoint: .leading, endPoint: .trailing)
-                    )
-                Text(L(store.soloMode ? "home.subtitle_solo"
-                       : store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-
-                // 两支队伍（可编辑队名）。快速模式不分队，队名卡和总轮数都没有意义
-                if !store.soloMode {
-                    VStack(spacing: 14) {
-                        ForEach($store.teams) { $team in
-                            TeamCard(team: $team)
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                }
-
-                HStack(spacing: 18) {
-                    if store.soloMode {
-                        Label(L("home.solo_badge"), systemImage: "bolt.fill")
-                            .foregroundStyle(.teal)
-                    } else {
-                        Label(L("home.rounds", store.settings.totalRounds),
-                              systemImage: "arrow.triangle.2.circlepath")
-                    }
-                    Label(L(store.soloMode ? "home.seconds_solo" : "home.seconds_per_turn",
-                            store.settings.roundSeconds),
-                          systemImage: "timer")
-                }
-                .font(.subheadline.bold())
-                .foregroundStyle(.secondary)
-
-                // 不分队时上面少了两张队名卡，补个弹簧把玩法一览顶回视觉中心
-                if store.soloMode { Spacer(minLength: 0) }
-
-                // 玩法一览（点标签看规则并加入/移出转盘；已排除的置灰）
-                VStack(spacing: 6) {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
-                              spacing: 8) {
-                        ForEach(store.settings.relevantGames) { kind in
-                            GameTagChip(kind: kind,
-                                        included: store.settings.enabled.contains(kind)) {
-                                FeedbackManager.shared.tap()
-                                infoGame = kind
-                            }
-                        }
-                    }
-                    Text(L("home.tag_hint"))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-                // 与下面「开始游戏」按钮同宽，两块左右对齐
-                .padding(.horizontal, 28)
-
-                Spacer()
-
-                VStack(spacing: 10) {
-                    Button {
-                        FeedbackManager.shared.tap()
-                        store.startGame()
-                    } label: {
-                        Label(L("home.start"), systemImage: "play.fill")
-                    }
-                    .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))
-
-                    Button {
-                        FeedbackManager.shared.tap()
-                        showSettings = true
-                    } label: {
-                        Label(L("home.settings"), systemImage: "gearshape.fill")
-                    }
-                    .buttonStyle(BigButtonStyle(colors: [Color(.systemGray2), Color(.systemGray)],
-                                                font: .headline))
-                }
-                .padding(.horizontal, 28)
-                .padding(.bottom, 16)
+            FittingScroll {
+                layout
             }
 
             // 玩法说明 + 加入/移出转盘（与设置页共用同一份开关状态）
@@ -131,6 +26,167 @@ struct HomeView: View {
             if ScreenshotMode.autoPresents("gametag") { infoGame = .lipRead }
             if ScreenshotMode.autoPresents("hoftag") { infoGame = .hallOfFame }
         }
+    }
+
+    /// 宽屏（iPhone Duo 内屏、iPad 分屏）排两栏：左边队伍，右边玩法和按钮。
+    /// 竖屏手机维持原来的单栏。两种都放在 FittingScroll 里，装不下就滚，不会把顶栏挤出屏幕。
+    @ViewBuilder private var layout: some View {
+        if hSize == .regular {
+            // 两栏各自垂直居中，而不是一栏贴顶、另一栏把按钮压到最底。
+            // 内屏是横着的 951x669pt，内容只占得满宽度占不满高度；先前左栏吊在上半、
+            // 右栏的开始/设置被弹簧推到屏底，中间就空出一大片，读起来像没排完。
+            // 居中之后两栏彼此对着，多出来的高度分到上下，成为页边距。
+            VStack(spacing: 12) {
+                langBar
+                HStack(alignment: .center, spacing: 12) {
+                    VStack(spacing: 12) {
+                        Spacer(minLength: 0)
+                        titleBlock
+                        teamCards
+                        infoRow
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    VStack(spacing: 16) {
+                        Spacer(minLength: 0)
+                        gameTags
+                        actions
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        } else {
+            VStack(spacing: 12) {
+                langBar
+                titleBlock
+                teamCards
+                infoRow
+                // 不分队时上面少了两张队名卡，补个弹簧把玩法一览顶回视觉中心
+                if store.soloMode { Spacer(minLength: 0) }
+                gameTags
+                Spacer(minLength: 0)
+                actions
+            }
+        }
+    }
+
+    /// 顶栏：语言切换按钮（右上角）
+    private var langBar: some View {
+        HStack {
+            Spacer()
+            Button {
+                FeedbackManager.shared.tap()
+                langManager.toggle()
+                store.syncTeamNamesToLanguage()
+            } label: {
+                Label(langManager.language.toggleLabel, systemImage: "globe")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule().fill(LinearGradient(colors: [.indigo, .purple],
+                                                      startPoint: .leading, endPoint: .trailing))
+                            .shadow(color: .purple.opacity(0.35), radius: 5, y: 2)
+                    )
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 6)
+    }
+
+    private var titleBlock: some View {
+        VStack(spacing: 12) {
+            Text("🎉")
+                .font(.system(size: 38))
+            Text(L("app.title"))
+                .font(.system(size: 40, weight: .black, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(colors: [.pink, .orange, .purple],
+                                   startPoint: .leading, endPoint: .trailing)
+                )
+            Text(L(store.soloMode ? "home.subtitle_solo"
+                   : store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
+                .font(.subheadline.bold())
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+        }
+    }
+
+    /// 两支队伍（可编辑队名）。快速模式不分队，队名卡和总轮数都没有意义
+    @ViewBuilder private var teamCards: some View {
+        if !store.soloMode {
+            VStack(spacing: 14) {
+                ForEach($store.teams) { $team in
+                    TeamCard(team: $team)
+                }
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+
+    private var infoRow: some View {
+        HStack(spacing: 18) {
+            if store.soloMode {
+                Label(L("home.solo_badge"), systemImage: "bolt.fill")
+                    .foregroundStyle(.teal)
+            } else {
+                Label(L("home.rounds", store.settings.totalRounds),
+                      systemImage: "arrow.triangle.2.circlepath")
+            }
+            Label(L(store.soloMode ? "home.seconds_solo" : "home.seconds_per_turn",
+                    store.settings.roundSeconds),
+                  systemImage: "timer")
+        }
+        .font(.subheadline.bold())
+        .foregroundStyle(.secondary)
+    }
+
+    /// 玩法一览（点标签看规则并加入/移出转盘；已排除的置灰）
+    private var gameTags: some View {
+        VStack(spacing: 6) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                      spacing: 8) {
+                ForEach(store.settings.relevantGames) { kind in
+                    GameTagChip(kind: kind,
+                                included: store.settings.enabled.contains(kind)) {
+                        FeedbackManager.shared.tap()
+                        infoGame = kind
+                    }
+                }
+            }
+            Text(L("home.tag_hint"))
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        // 与下面「开始游戏」按钮同宽，两块左右对齐
+        .padding(.horizontal, 28)
+    }
+
+    private var actions: some View {
+        VStack(spacing: 10) {
+            Button {
+                FeedbackManager.shared.tap()
+                store.startGame()
+            } label: {
+                Label(L("home.start"), systemImage: "play.fill")
+            }
+            .buttonStyle(BigButtonStyle(colors: [.pink, .orange]))
+
+            Button {
+                FeedbackManager.shared.tap()
+                showSettings = true
+            } label: {
+                Label(L("home.settings"), systemImage: "gearshape.fill")
+            }
+            .buttonStyle(BigButtonStyle(colors: [Color(.systemGray2), Color(.systemGray)],
+                                        font: .headline))
+        }
+        .padding(.horizontal, 28)
+        .padding(.bottom, 16)
     }
 }
 

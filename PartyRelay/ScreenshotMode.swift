@@ -259,9 +259,12 @@ enum ScreenshotMode {
 
     /// 画板演示笔画：一个雪人 ⛄️
     static func demoStrokes() -> [Stroke] {
+        // 下面的坐标都画在这块参考画布上，存进 Stroke 前统一换成归一化坐标
+        let design = CGSize(width: 370, height: 500)
+        func n(_ p: CGPoint) -> CGPoint { CanvasSpace.normalize(p, in: design) }
         func circle(cx: CGFloat, cy: CGFloat, r: CGFloat, color: Color, width: CGFloat) -> Stroke {
             let pts = stride(from: 0.0, through: 2 * Double.pi + 0.1, by: 0.15).map {
-                CGPoint(x: cx + r * cos($0), y: cy + r * sin($0))
+                n(CGPoint(x: cx + r * cos($0), y: cy + r * sin($0)))
             }
             return Stroke(points: pts, color: color, lineWidth: width)
         }
@@ -270,17 +273,17 @@ enum ScreenshotMode {
         s.append(circle(cx: 185, cy: 180, r: 60, color: .black, width: 6))      // 头
         s.append(circle(cx: 165, cy: 165, r: 5, color: .black, width: 6))       // 左眼
         s.append(circle(cx: 205, cy: 165, r: 5, color: .black, width: 6))       // 右眼
-        s.append(Stroke(points: [CGPoint(x: 185, y: 180), CGPoint(x: 215, y: 192),
-                                 CGPoint(x: 185, y: 196)],
+        s.append(Stroke(points: [n(CGPoint(x: 185, y: 180)), n(CGPoint(x: 215, y: 192)),
+                                 n(CGPoint(x: 185, y: 196))],
                         color: .orange, lineWidth: 6))                          // 胡萝卜鼻子
-        s.append(Stroke(points: [CGPoint(x: 128, y: 128), CGPoint(x: 242, y: 128)],
+        s.append(Stroke(points: [n(CGPoint(x: 128, y: 128)), n(CGPoint(x: 242, y: 128))],
                         color: .red, lineWidth: 12))                            // 帽檐
-        s.append(Stroke(points: [CGPoint(x: 150, y: 128), CGPoint(x: 152, y: 70),
-                                 CGPoint(x: 220, y: 70), CGPoint(x: 222, y: 128)],
+        s.append(Stroke(points: [n(CGPoint(x: 150, y: 128)), n(CGPoint(x: 152, y: 70)),
+                                 n(CGPoint(x: 220, y: 70)), n(CGPoint(x: 222, y: 128))],
                         color: .red, lineWidth: 12))                            // 帽筒
-        s.append(Stroke(points: [CGPoint(x: 95, y: 290), CGPoint(x: 30, y: 240)],
+        s.append(Stroke(points: [n(CGPoint(x: 95, y: 290)), n(CGPoint(x: 30, y: 240))],
                         color: .black, lineWidth: 6))                           // 左手
-        s.append(Stroke(points: [CGPoint(x: 275, y: 290), CGPoint(x: 340, y: 240)],
+        s.append(Stroke(points: [n(CGPoint(x: 275, y: 290)), n(CGPoint(x: 340, y: 240))],
                         color: .black, lineWidth: 6))                           // 右手
         for (i, y) in [280.0, 330.0, 380.0].enumerated() {
             s.append(circle(cx: 185, cy: y, r: 6, color: i == 0 ? .blue : .black, width: 5)) // 扣子
