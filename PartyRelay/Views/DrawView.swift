@@ -46,9 +46,15 @@ struct DrawView: View {
     @State private var currentStroke: Stroke?
     @State private var selectedColor: Color = .black
     @State private var selectedWidth: CGFloat = 6
+    @State private var eraserOn = false        // 橡皮：白底画布上用白色笔刷擦，撤销/清空照常生效
 
     static let palette: [Color] = [.black, .red, .blue, .green, .orange, .purple]
     static let widths: [CGFloat] = [3, 6, 12]
+    /// 橡皮比画笔粗一圈，不然擦得太慢
+    static let eraserScale: CGFloat = 2.5
+
+    private var brushColor: Color { eraserOn ? .white : selectedColor }
+    private var brushWidth: CGFloat { eraserOn ? selectedWidth * Self.eraserScale : selectedWidth }
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var game: GameKind { .drawGuess }
@@ -241,24 +247,43 @@ struct DrawView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .padding(.horizontal, 12)
 
-            // 工具栏：6色 + 3档粗细 + 撤销/清空
-            HStack(spacing: 6) {
+            // 工具栏：6色 + 橡皮 + 3档粗细 + 撤销/清空
+            HStack(spacing: 4) {
                 ForEach(Array(Self.palette.enumerated()), id: \.offset) { _, color in
                     Circle()
                         .fill(color)
-                        .frame(width: 27, height: 27)
-                        .overlay(Circle().stroke(.blue, lineWidth: selectedColor == color ? 3 : 0).padding(-3))
+                        .frame(width: 26, height: 26)
+                        .overlay(Circle()
+                            .stroke(.blue, lineWidth: (!eraserOn && selectedColor == color) ? 3 : 0)
+                            .padding(-3))
                         .onTapGesture {
                             FeedbackManager.shared.tap()
                             selectedColor = color
+                            eraserOn = false          // 选颜色 = 切回画笔
                         }
                 }
+                // 橡皮：当成第七支「笔」，跟颜色互斥
+                Circle()
+                    .fill(.white)
+                    .overlay(Circle().stroke(Color(.systemGray3), lineWidth: 1))
+                    .overlay(
+                        Image(systemName: "eraser.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(.systemGray))
+                    )
+                    .frame(width: 26, height: 26)
+                    .overlay(Circle().stroke(.blue, lineWidth: eraserOn ? 3 : 0).padding(-3))
+                    .onTapGesture {
+                        FeedbackManager.shared.tap()
+                        eraserOn = true
+                    }
+                    .accessibilityLabel(Text(L("draw.eraser")))
                 Divider().frame(height: 26)
                 ForEach(Self.widths, id: \.self) { w in
                     Circle()
                         .fill(Color.primary.opacity(selectedWidth == w ? 1 : 0.35))
                         .frame(width: 8 + w, height: 8 + w)
-                        .frame(width: 22, height: 22)
+                        .frame(width: 20, height: 22)
                         .onTapGesture {
                             FeedbackManager.shared.tap()
                             selectedWidth = w
@@ -270,14 +295,15 @@ struct DrawView: View {
                     _ = strokes.popLast()
                 } label: {
                     Image(systemName: "arrow.uturn.backward.circle.fill")
-                        .font(.title2)
+                        .font(.title3)
                 }
                 Button {
                     FeedbackManager.shared.skip()
                     strokes.removeAll()
+                    eraserOn = false
                 } label: {
                     Image(systemName: "trash.circle.fill")
-                        .font(.title2)
+                        .font(.title3)
                         .foregroundStyle(.red)
                 }
             }
@@ -319,8 +345,8 @@ struct DrawView: View {
                         let p = CanvasSpace.normalize(value.location, in: geo.size)
                         if currentStroke == nil {
                             currentStroke = Stroke(points: [p],
-                                                   color: selectedColor,
-                                                   lineWidth: selectedWidth)
+                                                   color: brushColor,
+                                                   lineWidth: brushWidth)
                         } else {
                             currentStroke?.points.append(p)
                         }
@@ -351,6 +377,7 @@ struct DrawView: View {
         word = store.nextWord()
         strokes.removeAll()
         currentStroke = nil
+        eraserOn = false
         showCanvas = false
         forceShow = false
     }
