@@ -1,0 +1,20 @@
+name: colorpicker-preview
+# 在 GitHub 的 macOS 机器上编译 → 启动模拟器 → 录「弹出选色框」的动画，产物是 GIF/MOV/PNG
+on:
+  push:
+    branches: [claude/colorpicker-preview]
+  workflow_dispatch:
+jobs:
+  record:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: ffmpeg
+        run: command -v ffmpeg || brew install ffmpeg
+      - name: Build, boot simulator, record
+        run: scripts/record-colorpicker.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: colorpicker
+          path: Screenshots/colorpicker/

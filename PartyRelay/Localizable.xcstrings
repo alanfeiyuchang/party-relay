@@ -625,6 +625,23 @@
         }
       }
     },
+    "draw.custom_color": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom color"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自选颜色"
+          }
+        }
+      }
+    },
     "draw.eraser": {
       "extractionState": "manual",
       "localizations": {

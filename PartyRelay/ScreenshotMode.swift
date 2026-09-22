@@ -149,8 +149,9 @@ enum ScreenshotMode {
                 store.pickGame(.act, by: picker)
             }
 
-        case "draw", "drawcanvas":
+        case "draw", "drawcanvas", "drawpicker":
             // draw = 看词界面（开始作画/答对/换一个）；drawcanvas = 画布界面（收起画布）
+            // drawpicker = 画布界面 + 1 秒后自动弹出自选色的选色框（录弹出动画用）
             store.teams[0].score = 2
             store.teams[1].score = 3
             store.roundNumber = 3

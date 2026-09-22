@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import Combine
 
 // MARK: - 笔画模型
@@ -47,8 +48,11 @@ struct DrawView: View {
     @State private var selectedColor: Color = .black
     @State private var selectedWidth: CGFloat = 6
     @State private var eraserOn = false        // 橡皮：白底画布上用白色笔刷擦，撤销/清空照常生效
+    @State private var customColor: Color = .purple   // 自选色，默认紫色 = 原来第六格的颜色
+    @State private var usingCustom = false            // 当前笔是不是自选色（别拿 Color 相等去判断，自选色可能恰好等于某个预设色）
+    @State private var showColorPicker = false
 
-    static let palette: [Color] = [.black, .red, .blue, .green, .orange, .purple]
+    static let palette: [Color] = [.black, .red, .blue, .green, .orange]
     static let widths: [CGFloat] = [3, 6, 12]
     /// 橡皮比画笔粗一圈，不然擦得太慢
     static let eraserScale: CGFloat = 2.5
@@ -78,12 +82,20 @@ struct DrawView: View {
             skipsLeft = store.skipAllowance
             if word.isEmpty { word = store.nextWord() }
             if store.settings.privacyGuardOn { motion.start() }
-            if let m = ScreenshotMode.mode, m == "draw" || m == "drawcanvas" {
+            if let m = ScreenshotMode.mode, ["draw", "drawcanvas", "drawpicker"].contains(m) {
                 word = LanguageManager.shared.language == .en ? "snowman" : "雪人"
                 ownPoints = 2
-                if m == "drawcanvas" {
+                if m != "draw" {
                     strokes = ScreenshotMode.demoStrokes()
                     showCanvas = true
+                }
+                if m == "drawpicker" {
+                    // 先停一秒让录屏拍到画布，再模拟点了自选色按钮
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        selectedColor = customColor
+                        usingCustom = true
+                        showColorPicker = true
+                    }
                 }
             }
         }
@@ -254,14 +266,33 @@ struct DrawView: View {
                         .fill(color)
                         .frame(width: 26, height: 26)
                         .overlay(Circle()
-                            .stroke(.blue, lineWidth: (!eraserOn && selectedColor == color) ? 3 : 0)
+                            .stroke(.blue, lineWidth: (!eraserOn && !usingCustom && selectedColor == color) ? 3 : 0)
                             .padding(-3))
                         .onTapGesture {
                             FeedbackManager.shared.tap()
                             selectedColor = color
+                            usingCustom = false
                             eraserOn = false          // 选颜色 = 切回画笔
                         }
                 }
+                // 自选色：彩虹外圈 + 中间是当前自选的颜色，点一下选中它并弹出系统选色框
+                Circle()
+                    .fill(AngularGradient(colors: [.red, .yellow, .green, .cyan, .blue, .purple, .red],
+                                          center: .center))
+                    .overlay(Circle().fill(.white).padding(3))
+                    .overlay(Circle().fill(customColor).padding(5))
+                    .frame(width: 26, height: 26)
+                    .overlay(Circle()
+                        .stroke(.blue, lineWidth: (!eraserOn && usingCustom) ? 3 : 0)
+                        .padding(-3))
+                    .onTapGesture {
+                        FeedbackManager.shared.tap()
+                        selectedColor = customColor
+                        usingCustom = true
+                        eraserOn = false
+                        showColorPicker = true
+                    }
+                    .accessibilityLabel(Text(L("draw.custom_color")))
                 // 橡皮：当成第七支「笔」，跟颜色互斥
                 Circle()
                     .fill(.white)
@@ -319,6 +350,15 @@ struct DrawView: View {
             .buttonStyle(BigButtonStyle(colors: [.indigo, .purple], font: .headline))
             .padding(.horizontal, 24)
             .padding(.bottom, 10)
+        }
+        // 选色框半屏弹出，上半截画布还露着，边拖边能看到颜色
+        .sheet(isPresented: $showColorPicker) {
+            SystemColorPicker(color: $customColor) { showColorPicker = false }
+                .presentationDetents([.medium, .large])
+                .ignoresSafeArea()
+        }
+        .onChange(of: customColor) { _, newColor in
+            if usingCustom { selectedColor = newColor }
         }
     }
 
@@ -380,5 +420,42 @@ struct DrawView: View {
         eraserOn = false
         showCanvas = false
         forceShow = false
+    }
+}
+
+// MARK: - 系统选色框
+
+/// UIColorPickerViewController 的 SwiftUI 包装：拖动时实时回写颜色，点右上角 × 关闭。
+/// 不用 SwiftUI 的 ColorPicker，是因为它的色块样式定死了，塞不进这排 26pt 的圆形工具栏。
+struct SystemColorPicker: UIViewControllerRepresentable {
+    @Binding var color: Color
+    var onDone: () -> Void
+
+    func makeUIViewController(context: Context) -> UIColorPickerViewController {
+        let vc = UIColorPickerViewController()
+        vc.supportsAlpha = false          // 白底画布上半透明没意义，还会跟橡皮搞混
+        vc.selectedColor = UIColor(color)
+        vc.delegate = context.coordinator
+        return vc
+    }
+
+    func updateUIViewController(_ vc: UIColorPickerViewController, context: Context) {
+        context.coordinator.parent = self
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
+        var parent: SystemColorPicker
+        init(_ parent: SystemColorPicker) { self.parent = parent }
+
+        func colorPickerViewController(_ viewController: UIColorPickerViewController,
+                                       didSelect color: UIColor, continuously: Bool) {
+            parent.color = Color(uiColor: color)
+        }
+
+        func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
+            parent.onDone()
+        }
     }
 }

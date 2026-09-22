@@ -222,5 +222,5 @@ SIMCTL_CHILD_SCREENSHOT_MODE=<mode> SIMCTL_CHILD_SCREENSHOT_LANG=<zh|en> \
   xcrun simctl launch booted com.partyrelay.app
 ```
 
-`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `handoff`, `pick`, `pickfirst`, `openbuzz`, `act`, `privacy`, `draw`, `drawcanvas`, `emoji`, `emojiguess`, `hof`, `hofpeek`, `hofsplit`, `hofname`, `hofreveal`, `hofscore`, `scoreboard`, `smallboard`, `result`, `settings`, `gametag`, `exitconfirm`, `victory`, `smallvictory`.
+`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `handoff`, `pick`, `pickfirst`, `openbuzz`, `act`, `privacy`, `draw`, `drawcanvas`, `drawpicker`, `emoji`, `emojiguess`, `hof`, `hofpeek`, `hofsplit`, `hofname`, `hofreveal`, `hofscore`, `scoreboard`, `smallboard`, `result`, `settings`, `gametag`, `exitconfirm`, `victory`, `smallvictory`.
 `SCREENSHOT_LANG` forces `zh` or `en` regardless of the simulator's system language.
