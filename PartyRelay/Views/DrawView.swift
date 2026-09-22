@@ -459,24 +459,27 @@ struct DrawView: View {
         .padding(14)
     }
 
-    /// 色盘本体：点哪格就是哪个颜色，白框滑到那一格
+    /// 色盘本体：点哪格就是哪个颜色，白框滑到那一格。
+    /// 96 格画在一个 Canvas 里、点击按坐标换算成格子：水滴动画每一帧都要重新排版面板，一格一个 view 的话太重
     private func colorGrid(width: CGFloat) -> some View {
         let cell = width / CGFloat(Self.gridColumns)
-        return VStack(spacing: 0) {
-            ForEach(0..<Self.gridRows, id: \.self) { row in
-                HStack(spacing: 0) {
-                    ForEach(0..<Self.gridColumns, id: \.self) { col in
-                        let index = row * Self.gridColumns + col
-                        Rectangle()
-                            .fill(Self.gridColor(index))
-                            .frame(width: cell, height: cell)
-                            .contentShape(Rectangle())
-                            .onTapGesture { pickGridColor(index) }
-                    }
-                }
+        return Canvas { context, _ in
+            for index in 0..<(Self.gridRows * Self.gridColumns) {
+                // 多画半个点压住右边和下边的邻格，小数格宽时格子之间才不会透出细缝
+                let rect = CGRect(x: CGFloat(index % Self.gridColumns) * cell,
+                                  y: CGFloat(index / Self.gridColumns) * cell,
+                                  width: cell + 0.5, height: cell + 0.5)
+                context.fill(Path(rect), with: .color(Self.gridColor(index)))
             }
         }
+        .frame(width: width, height: cell * CGFloat(Self.gridRows))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .contentShape(Rectangle())
+        .onTapGesture { location in
+            let col = min(max(Int(location.x / cell), 0), Self.gridColumns - 1)
+            let row = min(max(Int(location.y / cell), 0), Self.gridRows - 1)
+            pickGridColor(row * Self.gridColumns + col)
+        }
         .overlay(alignment: .topLeading) {
             // 选中框画在裁切外面，角上的格子才不会被圆角切掉一半；白框外面再描一圈暗边，选白色时也看得见
             RoundedRectangle(cornerRadius: 5, style: .continuous)
