@@ -58,7 +58,7 @@ struct DrawView: View {
     static let eraserScale: CGFloat = 2.5
 
     /// 色盘展开/收起用同一条弹簧，两个方向的手感才对称；bounce 给足，到位时会冲过头再弹回来
-    static let pickerSpring: Animation = .spring(duration: 0.8, bounce: 0.3)
+    static let pickerSpring: Animation = .spring(duration: 0.4, bounce: 0.3)
 
     /// 色盘：12 列 × 8 行，点一格就是一个颜色，不用拖。
     /// 第一行是灰阶（白 → 黑）；下面每列一个色相，从红开始每 30° 一列，从上到下由浅到深 7 档
@@ -595,7 +595,7 @@ struct DropMorph: ViewModifier, Animatable {
         set { progress = newValue }
     }
 
-    /// 竖直方向先走、水平方向后走（前 0.1 秒是一滴 30×80 左右的竖水滴）。
+    /// 竖直方向先走、水平方向后走（前 0.05 秒左右是一滴 30×80 左右的竖水滴）。
     /// 两条曲线在 0 和 1 处都跟直线接得上，外推时不会有折角；lead 的系数小于 3 才保证单调
     private static func lead(_ p: Double) -> Double {
         guard p > 0 && p < 1 else { return p }
