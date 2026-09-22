@@ -102,15 +102,16 @@ struct DrawView: View {
                     showCanvas = true
                 }
                 if m == "drawpicker" {
-                    // 录屏脚本用：停一下 → 展开 → 拖一下色相 → 收起，两个动画都录进去
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    // 录屏脚本用：停一下 → 展开 → 拖一下色相 → 收起，两个动画都录进去。
+                    // 先停 2 秒：刚启动时主线程还忙，停太短的话这几段会被挤到一起一口气跑完
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         usingCustom = true
                         withAnimation(Self.pickerSpring) { pickerOpen = true }
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.4) {
                         withAnimation(.easeInOut(duration: 0.9)) { pickerHue = 0.05 }
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.2) {
                         withAnimation(Self.pickerSpring) { pickerOpen = false }
                     }
                 }

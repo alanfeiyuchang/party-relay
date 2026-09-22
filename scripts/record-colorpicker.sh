@@ -26,6 +26,10 @@ xcrun simctl bootstatus "$UDID" -b >/dev/null
 # 动画要看清楚，关掉模拟器的「减弱动态效果」之类的干扰并保持满帧
 xcrun simctl install "$UDID" build/Debug-iphonesimulator/PartyRelay.app
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
+# 先空跑一次冷启动再杀掉：CI 上第一次启动要白屏好几秒，录的那次得是热启动，画面才会马上出来
+SIMCTL_CHILD_SCREENSHOT_MODE=drawcanvas xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
+sleep 8
+xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 
 echo "▶ 录屏…"
 MOV="$OUT/colorpicker.mov"
@@ -43,7 +47,7 @@ grep -q "Recording started" "$RECLOG" || { cat "$RECLOG"; echo "✗ 等了 120 �
 sleep 1
 SIMCTL_CHILD_SCREENSHOT_MODE=drawpicker SIMCTL_CHILD_SCREENSHOT_LANG=zh \
   xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
-# App 里的时间线（DrawView drawpicker）：1.2s 展开 → 2.4s 拖色相 → 4.2s 收起
+# App 里的时间线（DrawView drawpicker）：2.0s 展开 → 3.4s 拖色相 → 5.2s 收起
 if command -v ffmpeg >/dev/null; then
   sleep 12      # 冷启动也留足余量，多录的部分后面会裁掉
 else
