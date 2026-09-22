@@ -58,8 +58,8 @@ struct DrawView: View {
     /// 橡皮比画笔粗一圈，不然擦得太慢
     static let eraserScale: CGFloat = 2.5
 
-    /// 色盘展开/收起用同一条弹簧，两个方向的手感才对称
-    static let pickerSpring: Animation = .spring(response: 0.42, dampingFraction: 0.82)
+    /// 色盘展开/收起用同一条弹簧，两个方向的手感才对称；bounce 给足，到位时会冲过头再弹回来
+    static let pickerSpring: Animation = .spring(duration: 0.8, bounce: 0.3)
     static let panelHeight: CGFloat = 172
 
     /// 一条色带走完「白 → 纯色 → 黑」，一个手指就能调深浅
@@ -396,8 +396,8 @@ struct DrawView: View {
                                 y: max(swatchRect.minY - 14 - Self.panelHeight, 12),
                                 width: panelWidth,
                                 height: Self.panelHeight)
-            let box = pickerOpen ? target : swatchRect
-            let radius = pickerOpen ? 22 : max(box.width / 2, 1)
+            // 按钮中间那颗 16pt 的色点：水滴从这里长出来，收起时也缩回这里
+            let dot = CGRect(x: swatchRect.midX - 8, y: swatchRect.midY - 8, width: 16, height: 16)
 
             ZStack {
                 // 点画布上别的地方也收起
@@ -408,17 +408,8 @@ struct DrawView: View {
 
                 pickerPanel(width: panelWidth)
                     .frame(width: panelWidth, height: Self.panelHeight)   // 内容始终按最终尺寸布局，动画里只是被裁掉
-                    .opacity(pickerOpen ? 1 : 0)
-                    .animation(.easeOut(duration: 0.16), value: pickerOpen)
-                    .frame(width: max(box.width, 1), height: max(box.height, 1))
-                    .background(
-                        RoundedRectangle(cornerRadius: radius, style: .continuous)
-                            .fill(.white)
-                            .shadow(color: .black.opacity(pickerOpen ? 0.18 : 0), radius: 14, y: 6)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
-                    .opacity(pickerOpen ? 1 : 0)
-                    .position(x: box.midX, y: box.midY)
+                    .modifier(DropMorph(progress: pickerOpen ? 1 : 0, from: dot, to: target, tint: pickedColor))
+                    .opacity(swatchRect == .zero ? 0 : 1)                // 还没量到按钮位置之前先别画
                     .allowsHitTesting(pickerOpen)
             }
         }
@@ -550,4 +541,55 @@ struct DrawView: View {
 struct SwatchRectKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+}
+
+// MARK: - 色盘的水滴变形
+
+/// 色盘从按钮的色点长出来：先往上拉成一滴竖着的水滴，到位时再横向摊开成面板；收起时倒着走一遍缩回色点。
+/// progress 由弹簧驱动，回弹时会冲过 1、或在收起时低于 0，超出 [0, 1] 的部分按直线外推，冲过头就是真的冲过头。
+struct DropMorph: ViewModifier, Animatable {
+    var progress: Double
+    var from: CGRect
+    var to: CGRect
+    var tint: Color
+
+    var animatableData: Double {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    /// 竖直方向先走、水平方向后走（前 0.1 秒是一滴 30×80 左右的竖水滴）。
+    /// 两条曲线在 0 和 1 处都跟直线接得上，外推时不会有折角；lead 的系数小于 3 才保证单调
+    private static func lead(_ p: Double) -> Double {
+        guard p > 0 && p < 1 else { return p }
+        return p + 2.4 * p * (1 - p) * (1 - p)
+    }
+    private static func lag(_ p: Double) -> Double {
+        guard p > 0 && p < 1 else { return p }
+        return p - p * (1 - p) * (1 - p)
+    }
+    private static func lerp(_ a: CGFloat, _ b: CGFloat, _ t: Double) -> CGFloat { a + (b - a) * CGFloat(t) }
+    private static func clamp(_ x: Double) -> Double { min(max(x, 0), 1) }
+
+    func body(content: Content) -> some View {
+        let v = Self.lead(progress)
+        let h = Self.lag(progress)
+        let width = max(Self.lerp(from.width, to.width, h), 0.5)
+        let height = max(Self.lerp(from.height, to.height, v), 0.5)
+        // 没摊开之前两头都是半圆（竖着的水滴），快摊开完才收成面板的 22pt 圆角
+        let radius = min(min(width, height) / 2, Self.lerp(200, 22, Self.clamp(h)))
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+
+        return content
+            .opacity(Self.clamp((h - 0.6) / 0.3))          // 摊开得差不多了，里面的色带才浮出来
+            .frame(width: width, height: height)
+            .clipShape(shape)
+            .background(
+                shape.fill(.white)
+                    // 刚离开按钮时还是色点的颜色，越长越白
+                    .overlay(shape.fill(tint).opacity(1 - Self.clamp((v - 0.1) / 0.6)))
+                    .shadow(color: .black.opacity(0.18 * Self.clamp(v)), radius: 14, y: 6)
+            )
+            .position(x: Self.lerp(from.midX, to.midX, h), y: Self.lerp(from.midY, to.midY, v))
+    }
 }
