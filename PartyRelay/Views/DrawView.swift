@@ -49,8 +49,7 @@ struct DrawView: View {
     @State private var eraserOn = false        // 橡皮：白底画布上用白色笔刷擦，撤销/清空照常生效
     @State private var usingCustom = false            // 当前笔是不是自选色（别拿 Color 相等去判断，自选色可能恰好等于某个预设色）
     @State private var pickerOpen = false
-    @State private var pickerHue: Double = 0.78       // 默认紫，跟原来第六格的颜色对齐
-    @State private var pickerShade: Double = 0.33     // 0 = 白，0.5 = 纯色，1 = 黑
+    @State private var pickerCell = 4 * DrawView.gridColumns + 9   // 色盘里选中的格子，默认纯紫，跟原来第六格的颜色对齐
     @State private var swatchRect: CGRect = .zero     // 自选色按钮在画布坐标系里的位置，色盘从这里长出来、也缩回这里
 
     static let palette: [Color] = [.black, .red, .blue, .green, .orange]
@@ -60,14 +59,29 @@ struct DrawView: View {
 
     /// 色盘展开/收起用同一条弹簧，两个方向的手感才对称；bounce 给足，到位时会冲过头再弹回来
     static let pickerSpring: Animation = .spring(duration: 0.8, bounce: 0.3)
-    static let panelHeight: CGFloat = 172
 
-    /// 一条色带走完「白 → 纯色 → 黑」，一个手指就能调深浅
-    static func customColor(hue: Double, shade: Double) -> Color {
-        shade <= 0.5 ? Color(hue: hue, saturation: shade * 2, brightness: 1)
-                     : Color(hue: hue, saturation: 1, brightness: 2 - shade * 2)
+    /// 色盘：12 列 × 8 行，点一格就是一个颜色，不用拖。
+    /// 第一行是灰阶（白 → 黑）；下面每列一个色相，从红开始每 30° 一列，从上到下由浅到深 7 档
+    static let gridColumns = 12
+    static let gridShades: [Double] = [0.18, 0.3, 0.42, 0.5, 0.62, 0.74, 0.86]   // 0 = 白，0.5 = 纯色，1 = 黑
+    static var gridRows: Int { 1 + gridShades.count }
+    static let headerHeight: CGFloat = 32       // 面板顶上那行（色点 + 标题 + 完成），固定高度，面板高度才算得准
+
+    static func gridColor(_ cell: Int) -> Color {
+        let row = cell / gridColumns, col = cell % gridColumns
+        if row == 0 { return Color(white: 1 - Double(col) / Double(gridColumns - 1)) }
+        let hue = Double(col) / Double(gridColumns)
+        let shade = gridShades[row - 1]
+        return shade <= 0.5 ? Color(hue: hue, saturation: shade * 2, brightness: 1)
+                            : Color(hue: hue, saturation: 1, brightness: 2 - shade * 2)
     }
-    private var pickedColor: Color { Self.customColor(hue: pickerHue, shade: pickerShade) }
+
+    /// 格子是正方形、边长 = 面板内宽 / 12，所以面板高度跟着屏宽走
+    static func panelHeight(width: CGFloat) -> CGFloat {
+        let cell = (width - 28) / CGFloat(gridColumns)
+        return 14 + headerHeight + 12 + cell * CGFloat(gridRows) + 14
+    }
+    private var pickedColor: Color { Self.gridColor(pickerCell) }
 
     private var brushColor: Color { eraserOn ? .white : (usingCustom ? pickedColor : selectedColor) }
     private var brushWidth: CGFloat { eraserOn ? selectedWidth * Self.eraserScale : selectedWidth }
@@ -102,17 +116,14 @@ struct DrawView: View {
                     showCanvas = true
                 }
                 if m == "drawpicker" {
-                    // 录屏脚本用：停一下 → 展开 → 拖一下色相 → 收起，两个动画都录进去。
+                    // 录屏脚本用：停一下 → 展开 → 点橙色那格（点完自己收起），两个动画都录进去。
                     // 先停 2 秒：刚启动时主线程还忙，停太短的话这几段会被挤到一起一口气跑完
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         usingCustom = true
                         withAnimation(Self.pickerSpring) { pickerOpen = true }
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.4) {
-                        withAnimation(.easeInOut(duration: 0.9)) { pickerHue = 0.05 }
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.2) {
-                        withAnimation(Self.pickerSpring) { pickerOpen = false }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.6) {
+                        pickGridColor(4 * Self.gridColumns + 1)
                     }
                 }
             }
@@ -393,10 +404,11 @@ struct DrawView: View {
     private var colorPickerLayer: some View {
         GeometryReader { geo in
             let panelWidth = geo.size.width - 24
+            let panelH = Self.panelHeight(width: panelWidth)
             let target = CGRect(x: 12,
-                                y: max(swatchRect.minY - 14 - Self.panelHeight, 12),
+                                y: max(swatchRect.minY - 14 - panelH, 12),
                                 width: panelWidth,
-                                height: Self.panelHeight)
+                                height: panelH)
             // 按钮中间那颗 16pt 的色点：水滴从这里长出来，收起时也缩回这里
             let dot = CGRect(x: swatchRect.midX - 8, y: swatchRect.midY - 8, width: 16, height: 16)
 
@@ -408,7 +420,7 @@ struct DrawView: View {
                     .onTapGesture { closePicker() }
 
                 pickerPanel(width: panelWidth)
-                    .frame(width: panelWidth, height: Self.panelHeight)   // 内容始终按最终尺寸布局，动画里只是被裁掉
+                    .frame(width: panelWidth, height: panelH)   // 内容始终按最终尺寸布局，动画里只是被裁掉
                     .modifier(DropMorph(progress: pickerOpen ? 1 : 0, from: dot, to: target, tint: pickedColor))
                     .opacity(swatchRect == .zero ? 0 : 1)                // 还没量到按钮位置之前先别画
                     .allowsHitTesting(pickerOpen)
@@ -441,38 +453,54 @@ struct DrawView: View {
                 }
                 .buttonStyle(.plain)
             }
-            spectrumBar(width: width - 28, hueBar: true)
-            spectrumBar(width: width - 28, hueBar: false)
+            .frame(height: Self.headerHeight)
+            colorGrid(width: width - 28)
         }
         .padding(14)
     }
 
-    /// 上面一条选色相，下面一条选深浅；拖到哪儿画笔就立刻变成哪个颜色
-    private func spectrumBar(width: CGFloat, hueBar: Bool) -> some View {
-        let value = hueBar ? pickerHue : pickerShade
-        let fill: LinearGradient = hueBar
-            ? LinearGradient(colors: (0...12).map { Color(hue: Double($0) / 12, saturation: 1, brightness: 1) },
-                             startPoint: .leading, endPoint: .trailing)
-            : LinearGradient(colors: [.white, Self.customColor(hue: pickerHue, shade: 0.5), .black],
-                             startPoint: .leading, endPoint: .trailing)
-        return Capsule()
-            .fill(fill)
-            .frame(width: width, height: 30)
-            .overlay(alignment: .leading) {
-                Circle()
-                    .fill(.white)
-                    .overlay(Circle()
-                        .fill(hueBar ? Color(hue: pickerHue, saturation: 1, brightness: 1) : pickedColor)
-                        .padding(4))
-                    .frame(width: 26, height: 26)
-                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
-                    .offset(x: (width - 26) * value)
+    /// 色盘本体：点哪格就是哪个颜色，白框滑到那一格
+    private func colorGrid(width: CGFloat) -> some View {
+        let cell = width / CGFloat(Self.gridColumns)
+        return VStack(spacing: 0) {
+            ForEach(0..<Self.gridRows, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(0..<Self.gridColumns, id: \.self) { col in
+                        let index = row * Self.gridColumns + col
+                        Rectangle()
+                            .fill(Self.gridColor(index))
+                            .frame(width: cell, height: cell)
+                            .contentShape(Rectangle())
+                            .onTapGesture { pickGridColor(index) }
+                    }
+                }
             }
-            .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0).onChanged { v in
-                let t = min(max(v.location.x / width, 0), 1)
-                if hueBar { pickerHue = t } else { pickerShade = t }
-            })
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(alignment: .topLeading) {
+            // 选中框画在裁切外面，角上的格子才不会被圆角切掉一半；白框外面再描一圈暗边，选白色时也看得见
+            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                .strokeBorder(.white, lineWidth: 3)
+                .background(RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .stroke(Color.black.opacity(0.35), lineWidth: 1))
+                .frame(width: cell + 4, height: cell + 4)
+                .offset(x: CGFloat(pickerCell % Self.gridColumns) * cell - 2,
+                        y: CGFloat(pickerCell / Self.gridColumns) * cell - 2)
+                .animation(.spring(duration: 0.25, bounce: 0.2), value: pickerCell)
+                .allowsHitTesting(false)
+        }
+    }
+
+    /// 点一格：换成这个颜色，停一下让人看到白框移过去，再自己缩回按钮
+    private func pickGridColor(_ index: Int) {
+        FeedbackManager.shared.tap()
+        pickerCell = index
+        usingCustom = true
+        eraserOn = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            guard pickerOpen else { return }
+            withAnimation(Self.pickerSpring) { pickerOpen = false }
+        }
     }
 
     private var drawingCanvas: some View {

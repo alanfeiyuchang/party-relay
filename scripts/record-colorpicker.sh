@@ -47,7 +47,7 @@ grep -q "Recording started" "$RECLOG" || { cat "$RECLOG"; echo "✗ 等了 120 �
 sleep 1
 SIMCTL_CHILD_SCREENSHOT_MODE=drawpicker SIMCTL_CHILD_SCREENSHOT_LANG=zh \
   xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
-# App 里的时间线（DrawView drawpicker）：2.0s 展开 → 3.4s 拖色相 → 5.2s 收起
+# App 里的时间线（DrawView drawpicker）：2.0s 展开 → 3.6s 点橙色格子 → 3.85s 自己收起
 if command -v ffmpeg >/dev/null; then
   sleep 12      # 冷启动也留足余量，多录的部分后面会裁掉
 else
