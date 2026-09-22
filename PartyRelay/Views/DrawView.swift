@@ -569,7 +569,12 @@ struct DrawView: View {
 /// 自选色按钮在画布坐标系里的位置，色盘靠它决定从哪儿长出来
 struct SwatchRectKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
+    /// 只有自选色按钮会写这个值。没写的兄弟视图（比如排在后面、里面有 ForEach 的色盘层）会带着默认的 .zero
+    /// 一起参与合并，直接 value = nextValue() 的话按钮的位置会被 .zero 盖掉，色盘就一直不显示
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        let next = nextValue()
+        if next != .zero { value = next }
+    }
 }
 
 // MARK: - 色盘的水滴变形
