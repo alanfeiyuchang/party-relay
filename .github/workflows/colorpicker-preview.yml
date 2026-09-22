@@ -4,6 +4,8 @@ on:
   push:
     branches: [claude/colorpicker-preview]
   workflow_dispatch:
+permissions:
+  contents: write   # 下面要把录屏结果推到 colorpicker-output 分支
 jobs:
   record:
     runs-on: macos-15
@@ -18,3 +20,18 @@ jobs:
         with:
           name: colorpicker
           path: Screenshots/colorpicker/
+      # 产物 zip 放在 blob 存储上，有些环境下载不了；再推一份到单独的分支，git fetch 就能拿到
+      - name: Push output to colorpicker-output branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          cp Screenshots/colorpicker/* "$tmp"/
+          cd "$tmp"
+          git init -q -b colorpicker-output
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "colorpicker output for ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:colorpicker-output
