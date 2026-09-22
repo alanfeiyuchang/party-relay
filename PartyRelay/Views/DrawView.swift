@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 import Combine
 
 // MARK: - 笔画模型
@@ -48,16 +47,29 @@ struct DrawView: View {
     @State private var selectedColor: Color = .black
     @State private var selectedWidth: CGFloat = 6
     @State private var eraserOn = false        // 橡皮：白底画布上用白色笔刷擦，撤销/清空照常生效
-    @State private var customColor: Color = .purple   // 自选色，默认紫色 = 原来第六格的颜色
     @State private var usingCustom = false            // 当前笔是不是自选色（别拿 Color 相等去判断，自选色可能恰好等于某个预设色）
-    @State private var showColorPicker = false
+    @State private var pickerOpen = false
+    @State private var pickerHue: Double = 0.78       // 默认紫，跟原来第六格的颜色对齐
+    @State private var pickerShade: Double = 0.33     // 0 = 白，0.5 = 纯色，1 = 黑
+    @State private var swatchRect: CGRect = .zero     // 自选色按钮在画布坐标系里的位置，色盘从这里长出来、也缩回这里
 
     static let palette: [Color] = [.black, .red, .blue, .green, .orange]
     static let widths: [CGFloat] = [3, 6, 12]
     /// 橡皮比画笔粗一圈，不然擦得太慢
     static let eraserScale: CGFloat = 2.5
 
-    private var brushColor: Color { eraserOn ? .white : selectedColor }
+    /// 色盘展开/收起用同一条弹簧，两个方向的手感才对称
+    static let pickerSpring: Animation = .spring(response: 0.42, dampingFraction: 0.82)
+    static let panelHeight: CGFloat = 172
+
+    /// 一条色带走完「白 → 纯色 → 黑」，一个手指就能调深浅
+    static func customColor(hue: Double, shade: Double) -> Color {
+        shade <= 0.5 ? Color(hue: hue, saturation: shade * 2, brightness: 1)
+                     : Color(hue: hue, saturation: 1, brightness: 2 - shade * 2)
+    }
+    private var pickedColor: Color { Self.customColor(hue: pickerHue, shade: pickerShade) }
+
+    private var brushColor: Color { eraserOn ? .white : (usingCustom ? pickedColor : selectedColor) }
     private var brushWidth: CGFloat { eraserOn ? selectedWidth * Self.eraserScale : selectedWidth }
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -90,11 +102,16 @@ struct DrawView: View {
                     showCanvas = true
                 }
                 if m == "drawpicker" {
-                    // 先停一秒让录屏拍到画布，再模拟点了自选色按钮
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        selectedColor = customColor
+                    // 录屏脚本用：停一下 → 展开 → 拖一下色相 → 收起，两个动画都录进去
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                         usingCustom = true
-                        showColorPicker = true
+                        withAnimation(Self.pickerSpring) { pickerOpen = true }
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+                        withAnimation(.easeInOut(duration: 0.9)) { pickerHue = 0.05 }
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.2) {
+                        withAnimation(Self.pickerSpring) { pickerOpen = false }
                     }
                 }
             }
@@ -228,7 +245,18 @@ struct DrawView: View {
 
     // MARK: 画布界面（只有作画工具 + 收起画布）
 
+    static let canvasSpace = "drawCanvas"
+
     private var canvasBody: some View {
+        ZStack {
+            canvasStack
+            colorPickerLayer
+        }
+        .coordinateSpace(name: Self.canvasSpace)
+        .onPreferenceChange(SwatchRectKey.self) { swatchRect = $0 }
+    }
+
+    private var canvasStack: some View {
         VStack(spacing: 10) {
             HStack(spacing: 12) {
                 HomeExitButton()
@@ -275,22 +303,26 @@ struct DrawView: View {
                             eraserOn = false          // 选颜色 = 切回画笔
                         }
                 }
-                // 自选色：彩虹外圈 + 中间是当前自选的颜色，点一下选中它并弹出系统选色框
+                // 自选色：彩虹外圈 + 中间是当前自选的颜色，点一下选中它并展开色盘
                 Circle()
                     .fill(AngularGradient(colors: [.red, .yellow, .green, .cyan, .blue, .purple, .red],
                                           center: .center))
                     .overlay(Circle().fill(.white).padding(3))
-                    .overlay(Circle().fill(customColor).padding(5))
+                    .overlay(Circle().fill(pickedColor).padding(5))
                     .frame(width: 26, height: 26)
                     .overlay(Circle()
                         .stroke(.blue, lineWidth: (!eraserOn && usingCustom) ? 3 : 0)
                         .padding(-3))
+                    // 量一下按钮在画布里的位置，色盘就是从这个圆长出来的
+                    .background(GeometryReader { g in
+                        Color.clear.preference(key: SwatchRectKey.self,
+                                               value: g.frame(in: .named(DrawView.canvasSpace)))
+                    })
                     .onTapGesture {
                         FeedbackManager.shared.tap()
-                        selectedColor = customColor
                         usingCustom = true
                         eraserOn = false
-                        showColorPicker = true
+                        withAnimation(Self.pickerSpring) { pickerOpen.toggle() }
                     }
                     .accessibilityLabel(Text(L("draw.custom_color")))
                 // 橡皮：当成第七支「笔」，跟颜色互斥
@@ -351,15 +383,104 @@ struct DrawView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 10)
         }
-        // 选色框半屏弹出，上半截画布还露着，边拖边能看到颜色
-        .sheet(isPresented: $showColorPicker) {
-            SystemColorPicker(color: $customColor) { showColorPicker = false }
-                .presentationDetents([.medium, .large])
-                .ignoresSafeArea()
+    }
+
+    // MARK: 色盘（从按钮变形展开，点完成或点别处缩回按钮）
+
+    /// 遮罩 + 色盘。色盘一直在视图树里，只是尺寸/位置/圆角在按钮和面板之间插值，
+    /// 所以展开和收起是同一段连续动画，不是两个转场拼起来的。
+    private var colorPickerLayer: some View {
+        GeometryReader { geo in
+            let panelWidth = geo.size.width - 24
+            let target = CGRect(x: 12,
+                                y: max(swatchRect.minY - 14 - Self.panelHeight, 12),
+                                width: panelWidth,
+                                height: Self.panelHeight)
+            let box = pickerOpen ? target : swatchRect
+            let radius = pickerOpen ? 22 : max(box.width / 2, 1)
+
+            ZStack {
+                // 点画布上别的地方也收起
+                Color.black.opacity(pickerOpen ? 0.18 : 0)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(pickerOpen)
+                    .onTapGesture { closePicker() }
+
+                pickerPanel(width: panelWidth)
+                    .frame(width: panelWidth, height: Self.panelHeight)   // 内容始终按最终尺寸布局，动画里只是被裁掉
+                    .opacity(pickerOpen ? 1 : 0)
+                    .animation(.easeOut(duration: 0.16), value: pickerOpen)
+                    .frame(width: max(box.width, 1), height: max(box.height, 1))
+                    .background(
+                        RoundedRectangle(cornerRadius: radius, style: .continuous)
+                            .fill(.white)
+                            .shadow(color: .black.opacity(pickerOpen ? 0.18 : 0), radius: 14, y: 6)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+                    .opacity(pickerOpen ? 1 : 0)
+                    .position(x: box.midX, y: box.midY)
+                    .allowsHitTesting(pickerOpen)
+            }
         }
-        .onChange(of: customColor) { _, newColor in
-            if usingCustom { selectedColor = newColor }
+    }
+
+    private func closePicker() {
+        FeedbackManager.shared.tap()
+        withAnimation(Self.pickerSpring) { pickerOpen = false }
+    }
+
+    private func pickerPanel(width: CGFloat) -> some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Circle()
+                    .fill(pickedColor)
+                    .frame(width: 26, height: 26)
+                    .overlay(Circle().stroke(Color(.systemGray4), lineWidth: 1))
+                Text(L("draw.custom_color"))
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button(action: closePicker) {
+                    Text(L("draw.done"))
+                        .font(.subheadline.bold())
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(Color(.systemGray6)))
+                }
+                .buttonStyle(.plain)
+            }
+            spectrumBar(width: width - 28, hueBar: true)
+            spectrumBar(width: width - 28, hueBar: false)
         }
+        .padding(14)
+    }
+
+    /// 上面一条选色相，下面一条选深浅；拖到哪儿画笔就立刻变成哪个颜色
+    private func spectrumBar(width: CGFloat, hueBar: Bool) -> some View {
+        let value = hueBar ? pickerHue : pickerShade
+        let fill: LinearGradient = hueBar
+            ? LinearGradient(colors: (0...12).map { Color(hue: Double($0) / 12, saturation: 1, brightness: 1) },
+                             startPoint: .leading, endPoint: .trailing)
+            : LinearGradient(colors: [.white, Self.customColor(hue: pickerHue, shade: 0.5), .black],
+                             startPoint: .leading, endPoint: .trailing)
+        return Capsule()
+            .fill(fill)
+            .frame(width: width, height: 30)
+            .overlay(alignment: .leading) {
+                Circle()
+                    .fill(.white)
+                    .overlay(Circle()
+                        .fill(hueBar ? Color(hue: pickerHue, saturation: 1, brightness: 1) : pickedColor)
+                        .padding(4))
+                    .frame(width: 26, height: 26)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .offset(x: (width - 26) * value)
+            }
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0).onChanged { v in
+                let t = min(max(v.location.x / width, 0), 1)
+                if hueBar { pickerHue = t } else { pickerShade = t }
+            })
     }
 
     private var drawingCanvas: some View {
@@ -423,39 +544,10 @@ struct DrawView: View {
     }
 }
 
-// MARK: - 系统选色框
+// MARK: - 按钮位置
 
-/// UIColorPickerViewController 的 SwiftUI 包装：拖动时实时回写颜色，点右上角 × 关闭。
-/// 不用 SwiftUI 的 ColorPicker，是因为它的色块样式定死了，塞不进这排 26pt 的圆形工具栏。
-struct SystemColorPicker: UIViewControllerRepresentable {
-    @Binding var color: Color
-    var onDone: () -> Void
-
-    func makeUIViewController(context: Context) -> UIColorPickerViewController {
-        let vc = UIColorPickerViewController()
-        vc.supportsAlpha = false          // 白底画布上半透明没意义，还会跟橡皮搞混
-        vc.selectedColor = UIColor(color)
-        vc.delegate = context.coordinator
-        return vc
-    }
-
-    func updateUIViewController(_ vc: UIColorPickerViewController, context: Context) {
-        context.coordinator.parent = self
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator(self) }
-
-    final class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
-        var parent: SystemColorPicker
-        init(_ parent: SystemColorPicker) { self.parent = parent }
-
-        func colorPickerViewController(_ viewController: UIColorPickerViewController,
-                                       didSelect color: UIColor, continuously: Bool) {
-            parent.color = Color(uiColor: color)
-        }
-
-        func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
-            parent.onDone()
-        }
-    }
+/// 自选色按钮在画布坐标系里的位置，色盘靠它决定从哪儿长出来
+struct SwatchRectKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
 }

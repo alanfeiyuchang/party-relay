@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 录「画布 → 弹出选色框」的动画：编译 → 启动模拟器 → 录屏 → 截图 → 转 GIF
+# 录「点自选色 → 色盘从按钮展开 → 拖色相 → 收起缩回按钮」的完整动画
 # 用法：scripts/record-colorpicker.sh   （不需要打开 Xcode，也不用手点模拟器）
-# 产出：Screenshots/colorpicker/{colorpicker.mov, colorpicker.png, colorpicker.gif(有 ffmpeg 时)}
+# 产出：Screenshots/colorpicker/colorpicker.mp4（没有 ffmpeg 时是 .mov）+ colorpicker.png
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -23,6 +23,7 @@ if [[ -z "$UDID" ]]; then
 fi
 xcrun simctl bootstatus "$UDID" -b >/dev/null
 
+# 动画要看清楚，关掉模拟器的「减弱动态效果」之类的干扰并保持满帧
 xcrun simctl install "$UDID" build/Debug-iphonesimulator/PartyRelay.app
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 
@@ -32,14 +33,16 @@ REC=$!
 sleep 1.5
 SIMCTL_CHILD_SCREENSHOT_MODE=drawpicker SIMCTL_CHILD_SCREENSHOT_LANG=zh \
   xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
-sleep 5            # 启动 + 1 秒停顿 + 选色框弹出动画
-xcrun simctl io "$UDID" screenshot "$OUT/colorpicker.png" >/dev/null
-sleep 1
+sleep 3                                   # 启动 + 1.2s 停顿 + 展开动画
+xcrun simctl io "$UDID" screenshot "$OUT/colorpicker.png" >/dev/null   # 展开后的静态图
+sleep 4                                   # 拖色相 + 收起动画
 kill -INT "$REC"; wait "$REC" 2>/dev/null || true
 
+# .mov 手机上也能放，但转成 mp4 更通用
 if command -v ffmpeg >/dev/null; then
   ffmpeg -loglevel error -y -i "$OUT/colorpicker.mov" \
-    -vf "fps=20,scale=390:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse" \
-    "$OUT/colorpicker.gif"
+    -vf "scale=-2:1280" -c:v libx264 -pix_fmt yuv420p -movflags +faststart \
+    "$OUT/colorpicker.mp4"
+  rm -f "$OUT/colorpicker.mov"
 fi
 echo "✅ 完成：$OUT"; ls -la "$OUT"

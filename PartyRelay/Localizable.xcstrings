@@ -642,6 +642,23 @@
         }
       }
     },
+    "draw.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
     "draw.eraser": {
       "extractionState": "manual",
       "localizations": {
