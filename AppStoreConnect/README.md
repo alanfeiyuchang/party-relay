@@ -45,10 +45,12 @@ screenshot of the app inside a phone mockup — nothing here shows mocked-up or 
   catch-up/comeback system, the privacy guard, the round recap), meant to fill screenshot
   slots #2–6 in order.
 
-> **Check before uploading for 1.1:** Emoji Manager is shelved in this release, so drop
-> any slide that shows it. The `whats_new.txt` / `description.txt` / `promotional_text.txt`
-> files in `en/` and `zh-Hans/` are already updated for 1.1 and are generated from
-> `SUBMISSION.md` — edit there, not here, so the two never drift apart.
+> **Check before uploading for 1.3:** Emoji Manager is still shelved, so drop any slide
+> that shows it. None of these slides show the new mode picker or Take Turns yet — raw
+> captures are in `Screenshots/modes-*` (see `SUBMISSION.md` → Screenshots). The
+> `whats_new.txt` / `description.txt` / `promotional_text.txt` files in `en/` and `zh-Hans/`
+> are already updated for 1.3 and are generated from `SUBMISSION.md` — edit there, not
+> here, so the two never drift apart.
 
 If Apple's current upload portal asks for a different largest-device size (e.g. 6.9" /
 1320×2868 for the newest Pro Max), bump `W, H` in `scripts/gen_promo.py` and re-run

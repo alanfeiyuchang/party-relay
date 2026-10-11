@@ -17,6 +17,12 @@ enum ScreenshotMode {
         store.settings.totalRounds = 6
         // 截图都按对战模式拍，轮流模式的几张在下面单独切过去
         store.settings.playMode = mode.hasPrefix("rotation") ? .rotation : .match
+        if mode.hasPrefix("rotation") || mode == "menu" {
+            // 新加的这几张不吃模拟器里残留的设置：玩法全开、每人 60 秒
+            store.settings.enabled = Set(GameKind.allCases)
+            store.settings.roundSeconds = 60
+            store.settings.privacyGuardOn = false
+        }
 
         switch mode {
         case "menu":

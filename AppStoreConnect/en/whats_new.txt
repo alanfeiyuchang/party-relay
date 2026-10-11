@@ -1,12 +1,12 @@
-NEW: QUICK MODE
-Not enough people for two teams? Turn on Quick Mode in Settings — no teams, no scores, just one spin and one round, then a tally of how many words you got.
+NEW: TAKE TURNS
+A third way to play, where everyone scores for themselves. Add your players — give each a name and an avatar, drag them into seating order — and the phone goes round the circle, starting from someone picked at random. On your turn you spin for a game and give the clues. The other players' names sit around the word: tap whoever guessed, and you both get a point. Once everyone has had a go, a leaderboard shows who's on top, split into acting and guessing points.
 
-REBUILT WORD BANKS
-• Every word bank was rewritten and cleaned out. Obscure idioms, hard-to-place names and odd descriptive phrases that were never really "words" are gone — what's left is real words, common idioms, well-known sayings, and titles people actually recognise.
-• The hidden difficulty ramp is gone too. Each game now draws from a single pool, sized to how fast that game plays, so easier games have far more words and matches stay fresh much longer.
-• The English word banks grew from 120 entries per game to as many as 1,157.
+PICK A MODE ON THE HOME SCREEN
+Team Battle, Quick Mode and Take Turns are now three cards on the home screen. Quick Mode no longer hides in Settings.
+
+PAUSE
+The in-game Home button is now Pause. It stops the clock, and lets you restart the current turn with fresh words (handy after a mis-tap) or end the game.
 
 POLISH
-• Two games got new colours so the wheel never looks like it's naming a team.
-• Buttons that call out a team now wear that team's colour.
-• Tidier home screen.
+• Tidier layouts on larger screens.
+• The handoff button now just says Start.

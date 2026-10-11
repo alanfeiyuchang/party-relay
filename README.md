@@ -1,14 +1,25 @@
 # 🎉 派对接力 · PartyRelay
 
-A local, offline, pass-the-phone party game for two teams. SwiftUI · iOS 17+ · zero dependencies, zero network calls.
+A local, offline, pass-the-phone party game. SwiftUI · iOS 17+ · zero dependencies, zero network calls.
 
-Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words before the timer runs out, and let the built-in catch-up system quietly keep a blowout from turning into a boring rest of the night. Short on people? **Quick Mode** drops the teams and scoring entirely and plays a single round.
+The home screen offers three modes:
+
+- **Team Battle** — Red Team vs Blue Team: spin the wheel for a game, race to guess words before the timer runs out, and let the built-in catch-up system quietly keep a blowout from turning into a boring rest of the night.
+- **Quick Mode** — no teams, no scores, one spin and one round.
+- **Take Turns** — everyone plays for themselves: the phone goes round the circle, the other players' names surround the word, and tapping whoever guessed scores a point for them and for the performer.
 
 <p align="center">
   <img src="Screenshots/3-en-home.png" width="220" alt="Home screen">
   <img src="Screenshots/4-en-wheel.png" width="220" alt="Spin the wheel">
   <img src="Screenshots/7-en-scoreboard.png" width="220" alt="Scoreboard with recap">
   <img src="Screenshots/9-en-pickmode.png" width="220" alt="Catch-up game picker, tinted in the picking team's colour">
+</p>
+
+<p align="center">
+  <img src="Screenshots/modes-menu-en.png" width="220" alt="Home screen: pick Team Battle, Quick Mode or Take Turns">
+  <img src="Screenshots/modes-rotationhome-en.png" width="220" alt="Take Turns setup: player count, names and avatars">
+  <img src="Screenshots/modes-rotation-en.png" width="220" alt="Take Turns: the other players' names arc around the word">
+  <img src="Screenshots/modes-rotationresult-en.png" width="220" alt="Take Turns: leaderboard after everyone has had a turn">
 </p>
 
 <p align="center">
@@ -29,11 +40,23 @@ Split into Red Team vs Blue Team, spin the wheel for a game, race to guess words
   <img src="Screenshots/hof-5-cover-name-en.png" width="220" alt="Hall of Fame: the assigned name">
 </p>
 
-More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas, Emoji Manager, Hall of Fame) are in [`Screenshots/`](Screenshots).
+More screenshots (Chinese UI, settings, Open Buzz, privacy guard, drawing canvas, Emoji Manager, Hall of Fame, every Take Turns screen in both languages) are in [`Screenshots/`](Screenshots).
 
 ---
 
 ## Gameplay
+
+### Three modes
+
+The app opens on a mode picker. Each card leads to that mode's setup page (team names, player list, game tags, Start / Settings); a **Modes** button in its top-left corner goes back to the picker.
+
+| Mode | Teams | Scoring | Games on the wheel |
+|---|---|---|---|
+| ⚔️ **Team Battle** | Red vs Blue | Small points → big points over 3–10 rounds (or small-score mode) | All five, plus Open Buzz |
+| ⚡️ **Quick Mode** | None | None — a tally of one round | The four single-team games |
+| 🔄 **Take Turns** | None — 2–12 players | Per player: performer and guesser both +1 | The four single-team games |
+
+Hall of Fame and Open Buzz both need an opposing team, so the two no-team modes hide them from the wheel, the home tags and the settings list. If that would leave nothing to play (say only Hall of Fame was enabled), Say & Guess is switched back on so the wheel is never empty. The last mode picked is remembered.
 
 ### The games
 
@@ -80,9 +103,25 @@ Flip **"Decide the winner by small score"** in Settings and big points disappear
 
 ### Quick Mode — no teams, one round
 
-Flip **Quick Mode** on in Settings and the match structure goes away: *Start Game* spins once, plays a single round, and shows how many words the group got plus a recap of what came up. There are no teams, no scores and no handoff to an opponent, so the home screen drops the team cards, the round count, and the small-score toggle while it's on.
+Pick **Quick Mode** on the home screen and the match structure goes away: *Start Game* spins once, plays a single round, and shows how many words the group got plus a recap of what came up. There are no teams, no scores and no handoff to an opponent, so the setup page has no team cards or round count, and Settings hides the round count and the small-score toggle.
 
-Hall of Fame and Open Buzz both need an opposing team, so Quick Mode hides them from the wheel, the home tags and the settings list — the pool is exactly the single-team games you have switched on. If that would leave nothing to play (say you had only Hall of Fame enabled), Say & Guess is switched back on so the wheel is never empty. Turning Quick Mode off restores the full two-team match exactly as it was.
+### 🔄 Take Turns — everyone scores for themselves
+
+**Setup.** Set the player count (2–12) with − / +. Each player is a coloured pill with an avatar and a name:
+
+- **Tap** a pill and it grows into an edit card: rename, pick one of 12 avatars (each avatar comes with its own colour, so avatars someone else is using are greyed out — two players in the same colour would be hard to tell apart in the ring), or delete. A name still at its default ("Player 3") follows the avatar number when the avatar changes.
+- The **✕** on a pill removes that player directly.
+- **Long-press and drag** a pill to change the seating order. Others make room as you drag.
+
+Players are stored by identity rather than position, so removing or moving someone never shifts anyone else's avatar or colour. Names, avatars and order are remembered for next time.
+
+**A round.** *Start Game* picks a random first player, then goes round in seating order, wrapping from the last player back to the first, until everyone has performed once. Each turn: the handoff screen ("Pass the phone to …") → that player spins the wheel → 3-2-1 → their turn. When only one game is enabled the wheel is skipped.
+
+**During a turn** there is no "got it" button. The other players' names sit in two arcs above and below the word card — the ends curve in towards the card and tilt slightly, like people sat round a table. Tapping a name means that person guessed it: they get +1, the performer gets +1, a "+1" floats off the name and the next word comes up. Skip works as usual. Draw & Guess puts the same ring round its word card (the drawing canvas is unchanged).
+
+**Between turns** the next handoff recaps the previous turn — points scored and every word, each one that was guessed tagged with who guessed it.
+
+**After everyone has gone**, a leaderboard ranks all players by total score (ties share a rank; medals for the top three), with each total split into acting and guessing points. *Another round* keeps the scores and starts again from the same first player; *Back to home* resets them.
 
 ### Handoff countdown + word recap
 
@@ -106,25 +145,26 @@ When enabled in Settings, the word card only shows while the phone is held uprig
 
 ### Settings
 
-- **Quick Mode** on/off (see above) — sits at the top because it decides which of the rows below are even shown.
 - Toggle any game off (Open Buzz stays available as long as ≥1 game it can re-spin into is on) — the wheel rebuilds its sectors immediately. The same toggles are reachable from the home screen: tap any game tag to read its rules and add/remove it from the wheel; excluded games show greyed out.
-- Total rounds: 3–10 (default 6). *Hidden in Quick Mode — it only ever plays one round.*
-- Turn length: 30–600s in 30s steps.
+- Total rounds: 3–10 (default 6). *Team Battle only.*
+- Turn length: 30–600s in 30s steps (labelled per round in Quick Mode, per player in Take Turns).
 - Emoji Manager bonus time: 0–120s in 10s steps (default 30). Added on top of the turn length, for that game only. *Hidden while Emoji Manager is shelved.*
 - Skips per turn: 0–10 (default 3).
-- Small-score win mode on/off (see above). *Hidden in Quick Mode — nothing is scored.*
+- Small-score win mode on/off (see above). *Team Battle only.*
 - Privacy guard on/off.
 - Haptics + sound effects on/off (global switch).
 
 When exactly one regular game is enabled, spinning would be pointless — the wheel is skipped entirely and the match drops straight into that game (Open Buzz doesn't count here, since landing on it only re-spins for a real game).
 
-### Getting out mid-match
+### Pause: restart the turn, or end the game
 
-Every in-game screen has a **Home** button in the top-left corner. It asks for confirmation first ("Return to home? The current game's progress will be lost."), so a stray tap can't wipe a match in progress.
+Every in-game screen has a **Pause** button in the top-left corner. It opens a "Paused" dialog — **End game** (back to the setup page; the match's progress is lost) or **Resume** — so a stray tap can't wipe a match in progress.
+
+While a turn is actually running (the guessing screen of any timed game), the dialog also offers **Restart this turn**, and the clock stops for as long as the dialog is open. Restarting sends the same team / player back to their handoff screen with the same game: the timer resets, this turn's points are thrown away (Team Battle and Quick Mode only bank points when a turn ends; Take Turns rolls back each point it already awarded), and the words already shown stay used up, so the retry gets fresh ones.
 
 ### Localization
 
-Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String Catalog — no hardcoded UI text. Word banks are independently authored per language (not machine-translated) and switch automatically with the app language. Toggle language from the 🌐 button on the home screen; it takes effect instantly across the whole app.
+Fully bilingual (English / Simplified Chinese) via a native `.xcstrings` String Catalog — no hardcoded UI text. Word banks are independently authored per language (not machine-translated) and switch automatically with the app language. Toggle language from the 🌐 button on the mode picker or any setup page; it takes effect instantly across the whole app.
 
 ---
 
@@ -152,8 +192,8 @@ Everything is hand-curated against each game's constraints (describable nouns/id
 ```
 PartyRelay/
 ├── PartyRelayApp.swift        # App entry point
-├── Models.swift                # Team / GameKind / GameSettings / CatchUp / RoundOutcome / Phase
-├── GameStore.swift              # Central state machine: rounds, scoring, catch-up, word dispatch
+├── Models.swift                # Team / PlayMode / Player / GameKind / GameSettings / CatchUp / RoundOutcome / Phase
+├── GameStore.swift              # Central state machine: modes, rounds, scoring, catch-up, Take Turns, word dispatch
 ├── Localization.swift           # AppLanguage + LanguageManager (loads the right .lproj bundle)
 ├── Localizable.xcstrings        # All user-facing strings, en + zh-Hans
 ├── MotionManager.swift          # CoreMotion posture detection (upright/flat) for the privacy guard
@@ -162,7 +202,9 @@ PartyRelay/
 ├── ScreenshotMode.swift         # SCREENSHOT_MODE env var → jump straight to any screen (for automation)
 ├── Words/                       # Per-game word banks, zh + en, one pool each
 └── Views/
-    ├── HomeView, SettingsView    # Landing page (+ team setup) and settings sheet
+    ├── ModeMenuView               # Mode picker the app opens on
+    ├── HomeView, SettingsView    # Setup page for the chosen mode, and the settings sheet
+    ├── RotationViews              # Take Turns: player setup + edit card, name ring, handoff, leaderboard
     ├── WheelView                 # Spinning wheel, Open Buzz respin, catch-up game picker
     ├── HandoffView                # "pass the phone" screen: countdown + recap of the words just played
     ├── HallOfFameView              # Hall of Fame: private name reveals, split screen, cover pages
@@ -222,5 +264,5 @@ SIMCTL_CHILD_SCREENSHOT_MODE=<mode> SIMCTL_CHILD_SCREENSHOT_LANG=<zh|en> \
   xcrun simctl launch booted com.partyrelay.app
 ```
 
-`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `home`, `wheel`, `handoff`, `pick`, `pickfirst`, `openbuzz`, `act`, `privacy`, `draw`, `drawcanvas`, `drawpicker`, `emoji`, `emojiguess`, `hof`, `hofpeek`, `hofsplit`, `hofname`, `hofreveal`, `hofscore`, `scoreboard`, `smallboard`, `result`, `settings`, `gametag`, `exitconfirm`, `victory`, `smallvictory`.
+`SCREENSHOT_MODE` values (see `ScreenshotMode.swift`): `menu`, `home`, `rotationhome`, `rotation`, `rotationhandoff`, `rotationresult`, `wheel`, `handoff`, `pick`, `pickfirst`, `openbuzz`, `act`, `privacy`, `draw`, `drawcanvas`, `drawpicker`, `emoji`, `emojiguess`, `hof`, `hofpeek`, `hofsplit`, `hofname`, `hofreveal`, `hofscore`, `scoreboard`, `smallboard`, `result`, `settings`, `gametag`, `exitconfirm`, `victory`, `smallvictory`.
 `SCREENSHOT_LANG` forces `zh` or `en` regardless of the simulator's system language.

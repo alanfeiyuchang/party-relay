@@ -1,32 +1,32 @@
-PartyRelay turns any get-together into a game night — no extra equipment, no account, no ads, no internet required. Split into two teams, pass one phone back and forth, and race the clock.
+PartyRelay turns any get-together into a game night — no extra equipment, no account, no ads, no internet required. Pass one phone around and race the clock: as two teams, as one group, or taking turns with everyone scoring for themselves.
 
-HOW IT WORKS
-Spin the wheel to pick a game. Both teams play the exact same round, one after the other — whoever guesses more words wins the round and takes the point. Simple to explain in ten seconds, chaotic and hilarious in practice.
+THREE WAYS TO PLAY
+Team Battle — split into two teams and spin the wheel to pick a game. Both teams play the exact same round, one after the other — whoever guesses more words wins the round and takes the point. Simple to explain in ten seconds, chaotic and hilarious in practice.
+Quick Mode — not enough people for two teams? No teams, no scores: one spin, one round, then a tally of how many you got.
+Take Turns — everyone plays for themselves. Add the players and the phone goes round the circle: each person spins for a game and gives the clues while everyone else guesses. There's no "got it" button — the other players' names sit around the word, and tapping whoever guessed gives a point to them and to the clue-giver. When everyone has had a turn, the leaderboard shows who's on top.
 
-FIVE WAYS TO PLAY
-Say & Guess — describe the word out loud (without saying the word itself) while your team shouts out guesses.
-Draw & Guess — sketch it on the in-app canvas, no letters or numbers allowed, teammates guess from your doodle.
-Lip Reading — mouth the word with zero sound and see if your team can read your lips.
+FIVE GAMES ON THE WHEEL
+Say & Guess — describe the word out loud (without saying the word itself) while everyone shouts out guesses.
+Draw & Guess — sketch it on the in-app canvas, no letters or numbers allowed, and let the others guess from your doodle.
+Lip Reading — mouth the word with zero sound and see if anyone can read your lips.
 Charades — act it out with gestures alone.
-Hall of Fame — both teams play at once with no timer: each team is secretly given a famous name, then you take turns asking yes/no questions until someone cracks the other team's name.
+Hall of Fame (Team Battle) — both teams play at once with no timer: each team is secretly given a famous name, then you take turns asking yes/no questions until someone cracks the other team's name.
 
 OPEN BUZZ
-Land on this wheel sector and things get spicy: it picks one of the timed games above, but now the OTHER team can jump in and steal a point for anything your team misses. Nobody gets to zone out on their turn.
-
-QUICK MODE
-Not enough people to split into two teams? Turn on Quick Mode: no teams, no scores — one spin, one round, then a tally of how many you got. Turn it back off and everything returns to the full two-team match.
+In Team Battle, land on this wheel sector and things get spicy: it picks one of the timed games above, but now the OTHER team can jump in and steal a point for anything your team misses. Nobody gets to zone out on their turn.
 
 BUILT FOR CLOSE, FUN MATCHES
 PartyRelay quietly keeps blowouts from ruining the night — a team that falls behind gets a friendly boost (more time, extra skips) so the game stays fun for everyone until the last round, without ever feeling unfair or obvious about it.
 
 THOUGHTFUL EXTRAS
-• A recap after every round shows exactly which words came up, so arguments about "wait, was that really the word?" settle themselves.
+• A recap after every turn shows exactly which words came up (and in Take Turns, who guessed each one), so arguments about "wait, was that really the word?" settle themselves.
+• Pause any turn: restart it with fresh words if something went wrong, or end the game.
 • Optional privacy guard: hold the phone up to see the word, lay it flat to hide it automatically — perfect for passing hand to hand mid-round.
 • Fully bilingual: switch between English and Simplified Chinese instantly, with word lists written natively for each language (not machine-translated).
 • Thousands of hand-picked words per game — every entry is a real word, idiom, saying or title, so nobody gets stuck on something that isn't actually a thing.
-• Customize team names and emoji, round count, turn length, haptics, and sound — all from one settings screen.
+• Customize team names, player names and avatars, round count, turn length, haptics, and sound.
 
 NO CATCH
 PartyRelay is completely offline. No sign-up, no ads, no in-app purchases, no data collection, no network access of any kind. Just open it and start playing.
 
-Perfect for family game night, parties, icebreakers, road trips, and any time two teams and a timer sound more fun than a phone in everyone's own hands.
+Perfect for family game night, parties, icebreakers, road trips, and any time a timer and a few friends sound more fun than a phone in everyone's own hands.
