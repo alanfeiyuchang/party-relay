@@ -63,6 +63,7 @@ struct VictoryView: View {
                         .foregroundStyle(.white.opacity(0.85))
                         .padding(.bottom, 30)
                 }
+                .pageFrame()
 
                 ConfettiView()
                     .allowsHitTesting(false)

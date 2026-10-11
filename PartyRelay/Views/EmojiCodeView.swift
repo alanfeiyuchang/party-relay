@@ -68,7 +68,7 @@ struct EmojiCodeView: View {
         .onDisappear { motion.stop() }
         .onReceive(timer) { _ in
             // 拼表情和猜词都在同一块表上，中间不停
-            guard remaining > 0 else { return }
+            guard remaining > 0, !store.turnPaused else { return }
             remaining -= 1
             if remaining == 0 {
                 FeedbackManager.shared.timeUp()
@@ -125,6 +125,7 @@ struct EmojiCodeView: View {
 
             actionButtons
         }
+        .pageFrame()
     }
 
     /// 词条：防偷窥放平时整条换成遮挡样式，页面高度不跳
@@ -206,7 +207,16 @@ struct EmojiCodeView: View {
                                         font: .title3.bold()))
             .disabled(code.isEmpty)
 
-            if store.openBuzz {
+            if store.isRotation {
+                // 轮流模式：点猜对的那个人
+                GuesserStrip { guesser in
+                    FeedbackManager.shared.correct()
+                    ownPoints += 1
+                    store.creditGuess(by: guesser)
+                    nextRiddle(guessed: true, mark: false)
+                }
+                .padding(.horizontal, -20)   // 外层已经有左右边距
+            } else if store.openBuzz {
                 HStack(spacing: 10) {
                     correctButton(compactLabel: true)
                     Button {
@@ -309,11 +319,12 @@ struct EmojiCodeView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 18)
         }
+        .pageFrame()
     }
 
     /// 换词：结算当前词、清空表情、回到看词界面。下一个词重新拿到完整的 30 秒
-    private func nextRiddle(guessed: Bool) {
-        store.markCurrentWord(guessed: guessed)
+    private func nextRiddle(guessed: Bool, mark: Bool = true) {
+        if mark { store.markCurrentWord(guessed: guessed) }
         word = store.nextWord()
         code = ""
         showDisplay = false

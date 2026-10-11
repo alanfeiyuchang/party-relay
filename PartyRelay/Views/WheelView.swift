@@ -12,7 +12,7 @@ struct WheelView: View {
 
     /// 第一次转：全部启用扇区；二次转：只在「可被抢答」的普通玩法里转（名人堂不参与抢答）
     private var games: [GameKind] {
-        if store.soloMode { return store.soloGamePool }
+        if !store.playMode.hasTeams { return store.soloGamePool }
         return isRespin ? store.settings.openBuzzPool : store.settings.wheelList
     }
 
@@ -23,6 +23,9 @@ struct WheelView: View {
 
     private var titleText: String {
         if store.soloMode { return L("wheel.solo_subtitle") }
+        if store.isRotation {
+            return L("wheel.rotation_subtitle", "\(store.performer.emoji) \(store.performer.name)")
+        }
         if let picker = pickMode {
             return L("wheel.pick_title", "\(store.teams[picker].emoji) \(store.teams[picker].name)")
         }
@@ -44,77 +47,85 @@ struct WheelView: View {
             }
             VStack(spacing: 12) {
                 HomeExitBar()
+                VStack(spacing: 12) {
 
-                // 顶部：轮次信息
-                VStack(spacing: 6) {
-                    Text(store.soloMode ? L("wheel.solo_title")
-                         : store.isOvertime ? L("wheel.overtime")
-                         : L("wheel.round", store.roundNumber, store.totalRounds))
-                        .font(.subheadline.bold())
-                        .foregroundStyle(store.soloMode ? .teal : store.isOvertime ? .orange : .secondary)
-                    Text(titleText)
-                        .font(.system(size: pickMode != nil ? 20 : 26, weight: .black, design: .rounded))
-                        .foregroundStyle(titleColor)
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
-                }
-                .padding(.top, 16)
-
-                Spacer(minLength: 4)
-
-                if let picker = pickMode {
-                    // 追分特权：隐藏转盘，直接选玩法
-                    PickGamePanel(teamIndex: picker)
-                } else {
-                    // 转盘
-                    ZStack {
-                        WheelCanvas(games: games)
-                            .rotationEffect(.degrees(rotation))
-                            .frame(width: 310, height: 310)
-
-                        Triangle()
-                            .fill(Color(red: 0.95, green: 0.26, blue: 0.37))
-                            .frame(width: 34, height: 40)
-                            .shadow(radius: 3, y: 2)
-                            .offset(y: -167)
-
-                        Button {
-                            spin()
-                        } label: {
-                            Text(spinning ? "🎲" : L("wheel.spin"))
-                                .font(.system(size: 22, weight: .black, design: .rounded))
-                                .minimumScaleFactor(0.5)
-                                .foregroundStyle(.white)
-                                .frame(width: 80, height: 80)
-                                .background(
-                                    Circle()
-                                        .fill(LinearGradient(colors: isRespin ? GameKind.quiz.colors : [.pink, .purple],
-                                                             startPoint: .top, endPoint: .bottom))
-                                        .shadow(color: .purple.opacity(0.5), radius: 8, y: 4)
-                                )
-                                .overlay(Circle().stroke(.white, lineWidth: 4))
-                        }
-                        .disabled(spinning)
-                    }
-                }
-
-                Spacer(minLength: 4)
-
-                // 大分横条（不分队快速局没有比分）
-                HStack(spacing: 10) {
-                    ForEach(store.soloMode ? [] : store.teams) { team in
-                        Text(L(store.smallScoreWin ? "wheel.score_chip_small" : "wheel.score_chip",
-                               "\(team.emoji) \(team.name)", store.matchScore(team.id)))
+                    // 顶部：轮次信息
+                    VStack(spacing: 6) {
+                        Text(store.soloMode ? L("wheel.solo_title")
+                             : store.isRotation ? L("rotation.progress", store.rotationCycle,
+                                                    store.rotationTurn + 1, store.players.count)
+                             : store.isOvertime ? L("wheel.overtime")
+                             : L("wheel.round", store.roundNumber, store.totalRounds))
                             .font(.subheadline.bold())
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(Capsule().fill(team.gradient))
+                            .foregroundStyle(store.soloMode ? AnyShapeStyle(Color.teal)
+                                             : store.isRotation ? AnyShapeStyle(store.performer.colors[0])
+                                             : store.isOvertime ? AnyShapeStyle(Color.orange)
+                                             : AnyShapeStyle(Color.secondary))
+                        Text(titleText)
+                            .font(.system(size: pickMode != nil ? 20 : 26, weight: .black, design: .rounded))
+                            .foregroundStyle(titleColor)
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
                     }
+                    .padding(.top, 16)
+
+                    Spacer(minLength: 4)
+
+                    if let picker = pickMode {
+                        // 追分特权：隐藏转盘，直接选玩法
+                        PickGamePanel(teamIndex: picker)
+                    } else {
+                        // 转盘
+                        ZStack {
+                            WheelCanvas(games: games)
+                                .rotationEffect(.degrees(rotation))
+                                .frame(width: 310, height: 310)
+
+                            Triangle()
+                                .fill(Color(red: 0.95, green: 0.26, blue: 0.37))
+                                .frame(width: 34, height: 40)
+                                .shadow(radius: 3, y: 2)
+                                .offset(y: -167)
+
+                            Button {
+                                spin()
+                            } label: {
+                                Text(spinning ? "🎲" : L("wheel.spin"))
+                                    .font(.system(size: 22, weight: .black, design: .rounded))
+                                    .minimumScaleFactor(0.5)
+                                    .foregroundStyle(.white)
+                                    .frame(width: 80, height: 80)
+                                    .background(
+                                        Circle()
+                                            .fill(LinearGradient(colors: isRespin ? GameKind.quiz.colors : [.pink, .purple],
+                                                                 startPoint: .top, endPoint: .bottom))
+                                            .shadow(color: .purple.opacity(0.5), radius: 8, y: 4)
+                                    )
+                                    .overlay(Circle().stroke(.white, lineWidth: 4))
+                            }
+                            .disabled(spinning)
+                        }
+                    }
+
+                    Spacer(minLength: 4)
+
+                    // 大分横条（不分队快速局没有比分）
+                    HStack(spacing: 10) {
+                        ForEach(store.playMode.hasTeams ? store.teams : []) { team in
+                            Text(L(store.smallScoreWin ? "wheel.score_chip_small" : "wheel.score_chip",
+                                   "\(team.emoji) \(team.name)", store.matchScore(team.id)))
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(Capsule().fill(team.gradient))
+                        }
+                    }
+                    .padding(.bottom, 20)
                 }
-                .padding(.bottom, 20)
+                .pageFrame()
             }
 
             // 停盘弹卡
@@ -348,8 +359,14 @@ private struct GameCardOverlay: View {
     /// 按钮文案点名了哪支队，按钮就穿那支队的队色——白底按钮会让人以为
     /// 颜色代表玩法。两队一起上和不分队快速局没有「那支队」，仍旧白底。
     private var goingTeam: Team? {
-        guard !store.soloMode, !game.isSimultaneous else { return nil }
+        guard store.playMode.hasTeams, !game.isSimultaneous else { return nil }
         return store.teams[store.firstTeamIndex]
+    }
+
+    /// 按钮底色：对战看上场队，轮流看表演者，其余白底
+    private var buttonColors: [Color]? {
+        if store.isRotation { return store.performer.colors }
+        return goingTeam?.colors
     }
 
     var body: some View {
@@ -378,6 +395,7 @@ private struct GameCardOverlay: View {
                 }
 
                 Text(L(store.soloMode ? "gamecard.info_solo"
+                       : store.isRotation ? "gamecard.info_rotation"
                        : game.isSimultaneous ? "gamecard.info_together" : "gamecard.info_plain"))
                     .font(.caption.bold())
                     .foregroundStyle(.white)
@@ -390,13 +408,14 @@ private struct GameCardOverlay: View {
                     onContinue()
                 } label: {
                     Text(store.soloMode ? L("gamecard.solo_go")
+                         : store.isRotation ? L("gamecard.rotation_go", store.performer.name)
                          : game.isSimultaneous ? L("gamecard.together_go")
                          : L("gamecard.first_go", store.teams[store.firstTeamIndex].name))
                 }
-                .buttonStyle(BigButtonStyle(colors: goingTeam?.colors ?? [.white.opacity(0.95), .white],
-                                            textColor: goingTeam == nil ? game.colors[0] : .white,
+                .buttonStyle(BigButtonStyle(colors: buttonColors ?? [.white.opacity(0.95), .white],
+                                            textColor: buttonColors == nil ? game.colors[0] : .white,
                                             font: .title3.bold(),
-                                            shadowedText: goingTeam != nil))
+                                            shadowedText: buttonColors != nil))
             }
             .padding(26)
             .background(

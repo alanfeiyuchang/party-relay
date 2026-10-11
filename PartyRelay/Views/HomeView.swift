@@ -1,18 +1,58 @@
 import SwiftUI
 
-/// 主界面：红蓝两队（队名可编辑）+ 开始游戏 / 设置 + 右上角语言切换
+/// 准备页（启动页选完模式后进来）：
+/// - 对战：红蓝两队（队名可编辑）
+/// - 快速：不分队，只看玩法
+/// - 轮流：先定人数，再给每个人起名
+/// 下面都是玩法标签 + 开始游戏 / 设置；左上角回模式选择，右上角语言切换
+///
+/// 布局按可用空间挑，不按设备型号挑：
+/// - 宽而扁（iPhone Duo 内屏横放 951×669pt）：两栏，左「谁在玩」右「玩什么」，
+///   两栏等宽、各自垂直居中，富余的高度均分成上下留白
+/// - 其余形态（手机竖屏、Duo 外屏、内屏竖放、分屏窄条）：单栏限宽居中
 struct HomeView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject var langManager = LanguageManager.shared
     @Binding var showSettings: Bool
     @State private var infoGame: GameKind?
-    @Environment(\.horizontalSizeClass) private var hSize
+    /// 轮流模式：正在编辑的玩家（卡片从他的胶囊里展开）
+    @State private var editingPlayer: UUID?
+    @Namespace private var playerCards
+
+    private enum Metrics {
+        /// 低于这个宽度排两栏会把按钮和标签挤扁
+        static let twoColumnMinWidth: CGFloat = 700
+        static let columnMaxWidth: CGFloat = 400
+        static let singleMaxWidth: CGFloat = 520
+        /// 语言按钮距屏幕上沿的距离
+        static let langTopPadding: CGFloat = 18
+        /// 给浮在右上角的语言按钮让出的高度
+        static let topInset: CGFloat = 68
+        /// 开始/设置按钮距屏幕下沿的距离：贴着底边最好按，但要留出手势条的位置
+        static let actionsBottomPadding: CGFloat = 12
+    }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             PartyBackground()
-            FittingScroll {
-                layout
+
+            FittingScroll { size in
+                layout(for: size)
+            }
+
+            // 顶栏两个按钮浮在上面，不参与排版。它们要是排进内容流里，
+            // 矮屏上就会连着整列内容一起被挤出屏幕（Duo 内屏上出过这个问题）。
+            HStack {
+                modeBackButton
+                Spacer()
+                LanguageToggleButton()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, Metrics.langTopPadding)
+
+            if let id = editingPlayer {
+                PlayerEditCard(playerID: id, namespace: playerCards) { editingPlayer = nil }
+                    .zIndex(1)
             }
 
             // 玩法说明 + 加入/移出转盘（与设置页共用同一份开关状态）
@@ -28,73 +68,77 @@ struct HomeView: View {
         }
     }
 
-    /// 宽屏（iPhone Duo 内屏、iPad 分屏）排两栏：左边队伍，右边玩法和按钮。
-    /// 竖屏手机维持原来的单栏。两种都放在 FittingScroll 里，装不下就滚，不会把顶栏挤出屏幕。
-    @ViewBuilder private var layout: some View {
-        if hSize == .regular {
-            // 两栏各自垂直居中，而不是一栏贴顶、另一栏把按钮压到最底。
-            // 内屏是横着的 951x669pt，内容只占得满宽度占不满高度；先前左栏吊在上半、
-            // 右栏的开始/设置被弹簧推到屏底，中间就空出一大片，读起来像没排完。
-            // 居中之后两栏彼此对着，多出来的高度分到上下，成为页边距。
-            VStack(spacing: 12) {
-                langBar
-                HStack(alignment: .center, spacing: 12) {
-                    VStack(spacing: 12) {
-                        Spacer(minLength: 0)
-                        titleBlock
-                        teamCards
-                        infoRow
-                        Spacer(minLength: 0)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    VStack(spacing: 16) {
-                        Spacer(minLength: 0)
-                        gameTags
-                        actions
-                        Spacer(minLength: 0)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
+    @ViewBuilder private func layout(for size: CGSize) -> some View {
+        if size.width >= Metrics.twoColumnMinWidth, size.width > size.height {
+            wideLayout
         } else {
-            VStack(spacing: 12) {
-                langBar
-                titleBlock
-                teamCards
-                infoRow
-                // 不分队时上面少了两张队名卡，补个弹簧把玩法一览顶回视觉中心
-                if store.soloMode { Spacer(minLength: 0) }
-                gameTags
-                Spacer(minLength: 0)
-                actions
-            }
+            narrowLayout
         }
     }
 
-    /// 顶栏：语言切换按钮（右上角）
-    private var langBar: some View {
-        HStack {
-            Spacer()
-            Button {
-                FeedbackManager.shared.tap()
-                langManager.toggle()
-                store.syncTeamNamesToLanguage()
-            } label: {
-                Label(langManager.language.toggleLabel, systemImage: "globe")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(
-                        Capsule().fill(LinearGradient(colors: [.indigo, .purple],
-                                                      startPoint: .leading, endPoint: .trailing))
-                            .shadow(color: .purple.opacity(0.35), radius: 5, y: 2)
-                    )
+    /// 宽扁屏：两栏对着排，共用一条底线。
+    /// 底部对齐既让两栏看着是一组，又把「开始游戏」放在低处，握着手机时拇指够得到。
+    private var wideLayout: some View {
+        HStack(alignment: .bottom, spacing: 32) {
+            VStack(spacing: 16) {
+                titleBlock
+                teamCards
+                playerSetup
+                infoRow
             }
+            .frame(maxWidth: Metrics.columnMaxWidth)
+
+            VStack(spacing: 20) {
+                gameTags
+                actions
+            }
+            .frame(maxWidth: Metrics.columnMaxWidth)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 6)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 32)
+        .padding(.top, Metrics.topInset)
+        .padding(.bottom, Metrics.actionsBottomPadding)
+    }
+
+    /// 单栏：手机竖屏、Duo 外屏、内屏竖放、分屏窄条都走这条。
+    /// 上半部分（标题～玩法标签）在剩余空间里居中，开始/设置固定贴在底部——
+    /// 主操作放在拇指最容易够到的地方，屏幕越高越明显。
+    private var narrowLayout: some View {
+        VStack(spacing: 16) {
+            VStack(spacing: 12) {
+                titleBlock
+                teamCards
+                playerSetup
+                infoRow
+                // 固定间隔，不用弹簧——弹簧会把这块内容按屏幕高度拉散
+                Spacer().frame(height: 22)
+                gameTags
+            }
+            .frame(maxWidth: Metrics.singleMaxWidth)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            actions
+                .frame(maxWidth: Metrics.singleMaxWidth)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, Metrics.topInset)
+        .padding(.bottom, Metrics.actionsBottomPadding)
+    }
+
+    /// 回到模式三选一
+    private var modeBackButton: some View {
+        Button {
+            FeedbackManager.shared.tap()
+            store.backToMenu()
+        } label: {
+            Label(L("home.change_mode"), systemImage: "chevron.left")
+                .font(.subheadline.bold())
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(.white.opacity(0.85)))
+        }
+        .accessibilityIdentifier("changeMode")
     }
 
     private var titleBlock: some View {
@@ -107,8 +151,7 @@ struct HomeView: View {
                     LinearGradient(colors: [.pink, .orange, .purple],
                                    startPoint: .leading, endPoint: .trailing)
                 )
-            Text(L(store.soloMode ? "home.subtitle_solo"
-                   : store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle"))
+            Text(subtitle)
                 .font(.subheadline.bold())
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -116,9 +159,17 @@ struct HomeView: View {
         }
     }
 
-    /// 两支队伍（可编辑队名）。快速模式不分队，队名卡和总轮数都没有意义
+    private var subtitle: String {
+        switch store.playMode {
+        case .match:    return L(store.settings.smallScoreWin ? "home.subtitle_small" : "home.subtitle")
+        case .quick:    return L("home.subtitle_solo")
+        case .rotation: return L("home.subtitle_rotation")
+        }
+    }
+
+    /// 两支队伍（可编辑队名）。只有对战模式分队
     @ViewBuilder private var teamCards: some View {
-        if !store.soloMode {
+        if store.playMode == .match {
             VStack(spacing: 14) {
                 ForEach($store.teams) { $team in
                     TeamCard(team: $team)
@@ -128,16 +179,30 @@ struct HomeView: View {
         }
     }
 
+    /// 轮流模式：人数 + 每个人的名字
+    @ViewBuilder private var playerSetup: some View {
+        if store.isRotation {
+            // 与下面玩法标签、开始按钮同宽
+            PlayerSetupPanel(editing: $editingPlayer, namespace: playerCards)
+                .padding(.horizontal, 28)
+        }
+    }
+
     private var infoRow: some View {
         HStack(spacing: 18) {
-            if store.soloMode {
-                Label(L("home.solo_badge"), systemImage: "bolt.fill")
-                    .foregroundStyle(.teal)
-            } else {
+            switch store.playMode {
+            case .match:
                 Label(L("home.rounds", store.settings.totalRounds),
                       systemImage: "arrow.triangle.2.circlepath")
+            case .quick:
+                Label(L("home.solo_badge"), systemImage: "bolt.fill")
+                    .foregroundStyle(PlayMode.quick.colors[0])
+            case .rotation:
+                Label(L("home.rotation_badge"), systemImage: "arrow.triangle.2.circlepath")
+                    .foregroundStyle(PlayMode.rotation.colors[0])
             }
-            Label(L(store.soloMode ? "home.seconds_solo" : "home.seconds_per_turn",
+            Label(L(store.playMode == .match ? "home.seconds_per_turn"
+                    : store.isRotation ? "home.seconds_rotation" : "home.seconds_solo",
                     store.settings.roundSeconds),
                   systemImage: "timer")
         }
@@ -185,8 +250,8 @@ struct HomeView: View {
             .buttonStyle(BigButtonStyle(colors: [Color(.systemGray2), Color(.systemGray)],
                                         font: .headline))
         }
+        // 底部留白统一由 Metrics.actionsBottomPadding 控制，这里不再另加
         .padding(.horizontal, 28)
-        .padding(.bottom, 16)
     }
 }
 

@@ -81,6 +81,7 @@ struct SoloResultView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 30)
             }
+            .pageFrame()
         }
         .onAppear {
             FeedbackManager.shared.roundSettle()

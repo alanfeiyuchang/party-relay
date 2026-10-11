@@ -43,7 +43,7 @@ struct PlayView: View {
         }
         .onDisappear { motion.stop() }
         .onReceive(timer) { _ in
-            guard started, remaining > 0 else { return }
+            guard started, remaining > 0, !store.turnPaused else { return }
             remaining -= 1
             if remaining == 0 {
                 FeedbackManager.shared.timeUp()
@@ -59,21 +59,24 @@ struct PlayView: View {
     private var readyBody: some View {
         VStack(spacing: 24) {
             HomeExitBar()
-            Spacer()
-            Text("\(game.emoji) \(game.title)")
-                .font(.system(size: 34, weight: .black, design: .rounded))
-                .foregroundStyle(game.gradient)
-            if store.openBuzz {
-                OpenBuzzBadge()
+            VStack(spacing: 24) {
+                Spacer()
+                Text("\(game.emoji) \(game.title)")
+                    .font(.system(size: 34, weight: .black, design: .rounded))
+                    .foregroundStyle(game.gradient)
+                if store.openBuzz {
+                    OpenBuzzBadge()
+                }
+                Text("\(countdown)")
+                    .font(.system(size: 110, weight: .black, design: .rounded))
+                    .foregroundStyle(game.gradient)
+                    .contentTransition(.numericText(countsDown: true))
+                Spacer()
             }
-            Text("\(countdown)")
-                .font(.system(size: 110, weight: .black, design: .rounded))
-                .foregroundStyle(game.gradient)
-                .contentTransition(.numericText(countsDown: true))
-            Spacer()
+            .pageFrame()
         }
         .onReceive(timer) { _ in
-            guard !started else { return }
+            guard !started, !store.turnPaused else { return }
             if countdown > 1 {
                 FeedbackManager.shared.countdownTick()
                 withAnimation { countdown -= 1 }
@@ -94,6 +97,8 @@ struct PlayView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(store.soloMode
                          ? "\(game.emoji) \(game.title)"
+                         : store.isRotation
+                         ? "\(store.performer.emoji) \(store.performer.name)"
                          : "\(store.playingTeam.emoji) \(store.playingTeam.name)")
                         .font(.headline)
                         .lineLimit(1)
@@ -118,20 +123,22 @@ struct PlayView: View {
                 CatchUpBanner(catchUp: store.catchUp, teamName: store.playingTeam.name)
             }
 
-            Spacer()
-
-            // 词卡 / 防窥屏（姿态驱动）
-            if wordVisible {
-                wordCard
+            if store.isRotation {
+                // 轮流模式：其他人的名字围着词，谁猜对点谁，没有单独的猜对按钮
+                Spacer(minLength: 0)
+                GuesserRing(onGuess: creditGuess) { wordOrPrivacy }
+                Spacer(minLength: 0)
             } else {
-                PrivacyCard(game: game)
+                Spacer()
+                wordOrPrivacy
+                Spacer()
             }
-
-            Spacer()
 
             // 操作按钮
             VStack(spacing: 10) {
-                if store.openBuzz {
+                if store.isRotation {
+                    EmptyView()
+                } else if store.openBuzz {
                     HStack(spacing: 10) {
                         Button {
                             FeedbackManager.shared.correct()
@@ -178,6 +185,16 @@ struct PlayView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
         }
+        .pageFrame()
+    }
+
+    /// 词卡 / 防窥屏（姿态驱动）
+    @ViewBuilder private var wordOrPrivacy: some View {
+        if wordVisible {
+            wordCard
+        } else {
+            PrivacyCard(game: game)
+        }
     }
 
     private var wordCard: some View {
@@ -199,7 +216,8 @@ struct PlayView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 42)
+        // 轮流模式上下还要排两圈名字，词卡压矮一点
+        .padding(.vertical, store.isRotation ? 28 : 42)
         .padding(.horizontal, 20)
         .background(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
@@ -218,8 +236,20 @@ struct PlayView: View {
         }
     }
 
+    /// 轮流模式：表演者点了某个人的名字
+    private func creditGuess(_ guesser: UUID) {
+        FeedbackManager.shared.correct()
+        ownPoints += 1
+        store.creditGuess(by: guesser)   // 两人各 +1，并把这个词记成「某某猜对」
+        showNextWord()
+    }
+
     private func advanceWord(guessed: Bool) {
         store.markCurrentWord(guessed: guessed)
+        showNextWord()
+    }
+
+    private func showNextWord() {
         word = store.nextWord()
         withAnimation(.spring(response: 0.25, dampingFraction: 0.5)) { wordBounce = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

@@ -4,7 +4,7 @@ import Combine
 @MainActor
 final class GameStore: ObservableObject {
 
-    @Published var phase: Phase = .home
+    @Published var phase: Phase = .menu
     @Published var teams: [Team] = [
         Team(id: 0, name: L("team.red"), emoji: "🦁",
              colors: [Color(red: 1.0, green: 0.35, blue: 0.37), Color(red: 1.0, green: 0.58, blue: 0.25)]),
@@ -21,6 +21,13 @@ final class GameStore: ObservableObject {
         for i in teams.indices {
             if Self.defaultTeamNames[i].contains(teams[i].name) {
                 teams[i].name = L(keys[i])
+            }
+        }
+        // 玩家的默认名（「玩家 3」/「Player 3」）同理
+        for i in players.indices {
+            let n = players[i].avatar + 1
+            if ["玩家 \(n)", "Player \(n)"].contains(players[i].name) {
+                players[i].name = Player.defaultName(players[i].avatar)
             }
         }
     }
@@ -43,12 +50,36 @@ final class GameStore: ObservableObject {
     @Published var lastOutcome: RoundOutcome?
     @Published var hofNames: [String] = ["", ""]      // 名人堂：两队各自被指定的名人
 
+    // 轮流模式：一圈人依次表演，猜对的人和表演者各 +1
+    @Published var players: [Player] = Player.load() {
+        didSet { Player.save(players) }
+    }
+    @Published var performerIndex = 0            // 当前表演者（在 players 里的下标）
+    @Published var rotationCycle = 1             // 第几圈（「再来一轮」时分数接着累计）
+    @Published var rotationTurn = 0              // 这一圈已经表演完几个人（进度「第 x/n 位」用）
+    /// 这一局从谁开始：开局随机抽，之后按座位顺序轮下去（到末尾绕回开头）
+    private var rotationStart = 0
+    /// 这一位的玩法定了没有：只开了一个玩法时交接页就定好，否则交接后去转盘
+    @Published var turnGameReady = false
+    @Published var previousTurn: RotationTurn?  // 上一位刚表演完的那一轮
+    /// 返回主页 / 重开小局的弹窗开着时停表（弹窗标题就是「暂停一下」）
+    @Published var turnPaused = false
+
+    /// 这一位表演时点过的猜对者（座位号），重开小局时按它把分撤回去
+    private var turnCredits: [Int] = []
+
     /// 出词去重历史：常驻 UserDefaults，跨对局 / 跨启动 / 跨 App 更新都不清空
     private let history = WordHistory.shared
 
-    /// 快速模式：不分红蓝、不记大分，转一次盘打一局就结束。跟着设置走，
-    /// 不再是独立的运行时状态——设置只能在主页改，不会打到一半变模式
-    var soloMode: Bool { settings.soloMode }
+    var playMode: PlayMode { settings.playMode }
+
+    /// 快速模式：不分红蓝、不记大分，转一次盘打一局就结束
+    var soloMode: Bool { playMode == .quick }
+
+    /// 轮流模式：每人轮流表演，按个人记分
+    var isRotation: Bool { playMode == .rotation }
+
+    var performer: Player { players[performerIndex] }
 
     var playingTeam: Team { teams[playingTeamIndex] }
     var opponentIndex: Int { 1 - playingTeamIndex }
@@ -83,7 +114,7 @@ final class GameStore: ObservableObject {
     /// 平衡策略：已进行轮数达到总轮数 2/3 后，落后队可直接指定玩法（不转盘）
     /// 只有一个玩法时没有可选项，直接不给这个特权
     var pickEligibleTeam: Int? {
-        guard !soloMode else { return nil }
+        guard playMode.hasTeams else { return nil }
         guard settings.soleGame == nil else { return nil }
         guard Double(completedRounds) >= Double(totalRounds) * 2.0 / 3.0 else { return nil }
         return trailingIndex
@@ -109,23 +140,69 @@ final class GameStore: ObservableObject {
         }
     }
 
-    /// 快速模式开关。打开时如果一个单队玩法都没开（比如只留了名人堂），
-    /// 补上「你说我猜」，不然进去会没有玩法可转
-    func setSoloMode(_ on: Bool) {
-        FeedbackManager.shared.tap()
-        settings.soloMode = on
+    // MARK: - 模式选择
+
+    /// 启动页选模式 → 进该模式的准备页。不分队的模式里如果一个单队玩法都没开
+    /// （比如只留了名人堂），补上「你说我猜」，不然进去会没有玩法可转
+    func chooseMode(_ mode: PlayMode) {
+        settings.playMode = mode
         ensurePlayableGame()
+        phase = .home
+    }
+
+    func backToMenu() { phase = .menu }
+
+    /// 轮流模式的人数：加人补在末尾（用没被占的头像），减人从末尾撤，前面的人不动
+    func setPlayerCount(_ count: Int) {
+        let n = min(max(count, Player.countRange.lowerBound), Player.countRange.upperBound)
+        guard n != players.count else { return }
+        if n < players.count {
+            players.removeLast(players.count - n)
+        } else {
+            for _ in players.count..<n {
+                let avatar = Player.nextFreeAvatar(in: players)
+                players.append(Player(avatar: avatar, name: Player.defaultName(avatar)))
+            }
+        }
+    }
+
+    /// 单独去掉某一个人（名字上的 ✕ / 编辑卡片里的删除）；最少留 2 个人
+    func removePlayer(id: UUID) {
+        guard players.count > Player.countRange.lowerBound else { return }
+        players.removeAll { $0.id == id }
+    }
+
+    /// 换头像：别人用着的头像不能选（头像同时决定颜色，两个人撞色在圈里就分不清了）。
+    /// 名字还是默认名的话跟着头像一起换（「玩家 3」→「玩家 7」）
+    func setAvatar(_ avatar: Int, for id: UUID) {
+        guard let i = players.firstIndex(where: { $0.id == id }),
+              !players.contains(where: { $0.avatar == avatar && $0.id != id }) else { return }
+        let keepDefault = players[i].hasDefaultName
+        players[i].avatar = avatar
+        if keepDefault { players[i].name = Player.defaultName(avatar) }
+    }
+
+    /// 拖动排序：把 id 这个人挪到 target 现在的位置
+    func movePlayer(_ id: UUID, to target: UUID) {
+        guard id != target,
+              let from = players.firstIndex(where: { $0.id == id }),
+              let to = players.firstIndex(where: { $0.id == target }) else { return }
+        players.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
     }
 
     // MARK: - 流程
 
-    /// 主页「开始游戏」：按设置里的快速模式开关分流
+    /// 准备页「开始游戏」：按选好的模式分流
     func startGame() {
-        settings.soloMode ? startSolo() : startMatch()
+        switch playMode {
+        case .match:    startMatch()
+        case .quick:    startSolo()
+        case .rotation: startRotation()
+        }
     }
 
     /// 兜底：当前模式下一个可玩玩法都没有时补上「你说我猜」。
-    /// 老存档可能只开着某个后来被下架的玩法，或「快速模式 + 只留名人堂」
+    /// 老存档可能只开着某个后来被下架的玩法，或「不分队 + 只留名人堂」
     private func ensurePlayableGame() {
         if settings.requiredPool.isEmpty { settings.enabled.insert(.describeGuess) }
     }
@@ -168,6 +245,62 @@ final class GameStore: ObservableObject {
         }
     }
 
+    // MARK: - 轮流模式
+
+    /// 从第一个人开始一整圈；分数清零
+    func startRotation() {
+        ensurePlayableGame()
+        for i in players.indices {
+            players[i].performPoints = 0
+            players[i].guessPoints = 0
+            // 改名改到一半（名字还空着）就点了开始：退回默认名
+            if players[i].name.trimmingCharacters(in: .whitespaces).isEmpty {
+                players[i].name = Player.defaultName(players[i].avatar)
+            }
+        }
+        rotationCycle = 1
+        rotationStart = Int.random(in: players.indices)
+        performerIndex = rotationStart
+        rotationTurn = 0
+        previousTurn = nil
+        beginRotationTurn()
+    }
+
+    /// 一整圈结束后「再来一轮」：分数接着累计，又从第一个人开始
+    /// 新一圈还是从开局抽到的那个人开始，顺序不变
+    func nextRotationCycle() {
+        rotationCycle += 1
+        performerIndex = rotationStart
+        rotationTurn = 0
+        previousTurn = nil
+        beginRotationTurn()
+    }
+
+    /// 轮到下一位：先交接（把手机递过去），再由他自己转盘
+    private func beginRotationTurn() {
+        beginRound()
+        turnCredits = []
+        let pool = soloGamePool
+        turnGameReady = pool.count == 1
+        if turnGameReady { gameDecided(pool[0], openBuzz: false) }
+        phase = .handoff
+    }
+
+    /// 交接页「开始」：玩法已定就直接开演，否则去转盘
+    func leaveRotationHandoff() {
+        phase = turnGameReady ? .playing : .wheel
+    }
+
+    /// 表演者点了某个人的名字：那个人猜对了，两人各 +1
+    func creditGuess(by playerID: UUID) {
+        guard let guesser = players.firstIndex(where: { $0.id == playerID }),
+              guesser != performerIndex else { return }
+        players[performerIndex].performPoints += 1
+        players[guesser].guessPoints += 1
+        turnCredits.append(guesser)
+        markCurrentWord(guessed: true, by: players[guesser].name)
+    }
+
     /// 进入玩法选择：转盘只有一种结果时（只开了一个普通玩法）直接进那个游戏，不转盘
     private func enterGameSelection() {
         if let only = settings.soleGame {
@@ -180,7 +313,12 @@ final class GameStore: ObservableObject {
 
     /// 定盘后进入正式流程：同时进行的玩法（名人堂）没有交接页，直接进自己的整局流程
     func enterDecidedGame() {
-        phase = currentGame.isSimultaneous ? .hallOfFame : .handoff
+        if isRotation {
+            // 轮流模式先交接再转盘，转完就是表演者自己拿着手机，直接开演
+            phase = .playing
+        } else {
+            phase = currentGame.isSimultaneous ? .hallOfFame : .handoff
+        }
     }
 
     private func beginRound() {
@@ -228,6 +366,25 @@ final class GameStore: ObservableObject {
     }
 
     func proceedToHandoff() { phase = .handoff }
+
+    /// 重开小局：正在玩的这一遍作废，回到交接页从头再来（同一支队 / 同一个人、同一个玩法）。
+    /// 对战和快速模式的分数要等这一遍打完才入账，丢掉这一遍出过的词就够了；
+    /// 轮流模式是点名字当场加分，要把这一遍加上的分逐个撤回。
+    /// 作废的词不会放回词池——已经被看过了，再出现就没意思了
+    func restartTurn() {
+        guard phase == .playing else { return }
+        if isRotation {
+            for g in turnCredits where players.indices.contains(g) {
+                players[performerIndex].performPoints = max(0, players[performerIndex].performPoints - 1)
+                players[g].guessPoints = max(0, players[g].guessPoints - 1)
+            }
+            turnGameReady = true   // 玩法已经定了，不用再转一次盘
+        }
+        turnCredits = []
+        roundWords[playingTeamIndex] = []
+        turnPaused = false
+        phase = .handoff
+    }
     func startPlaying() { phase = .playing }
 
     var roundDuration: Int {
@@ -243,6 +400,18 @@ final class GameStore: ObservableObject {
 
     /// 一遍游戏结束：own=己方猜对数，stolen=开放抢答中被对方偷走的分
     func finishPlay(own: Int, stolen: Int) {
+        if isRotation {
+            // 分数在点名字时已经加过了，这里只负责轮到下一个人 / 一圈结束
+            previousTurn = RotationTurn(performer: performerIndex, points: own, words: roundWords[0])
+            if rotationTurn + 1 < players.count {
+                rotationTurn += 1
+                performerIndex = (performerIndex + 1) % players.count
+                beginRotationTurn()
+            } else {
+                phase = .rotationResult
+            }
+            return
+        }
         if soloMode {
             // 不分队：一局就是全部，直接进成绩页
             roundSmall = [own, 0]
@@ -394,6 +563,7 @@ final class GameStore: ObservableObject {
 
     func resetToHome() {
         phase = .home
+        turnPaused = false
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0
@@ -409,6 +579,15 @@ final class GameStore: ObservableObject {
         playIndex = 0
         playingTeamIndex = 0
         hofNames = ["", ""]
+        for i in players.indices {
+            players[i].performPoints = 0
+            players[i].guessPoints = 0
+        }
+        performerIndex = 0
+        rotationTurn = 0
+        rotationCycle = 1
+        previousTurn = nil
+        turnGameReady = false
     }
 
     // MARK: - 词库派发（去重历史常驻，出现过的词整池抽干前不再出现）
@@ -425,9 +604,10 @@ final class GameStore: ObservableObject {
     }
 
     /// 结算当前（最后发出的）词：猜对 / 跳过。供交接页与记分板的词语回顾区分显示
-    func markCurrentWord(guessed: Bool) {
+    func markCurrentWord(guessed: Bool, by guesser: String? = nil) {
         guard let last = roundWords[playingTeamIndex].indices.last else { return }
         roundWords[playingTeamIndex][last].guessed = guessed
+        roundWords[playingTeamIndex][last].guessedBy = guesser
     }
 
     /// 上一队刚打完那一遍出现过的词（交接页回顾用；只在换手时有意义）

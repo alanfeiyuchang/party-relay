@@ -125,6 +125,7 @@ struct HandoffView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 36)
             }
+            .pageFrame()
         }
         .onAppear {
             waitLeft = needsWait ? GameSettings.handoffCountdown : 0

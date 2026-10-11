@@ -130,7 +130,7 @@ struct DrawView: View {
         }
         .onDisappear { motion.stop() }
         .onReceive(timer) { _ in
-            guard remaining > 0 else { return }
+            guard remaining > 0, !store.turnPaused else { return }
             remaining -= 1
             if remaining == 0 {
                 FeedbackManager.shared.timeUp()
@@ -170,34 +170,16 @@ struct DrawView: View {
                 CatchUpBanner(catchUp: store.catchUp, teamName: store.playingTeam.name)
             }
 
-            Spacer()
-
-            if wordHiddenByGuard {
-                PrivacyCard(game: game)
+            if store.isRotation {
+                // 轮流模式：其他人的名字围着词，谁猜对点谁
+                Spacer(minLength: 0)
+                GuesserRing(onGuess: creditGuess) { wordCard }
+                Spacer(minLength: 0)
             } else {
-                VStack(spacing: 12) {
-                    Text(L("draw.artist_only"))
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.white.opacity(0.85))
-                    Text(word)
-                        .font(.system(size: word.count > 6 ? 40 : 54, weight: .black, design: .rounded))
-                        .foregroundStyle(.white)
-                        .minimumScaleFactor(0.4)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 38)
-                .padding(.horizontal, 20)
-                .background(
-                    RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(game.gradient)
-                        .shadow(color: game.colors[0].opacity(0.45), radius: 14, y: 6)
-                )
-                .padding(.horizontal, 24)
+                Spacer()
+                wordCard
+                Spacer()
             }
-
-            Spacer()
 
             // 开始作画 + 计分按钮（只在看词界面）
             VStack(spacing: 10) {
@@ -209,7 +191,9 @@ struct DrawView: View {
                 }
                 .buttonStyle(BigButtonStyle(colors: game.colors))
 
-                if store.openBuzz {
+                if store.isRotation {
+                    EmptyView()
+                } else if store.openBuzz {
                     HStack(spacing: 10) {
                         correctButton(compactLabel: true)
                         Button {
@@ -241,6 +225,43 @@ struct DrawView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 18)
         }
+    }
+
+    /// 词卡 / 防窥屏
+    @ViewBuilder private var wordCard: some View {
+        if wordHiddenByGuard {
+            PrivacyCard(game: game)
+        } else {
+            VStack(spacing: 12) {
+                Text(L("draw.artist_only"))
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white.opacity(0.85))
+                Text(word)
+                    .font(.system(size: word.count > 6 ? 40 : 54, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .minimumScaleFactor(0.4)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            // 轮流模式上下还要排两圈名字，词卡压矮一点
+            .padding(.vertical, store.isRotation ? 26 : 38)
+            .padding(.horizontal, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 32, style: .continuous)
+                    .fill(game.gradient)
+                    .shadow(color: game.colors[0].opacity(0.45), radius: 14, y: 6)
+            )
+            .padding(.horizontal, 24)
+        }
+    }
+
+    /// 轮流模式：表演者点了某个人的名字，两人各 +1，换下一个词
+    private func creditGuess(_ guesser: UUID) {
+        FeedbackManager.shared.correct()
+        ownPoints += 1
+        store.creditGuess(by: guesser)
+        nextDrawing(guessed: true, mark: false)
     }
 
     private func correctButton(compactLabel: Bool) -> some View {
@@ -556,8 +577,9 @@ struct DrawView: View {
     }
 
     /// 换词：结算当前词、清画布、回到看词界面
-    private func nextDrawing(guessed: Bool) {
-        store.markCurrentWord(guessed: guessed)
+    /// mark = false：这个词已经记过账了（轮流模式点名字时连猜对的人一起记了）
+    private func nextDrawing(guessed: Bool, mark: Bool = true) {
+        if mark { store.markCurrentWord(guessed: guessed) }
         word = store.nextWord()
         strokes.removeAll()
         currentStroke = nil

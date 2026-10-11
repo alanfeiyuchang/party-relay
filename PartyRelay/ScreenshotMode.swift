@@ -15,10 +15,45 @@ enum ScreenshotMode {
         store.teams[0].name = L("team.red")
         store.teams[1].name = L("team.blue")
         store.settings.totalRounds = 6
+        // 截图都按对战模式拍，轮流模式的几张在下面单独切过去
+        store.settings.playMode = mode.hasPrefix("rotation") ? .rotation : .match
 
         switch mode {
+        case "menu":
+            store.phase = .menu
+
         case "home":
             store.phase = .home
+
+        case "rotationhome":
+            store.players = demoPlayers(count: 6)
+            store.phase = .home
+
+        case "rotation":
+            // 表演者看到的画面：其他人的名字围着词
+            MotionManager.debugOverride = .upright
+            store.settings.privacyGuardOn = false
+            store.players = demoPlayers(count: 6, scored: true)
+            store.performerIndex = 2
+            store.rotationTurn = 2
+            store.currentGame = .act
+            store.openBuzz = false
+            store.phase = .playing
+
+        case "rotationhandoff":
+            // 交给下一位，附上一位的回顾（谁猜出了哪个词）
+            store.players = demoPlayers(count: 6, scored: true)
+            store.performerIndex = 3
+            store.rotationTurn = 3
+            store.currentGame = .describeGuess
+            store.turnGameReady = false
+            store.previousTurn = RotationTurn(performer: 2, points: 4, words: demoRotationWords(store.players))
+            store.phase = .handoff
+
+        case "rotationresult":
+            store.players = demoPlayers(count: 6, scored: true)
+            store.rotationCycle = 1
+            store.phase = .rotationResult
 
         case "wheel":
             store.teams[0].score = 2
@@ -247,6 +282,29 @@ enum ScreenshotMode {
                   ("tug of war", false), ("photographer", true), ("sneeze", true)]
                : [("刷牙", true), ("宇航员", false), ("跳舞", true), ("杂技", true),
                   ("拔河", false), ("摄影师", true), ("打喷嚏", true)])
+    }
+
+    /// 轮流模式的演示玩家（scored = 打过几轮、带分数）
+    static func demoPlayers(count: Int, scored: Bool = false) -> [Player] {
+        let names = LanguageManager.shared.language == .en
+            ? ["Alex", "Sam", "Mia", "Leo", "Zoe", "Max"]
+            : ["小明", "阿杰", "莉莉", "大伟", "小雨", "欧阳"]
+        let points: [(Int, Int)] = [(5, 3), (2, 4), (4, 2), (3, 3), (1, 5), (2, 1)]
+        return (0..<count).map { i in
+            var p = Player(avatar: i, name: names[i % names.count])
+            if scored { (p.performPoints, p.guessPoints) = points[i % points.count] }
+            return p
+        }
+    }
+
+    /// 轮流模式一位表演完的词：猜对的词后面记着是谁猜的
+    static func demoRotationWords(_ players: [Player]) -> [PlayedWord] {
+        let words: [(String, Int?)] = LanguageManager.shared.language == .en
+            ? [("brush teeth", 0), ("astronaut", nil), ("dance", 4), ("juggling", 1), ("sneeze", 0)]
+            : [("刷牙", 0), ("宇航员", nil), ("跳舞", 4), ("杂技", 1), ("打喷嚏", 0)]
+        return words.map { w, by in
+            PlayedWord(text: w, guessed: by != nil, guessedBy: by.map { players[$0].name })
+        }
     }
 
     /// 一轮里两队各自出现过的词（记分板 / 结算页回顾用）

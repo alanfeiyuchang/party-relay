@@ -7,17 +7,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // 快速模式：不分队、只打一局。放在最上面，它决定下面显示哪些玩法
-                Section {
-                    Toggle(isOn: Binding(get: { store.settings.soloMode },
-                                         set: { store.setSoloMode($0) })) {
-                        Label(L("settings.solo_mode"), systemImage: "bolt.fill")
-                    }
-                    .tint(.teal)
-                } footer: {
-                    Text(L("settings.solo_footer"))
-                }
-
                 // 玩法开关
                 Section {
                     ForEach(store.settings.relevantGames) { kind in
@@ -44,13 +33,14 @@ struct SettingsView: View {
                 } header: {
                     Text(L("settings.games_header"))
                 } footer: {
-                    Text(L(store.settings.soloMode ? "settings.games_footer_solo" : "settings.games_footer"))
+                    Text(L(store.playMode.hasTeams ? "settings.games_footer"
+                           : store.isRotation ? "settings.games_footer_rotation" : "settings.games_footer_solo"))
                 }
 
                 // 赛制
                 Section(L("settings.match_header")) {
-                    // 快速模式只打一局，总轮数用不上
-                    if !store.settings.soloMode {
+                    // 只有对战模式打多轮；快速一局、轮流每人一次，总轮数用不上
+                    if store.playMode.hasTeams {
                         Stepper(value: $store.settings.totalRounds, in: 3...10) {
                             HStack {
                                 Text(L("settings.total_rounds"))
@@ -64,7 +54,8 @@ struct SettingsView: View {
                             in: GameSettings.roundSecondsRange,
                             step: GameSettings.roundSecondsStep) {
                         HStack {
-                            Text(L(store.settings.soloMode ? "settings.turn_length_solo" : "settings.turn_length"))
+                            Text(L(store.playMode.hasTeams ? "settings.turn_length"
+                                   : store.isRotation ? "settings.turn_length_rotation" : "settings.turn_length_solo"))
                             Spacer()
                             Text(L("settings.seconds_value", store.settings.roundSeconds))
                                 .foregroundStyle(.secondary)
@@ -99,15 +90,14 @@ struct SettingsView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(L("settings.rules_title")).font(.subheadline.bold())
-                        Text(L(store.settings.soloMode ? "settings.rules_body_solo"
-                               : store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"))
+                        Text(L(rulesKey))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                // 计分制：小分制（无大分，累计小分定胜负）。快速模式不记分，藏起来
-                if !store.settings.soloMode {
+                // 计分制：小分制（无大分，累计小分定胜负）。只有对战模式有队伍比分
+                if store.playMode.hasTeams {
                     Section {
                         Toggle(isOn: $store.settings.smallScoreWin) {
                             Label(L("settings.small_score_win"), systemImage: "sum")
@@ -149,6 +139,14 @@ struct SettingsView: View {
         }
         .onChange(of: store.settings.feedbackOn) {
             FeedbackManager.shared.isEnabled = store.settings.feedbackOn
+        }
+    }
+
+    private var rulesKey: String {
+        switch store.playMode {
+        case .match:    return store.settings.smallScoreWin ? "settings.rules_body_small" : "settings.rules_body"
+        case .quick:    return "settings.rules_body_solo"
+        case .rotation: return "settings.rules_body_rotation"
         }
     }
 }

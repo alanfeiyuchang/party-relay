@@ -8,12 +8,14 @@ struct RootView: View {
     var body: some View {
         Group {
             switch store.phase {
+            case .menu:
+                ModeMenuView()
             case .home:
                 HomeView(showSettings: $showSettings)
             case .wheel:
                 WheelView()
             case .handoff:
-                HandoffView()
+                if store.isRotation { RotationHandoffView() } else { HandoffView() }
             case .playing:
                 switch store.currentGame {
                 case .drawGuess:  DrawView()
@@ -24,6 +26,8 @@ struct RootView: View {
                 HallOfFameView()
             case .soloResult:
                 SoloResultView()
+            case .rotationResult:
+                RotationResultView()
             case .roundResult:
                 RoundResultView()
             case .scoreboard:

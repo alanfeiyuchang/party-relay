@@ -217,12 +217,15 @@ struct HomeExitButton: View {
     var light: Bool = false
     @State private var showConfirm = false
 
+    /// 只有正在猜词的那一遍能重开；转盘、交接、结算页上没有「小局」可重开
+    private var canRestartTurn: Bool { store.phase == .playing }
+
     var body: some View {
         Button {
             FeedbackManager.shared.tap()
             showConfirm = true
         } label: {
-            Label(L("common.back_home"), systemImage: "house.fill")
+            Label(L("common.pause"), systemImage: "pause.fill")
                 .font(.caption.bold())
                 .foregroundStyle(light ? .white : Color.secondary)
                 .padding(.horizontal, 12)
@@ -235,15 +238,26 @@ struct HomeExitButton: View {
                 )
         }
         .accessibilityIdentifier("backHome")
-        // 用 alert 而不是 confirmationDialog：alert 一定会同时显示「取消」按钮
-        .alert(L("exit.confirm_title"), isPresented: $showConfirm) {
+        // 用 alert 而不是 confirmationDialog：alert 一定会同时显示「取消」按钮。
+        // 一遍正在进行时（计时已经开始）多给一个「重开小局」
+        .alert(L("exit.paused_title"), isPresented: $showConfirm) {
+            if canRestartTurn {
+                Button(L("exit.restart_turn")) {
+                    FeedbackManager.shared.tap()
+                    store.restartTurn()
+                }
+            }
             Button(L("exit.confirm_action"), role: .destructive) {
                 FeedbackManager.shared.tap()
                 store.resetToHome()
             }
-            Button(L("common.cancel"), role: .cancel) {}
+            Button(L("exit.resume"), role: .cancel) {}
         } message: {
-            Text(L("exit.confirm_body"))
+            Text(L(canRestartTurn ? "exit.paused_body" : "exit.confirm_body"))
+        }
+        // 弹窗开着就停表，点「取消」回来接着计时
+        .onChange(of: showConfirm) {
+            store.turnPaused = showConfirm && canRestartTurn
         }
         .onAppear {
             guard ScreenshotMode.autoPresents("exitconfirm") else { return }
@@ -271,14 +285,27 @@ struct HomeExitBar: View {
 /// 高度够时和普通 VStack 一样（Spacer 照常把内容撑开），高度不够时整页可以滚。
 /// iPhone Duo 内屏是横着的，只有 669pt 高，按手机竖屏排的页面会溢出，顶部或底部的控件会被推出屏幕。
 struct FittingScroll<Content: View>: View {
-    @ViewBuilder var content: Content
+    /// 可用尺寸交给内容自己判断排版（宽扁排两栏、其余排单栏）
+    @ViewBuilder var content: (CGSize) -> Content
 
     var body: some View {
         GeometryReader { geo in
             ScrollView {
-                content.frame(minHeight: geo.size.height)
+                content(geo.size).frame(minHeight: geo.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
+    }
+}
+
+// MARK: - 内容限宽
+
+/// 页面内容的尺寸上限：屏幕比这更大时，多出来的空间变成四周留白，而不是把内容拉散。
+/// 没有上限的话，Duo 内屏横放会把卡片拉成横贯整屏的长条，内屏竖放 / iPad 又会在
+/// 中间豁开一大条空白（弹簧把按钮全推到屏底）。
+extension View {
+    func pageFrame(maxWidth: CGFloat = 560, maxHeight: CGFloat = 760) -> some View {
+        frame(maxWidth: maxWidth, maxHeight: maxHeight)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
