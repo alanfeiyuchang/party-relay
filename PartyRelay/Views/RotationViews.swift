@@ -634,7 +634,11 @@ private struct PreviousTurnRecap: View {
 
 struct RotationResultView: View {
     @EnvironmentObject var store: GameStore
+    @Environment(\.horizontalSizeClass) private var hSize
     @State private var appeared = false
+
+    /// 宽屏（iPhone Duo 内屏横放、iPad）排两列：单列的话内屏只看得到四个人，右边三分之二是空的
+    private var wide: Bool { hSize == .regular }
 
     /// 按总分从高到低；同分同名次
     private var ranked: [(rank: Int, player: Player)] {
@@ -670,7 +674,8 @@ struct RotationResultView: View {
                 }
 
                 ScrollView {
-                    VStack(spacing: 10) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: wide ? 2 : 1),
+                              spacing: 10) {
                         ForEach(Array(ranked.enumerated()), id: \.element.player.id) { i, entry in
                             RankRow(rank: entry.rank, player: entry.player)
                                 .opacity(appeared ? 1 : 0)
@@ -701,10 +706,11 @@ struct RotationResultView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
+                .frame(maxWidth: 480)
                 .padding(.horizontal, 32)
-                .padding(.bottom, 24)
+                .padding(.bottom, wide ? 12 : 24)
             }
-            .pageFrame()
+            .pageFrame(maxWidth: wide ? 860 : 560)
 
             ConfettiView()
                 .ignoresSafeArea()
