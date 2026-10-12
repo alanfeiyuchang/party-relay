@@ -308,6 +308,41 @@ remotely.
 
 ---
 
+## 1.3.1 — screenshots + iPhone Duo polish (submitted 2026-10-12)
+
+1.3 went live with the old marketing slides, and a live version's screenshots are locked,
+so 1.3.1 exists to carry the new ones. Uploaded as build **28**, submitted 2026-10-12.
+
+**Screenshot slots** (App Store Connect now groups them like this):
+
+| Slot | Accepted sizes | Files |
+|---|---|---|
+| iPhone with Dynamic Island (medium display) | 1206×2622, 1179×2556 (and landscape) | `Screenshots/iphone63/` (iPhone 17 Pro) |
+| iPhone Duo | 2853×2007 inner, 1398×2034 outer (and rotated) | `Screenshots/duo/` (inner screen) |
+
+The 1320×2868 Pro Max shots in `Screenshots/promax/` are **not** accepted by either slot.
+Eight per slot per language, mode picker first. A few PNGs stalled server-side ("This file
+has not yet been uploaded", which blocks Add for Review); the `.jpg` copies next to them are
+what replaced those, at the same size.
+
+**What's New (1.3.1)**
+
+```
+MADE FOR iPHONE DUO
+• On the unfolded inner screen, the Take Turns leaderboard now uses two columns, so everyone fits on one screen.
+• Pause moves to the bottom of the status strip along the screen's edge, out of the way of the game.
+• Hall of Fame's split screen no longer tucks its buttons under that strip.
+```
+
+```
+适配 iPhone Duo
+• 展开后的内屏上，轮流模式的排行榜改成两列，一屏看全所有人。
+• 暂停键挪到屏幕侧边状态栏的最下面，不再挡着页面内容。
+• 名人堂分屏的按钮不再被侧边状态栏遮住。
+```
+
+Description, promotional text and reviewer notes are unchanged from 1.3.
+
 ## Pre-submit checklist — 1.3 update
 
 **Status (2026-10-12):** submitted — 1.3 (24) is Waiting for Review. Both listings, the

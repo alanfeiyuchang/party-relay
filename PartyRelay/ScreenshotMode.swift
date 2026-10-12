@@ -15,6 +15,8 @@ enum ScreenshotMode {
         store.teams[0].name = L("team.red")
         store.teams[1].name = L("team.blue")
         store.settings.totalRounds = 6
+        // 截图状态要可复现：小分制只在需要它的几张里单独打开，别吃上一次截图留下的设置
+        store.settings.smallScoreWin = false
         // 截图都按对战模式拍，轮流模式的几张在下面单独切过去
         store.settings.playMode = mode.hasPrefix("rotation") ? .rotation : .match
         if mode.hasPrefix("rotation") || mode == "menu" {
