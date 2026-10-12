@@ -66,7 +66,7 @@ code — nothing to fill in here.
 | Field | Value |
 |---|---|
 | Version number | `1.3` (set as `MARKETING_VERSION` in the Xcode project) |
-| Build number | `9` (set as `CURRENT_PROJECT_VERSION`) — builds up to 8 went to 1.0–1.2 |
+| Build number | `9` in the project, but Xcode's upload renumbered it to **24** (1.2 TestFlight builds already went up to 23). Submitted for review as 1.3 (24) on 2026-10-12. Next upload: bump `CURRENT_PROJECT_VERSION` past 24 |
 | Copyright | `© 2026 [YOUR NAME OR COMPANY]` ⬜ **FILL IN** the legal name |
 | Routing App Coverage File | Not applicable |
 | Export compliance (encryption) | **No** — app uses no non-exempt encryption (no networking at all). Already declared in the build (`ITSAppUsesNonExemptEncryption = NO`), so App Store Connect won't ask |
@@ -206,21 +206,21 @@ https://github.com/alanfeiyuchang/party-relay
 
 **Description**
 ```
-🎉 派对接力能让任何聚会秒变游戏之夜——不用额外道具，不用注册账号，没有广告，全程不联网。一部手机轮流传递，比拼谁能在限时内猜对更多词：可以两队对战，可以大家一起快玩一局，也可以轮流表演、各记各分。
+派对接力能让任何聚会秒变游戏之夜——不用额外道具，不用注册账号，没有广告，全程不联网。一部手机轮流传递，比拼谁能在限时内猜对更多词：可以两队对战，可以大家一起快玩一局，也可以轮流表演、各记各分。
 
 三种模式
-⚔️ 对战模式——分成两队，转动转盘随机决定本轮玩法，两队依次挑战同一个玩法，猜对更多词的一方赢下本轮得分。十秒就能讲明白规则，玩起来却笑到停不下来。
-⚡️ 快速模式——人不够分成两队？不分队、不记分，转一次盘只打一局，打完直接看猜对了几个。
-🔄 轮流模式——每个人各自为战。填好玩家，手机按顺序轮着传：轮到谁，谁就转盘选玩法、负责表演，其他人一起猜。屏幕上没有「猜对」按钮，其他人的名字围在词的周围，谁猜对了就点谁，表演者和猜对的人各得 1 分。所有人都表演过一次后，排行榜揭晓谁最厉害。
+对战模式——分成两队，转动转盘随机决定本轮玩法，两队依次挑战同一个玩法，猜对更多词的一方赢下本轮得分。十秒就能讲明白规则，玩起来却笑到停不下来。
+快速模式——人不够分成两队？不分队、不记分，转一次盘只打一局，打完直接看猜对了几个。
+轮流模式——每个人各自为战。填好玩家，手机按顺序轮着传：轮到谁，谁就转盘选玩法、负责表演，其他人一起猜。屏幕上没有「猜对」按钮，其他人的名字围在词的周围，谁猜对了就点谁，表演者和猜对的人各得 1 分。所有人都表演过一次后，排行榜揭晓谁最厉害。
 
 五种玩法任你转
-🗣️ 你说我猜——用语言描述词语（不能说出词语本身），其他人抢答。
-🎨 你画我猜——在画板上画出词语（不能写字、数字），其他人根据画面猜。
-🤐 唇语猜词——完全不出声，只靠口型让大家读出词语。
-🕺 肢体模仿——只用动作和表情表演，不能发出声音。
-🌟 名人堂（对战模式）——两队同时进行、不计时：各自拿到一个名人的名字，轮流互相提问，先猜中对方名字的一队获胜。
+你说我猜——用语言描述词语（不能说出词语本身），其他人抢答。
+你画我猜——在画板上画出词语（不能写字、数字），其他人根据画面猜。
+唇语猜词——完全不出声，只靠口型让大家读出词语。
+肢体模仿——只用动作和表情表演，不能发出声音。
+名人堂（对战模式）——两队同时进行、不计时：各自拿到一个名人的名字，轮流互相提问，先猜中对方名字的一队获胜。
 
-⚡️ 开放抢答
+开放抢答
 对战模式下转到这个特殊扇区会更刺激：系统会再转一次选出一个计时玩法，但这一轮对方队伍也能随时抢答偷分——谁都别想在自己回合里划水。
 
 贴心小细节
@@ -310,10 +310,14 @@ remotely.
 
 ## Pre-submit checklist — 1.3 update
 
+**Status (2026-10-12):** submitted — 1.3 (24) is Waiting for Review. Both listings, the
+reviewer notes and the build were entered as written here. Neither listing uses emoji
+any more (that matches what was live for 1.1).
+
 Sections 1–3 (app info, pricing, privacy) carry over untouched. For an update you only
 need:
 
-- [ ] Archive with the release **Xcode.app**, not Xcode-beta (see section 0) — build `1.3 (9)`
+- [x] Archive with the release **Xcode.app**, not Xcode-beta (see section 0) — uploaded as `1.3 (24)`
 - [ ] Paste the new **What's New** text, both languages (section 5 / 6)
 - [ ] Update the **Description** in both languages — it now describes the three modes,
       Take Turns and the Pause menu, and no longer says Quick Mode lives in Settings
