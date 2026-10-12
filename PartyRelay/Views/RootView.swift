@@ -18,14 +18,15 @@ struct RootView: View {
             let onLeft = geo.safeAreaInsets.leading > geo.safeAreaInsets.trailing
             phaseView
                 .environment(\.pauseSidebarWidth, showsPause ? sidebar : 0)
-                .overlay(alignment: onLeft ? .topLeading : .topTrailing) {
-                    // 暂停键放进状态栏那一条，排在时间和 Wi-Fi 下面
+                .overlay(alignment: onLeft ? .bottomLeading : .bottomTrailing) {
+                    // 暂停键放进状态栏那一条的最下面：上面是时间和 Wi-Fi，底下这段原本空着，
+                    // 拿手机时拇指也更容易够到
                     if showsPause && sidebar > 0 {
                         HomeExitButton(placement: .sidebar)
                             .environment(\.pauseSidebarWidth, sidebar)
                             .frame(width: sidebar)
                             // 系统把时间和 Wi-Fi 画得比竖条正中略往里 6pt，跟它们对齐
-                            .offset(x: onLeft ? -(sidebar - 6) : sidebar - 6, y: 110)
+                            .offset(x: onLeft ? -(sidebar - 6) : sidebar - 6, y: -12)
                     }
                 }
         }

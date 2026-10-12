@@ -136,7 +136,9 @@ struct HallOfFameView: View {
                 teamHalf(index: 0)
                 teamHalf(index: 1)
             }
-            .ignoresSafeArea()
+            // 只铺满上下；左右留出安全区，内容（尤其右半边的按钮）才不会钻到
+            // iPhone Duo 的状态栏竖条底下、跟侧边栏里的暂停键叠在一起。底色仍然铺满整屏
+            .ignoresSafeArea(edges: .vertical)
 
             VStack(spacing: 8) {
                 HomeExitBar(light: true)
@@ -189,7 +191,7 @@ struct HallOfFameView: View {
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Rectangle().fill(team.gradient))
+        .background(Rectangle().fill(team.gradient).ignoresSafeArea())
     }
 
     // MARK: - 遮罩页：从该队那一侧展开铺满整页
