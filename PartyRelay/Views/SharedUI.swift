@@ -211,31 +211,78 @@ struct ScoreBadge: View {
 
 // MARK: - 返回主页按钮（所有游戏中页面顶部，二次确认后才真的退出）
 
+// MARK: - 侧边栏里的暂停键（iPhone Duo）
+
+/// 屏幕一侧有没有整条留给系统状态栏的竖条，有的话多宽。
+/// iPhone Duo 的两块屏都把时间、Wi-Fi 竖着放在右边一条里，下面整段是空的；
+/// 暂停键挪进这条里，不再浮在居中内容列的左上角。普通手机为 0，暂停键照旧在左上角
+private struct PauseSidebarWidthKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var pauseSidebarWidth: CGFloat {
+        get { self[PauseSidebarWidthKey.self] }
+        set { self[PauseSidebarWidthKey.self] = newValue }
+    }
+}
+
 struct HomeExitButton: View {
+    enum Placement { case inline, sidebar }
+
     @EnvironmentObject var store: GameStore
+    @Environment(\.pauseSidebarWidth) private var sidebarWidth
     /// 深色/彩色背景上用浅色描边样式
     var light: Bool = false
+    var placement: Placement = .inline
     @State private var showConfirm = false
 
     /// 只有正在猜词的那一遍能重开；转盘、交接、结算页上没有「小局」可重开
     private var canRestartTurn: Bool { store.phase == .playing }
 
     var body: some View {
+        // 有侧边栏时，页面里的那颗不画，由 RootView 在侧边栏里画一颗（同一个弹窗逻辑）
+        if placement == .inline && sidebarWidth > 0 {
+            EmptyView()
+        } else {
+            button
+        }
+    }
+
+    private var button: some View {
         Button {
             FeedbackManager.shared.tap()
             showConfirm = true
         } label: {
-            Label(L("common.pause"), systemImage: "pause.fill")
-                .font(.caption.bold())
-                .foregroundStyle(light ? .white : Color.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(
-                    Capsule()
-                        .fill(light ? AnyShapeStyle(.white.opacity(0.22))
-                                    : AnyShapeStyle(.white.opacity(0.85)))
-                        .overlay(Capsule().stroke(light ? .white.opacity(0.5) : .clear, lineWidth: 1))
-                )
+            switch placement {
+            case .inline:
+                Label(L("common.pause"), systemImage: "pause.fill")
+                    .font(.caption.bold())
+                    .foregroundStyle(light ? .white : Color.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule()
+                            .fill(light ? AnyShapeStyle(.white.opacity(0.22))
+                                        : AnyShapeStyle(.white.opacity(0.85)))
+                            .overlay(Capsule().stroke(light ? .white.opacity(0.5) : .clear, lineWidth: 1))
+                    )
+            case .sidebar:
+                // 竖条只有四五十点宽：图标在上、字在下
+                VStack(spacing: 4) {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 15, weight: .bold))
+                        .frame(width: 38, height: 38)
+                        .background(Circle().fill(.white.opacity(0.9))
+                            .shadow(color: .black.opacity(0.15), radius: 4, y: 2))
+                    Text(L("common.pause"))
+                        .font(.system(size: 10, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+                .foregroundStyle(Color(white: 0.3))
+                .frame(width: max(sidebarWidth - 4, 40))
+            }
         }
         .accessibilityIdentifier("backHome")
         // 用 alert 而不是 confirmationDialog：alert 一定会同时显示「取消」按钮。
@@ -266,17 +313,22 @@ struct HomeExitButton: View {
     }
 }
 
-/// 顶部只放一个返回主页按钮的行（用于原本没有顶栏的页面）
+/// 顶部只放一个暂停键的行（用于原本没有顶栏的页面）；暂停键在侧边栏时整行不占地方
 struct HomeExitBar: View {
+    @Environment(\.pauseSidebarWidth) private var sidebarWidth
     var light: Bool = false
 
     var body: some View {
-        HStack {
-            HomeExitButton(light: light)
-            Spacer()
+        if sidebarWidth > 0 {
+            Color.clear.frame(height: 10)
+        } else {
+            HStack {
+                HomeExitButton(light: light)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
     }
 }
 

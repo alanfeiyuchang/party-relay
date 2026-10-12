@@ -5,7 +5,33 @@ struct RootView: View {
     @ObservedObject var langManager = LanguageManager.shared
     @State private var showSettings = false
 
+    /// 系统状态栏竖条至少这么宽，才算「有侧边栏」（普通手机竖屏左右安全区是 0）
+    private static let sidebarMinWidth: CGFloat = 36
+
+    /// 页面上有暂停键的阶段（启动页、准备页没有）
+    private var showsPause: Bool { store.phase != .menu && store.phase != .home }
+
     var body: some View {
+        GeometryReader { geo in
+            let inset = max(geo.safeAreaInsets.trailing, geo.safeAreaInsets.leading)
+            let sidebar = inset >= Self.sidebarMinWidth ? inset : 0
+            let onLeft = geo.safeAreaInsets.leading > geo.safeAreaInsets.trailing
+            phaseView
+                .environment(\.pauseSidebarWidth, showsPause ? sidebar : 0)
+                .overlay(alignment: onLeft ? .topLeading : .topTrailing) {
+                    // 暂停键放进状态栏那一条，排在时间和 Wi-Fi 下面
+                    if showsPause && sidebar > 0 {
+                        HomeExitButton(placement: .sidebar)
+                            .environment(\.pauseSidebarWidth, sidebar)
+                            .frame(width: sidebar)
+                            // 系统把时间和 Wi-Fi 画得比竖条正中略往里 6pt，跟它们对齐
+                            .offset(x: onLeft ? -(sidebar - 6) : sidebar - 6, y: 110)
+                    }
+                }
+        }
+    }
+
+    private var phaseView: some View {
         Group {
             switch store.phase {
             case .menu:
