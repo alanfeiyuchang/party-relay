@@ -23,15 +23,15 @@ SLIDES = {
     "zh-Hans": [
         ("store-fold.png",  "一台手机",        "两边展示",
          "实时信息，更容易看到"),
-        ("store-cover.png", "对面那块屏",       "实时同步整张画",
-         "计时、得分、笔画，猜的人全看得见"),
+        ("store-cover.png", "外屏朝着对面",     "画到哪同步到哪",
+         "不用再挤到一块儿看"),
     ],
     # 英文那两张底图是用英文界面的贴图单独渲的（scene.py --tex tex-en）
     "en": [
         ("en-store-fold.png",  "One phone",        "Both sides at once",
          "Live info, easier to see"),
-        ("en-store-cover.png", "The outer screen", "Mirrors every stroke",
-         "Timer, score and drawing — live, for everyone else."),
+        ("en-store-cover.png", "The outer screen", "Synced as you draw",
+         "No crowding around one phone"),
     ],
 }
 
