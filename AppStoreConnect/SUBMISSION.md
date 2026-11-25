@@ -65,8 +65,8 @@ code — nothing to fill in here.
 
 | Field | Value |
 |---|---|
-| Version number | `1.3` (set as `MARKETING_VERSION` in the Xcode project) |
-| Build number | `9` in the project, but Xcode's upload renumbered it to **24** (1.2 TestFlight builds already went up to 23). Submitted for review as 1.3 (24) on 2026-10-12. Next upload: bump `CURRENT_PROJECT_VERSION` past 24 |
+| Version number | `1.4` (set as `MARKETING_VERSION` in the Xcode project) |
+| Build number | `29` in the project. History: 1.3 shipped as build 24, 1.3.1 as build 28 — Xcode's upload renumbers, so always bump `CURRENT_PROJECT_VERSION` past the last **uploaded** build, not past what the project says |
 | Copyright | `© 2026 [YOUR NAME OR COMPANY]` ⬜ **FILL IN** the legal name |
 | Routing App Coverage File | Not applicable |
 | Export compliance (encryption) | **No** — app uses no non-exempt encryption (no networking at all). Already declared in the build (`ITSAppUsesNonExemptEncryption = NO`), so App Store Connect won't ask |
@@ -104,7 +104,7 @@ required 1024×1024, single-size universal icon format. Nothing to do here.
 
 **App Name** *(30 char max)*
 ```
-PartyRelay: Team Party Game
+PartyRelay: Charades Party
 ```
 
 **Subtitle** *(30 char max)*
@@ -155,7 +155,7 @@ Perfect for family game night, parties, icebreakers, road trips, and any time a 
 
 **Keywords** *(100 char max, comma-separated, no spaces)*
 ```
-party,charades,pictionary,drawing,guess,team,family,friends,offline,group,words,icebreaker,board
+pictionary,drawing,guess,team,family,friends,kids,offline,group,words,icebreaker,board,mime,emoji
 ```
 
 **What's New in This Version** *(1.3)*
@@ -191,7 +191,7 @@ https://github.com/alanfeiyuchang/party-relay
 
 **App Name** *(30 字符以内)*
 ```
-派对接力 PartyRelay
+猜词派对 - 线下猜词游戏神器
 ```
 
 **Subtitle**
@@ -206,7 +206,7 @@ https://github.com/alanfeiyuchang/party-relay
 
 **Description**
 ```
-派对接力能让任何聚会秒变游戏之夜——不用额外道具，不用注册账号，没有广告，全程不联网。一部手机轮流传递，比拼谁能在限时内猜对更多词：可以两队对战，可以大家一起快玩一局，也可以轮流表演、各记各分。
+猜词派对能让任何聚会秒变游戏之夜——不用额外道具，不用注册账号，没有广告，全程不联网。一部手机轮流传递，比拼谁能在限时内猜对更多词：可以两队对战，可以大家一起快玩一局，也可以轮流表演、各记各分。
 
 三种模式
 对战模式——分成两队，转动转盘随机决定本轮玩法，两队依次挑战同一个玩法，猜对更多词的一方赢下本轮得分。十秒就能讲明白规则，玩起来却笑到停不下来。
@@ -232,14 +232,14 @@ https://github.com/alanfeiyuchang/party-relay
 • 队伍名称、玩家名字和头像、总轮数、每轮时长、震动和音效都可以自由调整。
 
 没有套路
-派对接力完全离线运行，无需注册、没有广告、没有内购、不收集任何数据，也没有任何形式的联网行为。打开就能玩。
+猜词派对完全离线运行，无需注册、没有广告、没有内购、不收集任何数据，也没有任何形式的联网行为。打开就能玩。
 
 无论是家庭聚会、朋友派对、破冰活动还是自驾游途中，几个人加一个计时器，可能比每个人各自刷手机有趣多了。
 ```
 
 **Keywords**
 ```
-派对,聚会,你画我猜,你说我猜,猜词,团队,家庭,朋友,离线,破冰,桌游,组队,聚会游戏
+聚会,你比我猜,你演我猜,猜字,画画,唇语,肢体,表演,抢答,转盘,团建,破冰,桌游,团队,组队,家庭,亲子,朋友,聚餐,年会,生日,离线,单机,多人,双人,室内,暖场,互动,无网络,儿童
 ```
 
 **What's New in This Version** *(1.3)*
@@ -281,6 +281,10 @@ https://github.com/alanfeiyuchang/party-relay
 | Contact — Email | ⬜ **FILL IN** (defaults to your Apple ID email if left blank, but Apple recommends filling it in) |
 | Notes for reviewer | See suggested text below — paste as-is or edit |
 
+> ⚠️ **1.4 adds a camera permission request.** A word game asking for the camera is the
+> kind of thing a reviewer will stop on, so the notes below explain it up front. Do not
+> submit 1.4 without that paragraph.
+
 **Suggested reviewer notes:**
 ```
 PartyRelay is an offline, pass-the-phone party game — there is no account/sign-in, no
@@ -297,6 +301,34 @@ network access, and no server component to test. The home screen offers three mo
 The "Pause" button in the top-left corner of any game screen offers Restart this turn /
 End game / Resume. All word content is bundled locally in the app; nothing is fetched
 remotely.
+
+WHY THIS GAME ASKS FOR THE CAMERA (new in 1.4)
+
+1.4 adds support for folding iPhones. Folded to 90° and stood on the table, the inner
+screen is split — the standing half shows the word and timer to the player holding it,
+the flat half holds the buttons — and the OUTER screen faces the other players with the
+timer, the score, and a live mirror of the drawing in Draw & Guess.
+
+On iOS 27 the only public way to put app content on the outer screen is
+UISceneAccessory. It has two factory methods: externalNonInteractive (for HDMI/AirPlay
+external displays) and cameraCapture. cameraCapture is documented to be available only
+"while the app is in the foreground and has an active camera capture session" — with no
+session, the system reports isAvailable = false and the outer screen stays dark.
+
+So the app runs a minimal AVCaptureSession purely to satisfy that condition. It has no
+preview layer and no photo output, and its video-data delegate discards every frame
+without decoding it. Nothing is photographed, recorded, written to disk, added to
+Photos, or displayed anywhere in the UI. The app makes no network requests at all, so
+no image could leave the device even in principle.
+
+The session is also gated on the hardware: it is only started when the system reports
+that the device has a hinge (UIHingeInteraction). On a non-folding iPhone or iPad the
+permission is never requested and the green indicator never appears. If permission is
+declined, the game plays exactly as before — only the outer screen stays dark, and
+Settings explains why.
+
+To see this on a non-folding device, there is nothing to see — the feature is inert.
+On a folding iPhone: start any game, fold to about 90° and stand it on the table.
 ```
 
 ## 8. Version Release

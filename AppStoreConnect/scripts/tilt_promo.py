@@ -2,6 +2,9 @@ import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from gen_promo import SCREENS, HTML_OUT
 
+# 促销图右下角的字标：中文区用中文店名，英文区用英文店名。
+WORDMARK = {"en": "🎉 PartyRelay", "zh-Hans": "🎉 猜词派对"}
+
 W, H = 1290, 2796
 FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif'
 
@@ -109,7 +112,7 @@ def build(lang, shot_prefix):
         phone_x = (W - phone_w) / 2 + (60 if s["rotY"] < 0 else -60)
         shot_file = f'{shot_prefix}-{s["shot_suffix"]}'
         body += f'<div class="stage">{phone_html(shot_file, phone_x, 560, phone_w, s["rotY"], s["rotX"])}</div>'
-        body += '<div class="wordmark" style="bottom:80px; font-size:40px;">🎉 PartyRelay</div>'
+        body += f'<div class="wordmark" style="bottom:80px; font-size:40px;">{WORDMARK[lang]}</div>'
         html = page(body)
         fname = f"tilt-{i}-{s['key']}-{lang}.html"
         with open(os.path.join(HTML_OUT, fname), "w", encoding="utf-8") as f:

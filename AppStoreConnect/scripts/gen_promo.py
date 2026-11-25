@@ -2,6 +2,9 @@ import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from people import person_svg, confetti_svg
 
+# 促销图右下角的字标：中文区用中文店名，英文区用英文店名。
+WORDMARK = {"en": "🎉 PartyRelay", "zh-Hans": "🎉 猜词派对"}
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCREENS = os.path.join(ROOT, "AppStoreConnect", "_build", "fresh_screens")
 HTML_OUT = os.path.join(ROOT, "AppStoreConnect", "_build", "html")
@@ -98,7 +101,7 @@ def hero_slide(lang, key, bg, phone_shot, people, dpi_dir):
     body += phone_html(phone_shot, x=(W-720)/2, y=560, w=720)
     for (svg_x, svg_y, scale, pose, skin, shirt, hair, mirror, hair_style) in people:
         body += f'<svg style="position:absolute; left:{svg_x}px; top:{svg_y}px; width:{240*scale:.0f}px; height:{320*scale:.0f}px;" viewBox="0 0 240 320">{person_svg(pose, skin, shirt, hair, mirror, hair_style)}</svg>'
-    body += f'<div class="wordmark" style="bottom:70px; font-size:44px; color:rgba(255,255,255,0.95);">🎉 PartyRelay</div>'
+    body += f'<div class="wordmark" style="bottom:70px; font-size:44px; color:rgba(255,255,255,0.95);">{WORDMARK[lang]}</div>'
     return page(body, bg)
 
 
@@ -131,5 +134,5 @@ def feature_slide(lang, key, bg, phone_shot, banner_color):
     <div class="subline" style="top:410px; font-size:38px;">{sub}</div>
     '''
     body += phone_html(phone_shot, x=(W-840)/2, y=620, w=840)
-    body += f'<div class="wordmark" style="bottom:70px; font-size:44px; color:rgba(255,255,255,0.95);">🎉 PartyRelay</div>'
+    body += f'<div class="wordmark" style="bottom:70px; font-size:44px; color:rgba(255,255,255,0.95);">{WORDMARK[lang]}</div>'
     return page(body, bg)

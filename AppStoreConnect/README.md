@@ -1,6 +1,6 @@
 # App Store Connect submission kit
 
-Everything needed to fill out the App Store Connect listing for PartyRelay / 派对接力, in both English and Simplified Chinese.
+Everything needed to fill out the App Store Connect listing for PartyRelay / 猜词派对, in both English and Simplified Chinese.
 
 ```
 AppStoreConnect/

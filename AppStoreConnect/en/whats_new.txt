@@ -1,12 +1,17 @@
-NEW: TAKE TURNS
-A third way to play, where everyone scores for themselves. Add your players — give each a name and an avatar, drag them into seating order — and the phone goes round the circle, starting from someone picked at random. On your turn you spin for a game and give the clues. The other players' names sit around the word: tap whoever guessed, and you both get a point. Once everyone has had a go, a leaderboard shows who's on top, split into acting and guessing points.
+FOLDED PHONES
+Fold the phone to 90° and stand it on the table, and one phone gives three people their own view. The top half faces you with the word and the timer. The bottom half lies flat as the buttons and the drawing canvas, right under your thumb. The outer screen faces everyone else with the timer and the score — and in Draw & Guess it mirrors the whole drawing, live.
 
-PICK A MODE ON THE HOME SCREEN
-Team Battle, Quick Mode and Take Turns are now three cards on the home screen. Quick Mode no longer hides in Settings.
+The first time you fold it, a short card explains what each screen is for. You can bring it back any time from Settings.
 
-PAUSE
-The in-game Home button is now Pause. It stops the clock, and lets you restart the current turn with fresh words (handy after a mis-tap) or end the game.
+CLOSE IT TO HIDE THE WORD
+Shut the phone mid-round and the word is hidden and the clock stops. Closing it is how you hand it over, so whoever picks it up next doesn't see the answer first.
 
-POLISH
-• Tidier layouts on larger screens.
-• The handoff button now just says Start.
+DRAW & GUESS, FOLDED
+Folded, the word and the canvas are on screen together — no more tapping "Start drawing" back and forth. Folding or unfolding mid-drawing no longer loses the strokes.
+
+ABOUT THE CAMERA PERMISSION
+iOS only lets an app put content on the outer screen while it is using the camera, so folded play asks for camera access. The app never photographs, records, saves, or displays anything from the camera. Decline it and everything else works as before — only the outer screen stays dark. A non-folding iPhone is never asked for the camera.
+
+ALSO
+• Hall of Fame asks you to open the phone — that game needs both teams facing one flat screen.
+• Handoff, scoreboard and results now pull their content into the standing half instead of sitting across the crease.
