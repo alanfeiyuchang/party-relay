@@ -21,7 +21,9 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 #   2853×2007 / 2007×2853 这四种，正好对上真机实测的内外屏点数 ×3）
 SIZES = {
     "phone": (1290, 2796, "", ""),
-    "duo":   (2007, 2853, "duo-", "duo"),
+    # Duo 这一套跟着**现有那 8 张**走：它们都是 2853×2007 的横版。
+    # 竖版（2007×2853）ASC 也收，但混在一个截图位里排首位会很突兀
+    "duo":   (2853, 2007, "duo-", "duo"),
 }
 W, H = 1290, 2796
 FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif'
@@ -43,31 +45,48 @@ SLIDES = {
     ],
 }
 
+def _metrics(w, h):
+    """字号和位置按画幅算。横版（2853×2007）比竖版矮得多，
+    照竖版那套绝对像素会把标题撑到占掉半张图。"""
+    head = min(w * 0.074, h * 0.070)
+    return {
+        "head": round(head),
+        "head_top": round(h * 0.055),
+        "sub_size": round(head * 0.42),
+        "sub_top": round(h * 0.055 + head * 2 * 1.16 + head * 0.48),
+        "wash": round(h * 0.38),
+        "mark_size": round(head * 0.44),
+        "pad": round(w * 0.054),
+    }
+
+
 PAGE = """<!doctype html><meta charset="utf-8"><style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
 html,body {{ width:{W}px; height:{H}px; overflow:hidden; font-family:{FONT}; }}
 .canvas {{ position:relative; width:{W}px; height:{H}px; background:#EFECF4; }}
 .shot {{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }}
 /* 底图顶上是浅灰的墙，直接放深色字有点飘——压一层很淡的品牌紫把字托住 */
-.wash {{ position:absolute; left:0; right:0; top:0; height:1050px;
+.wash {{ position:absolute; left:0; right:0; top:0; height:{wash}px;
          background:linear-gradient(180deg, rgba(243,238,255,0.97) 0%,
                                            rgba(243,238,255,0.86) 55%,
                                            rgba(243,238,255,0) 100%); }}
-.headline {{ position:absolute; left:70px; right:70px; top:150px; text-align:center;
-             font-size:96px; font-weight:800; line-height:1.16; color:#241B3D;
-             letter-spacing:-1px; }}
+.headline {{ position:absolute; left:{pad}px; right:{pad}px; top:{head_top}px;
+             text-align:center; font-size:{head}px; font-weight:800; line-height:1.16;
+             color:#241B3D; letter-spacing:-1px; }}
 .accent {{ color:#7C4DFF; }}
-.subline {{ position:absolute; left:110px; right:110px; top:{sub_top}px; text-align:center;
-            font-size:40px; font-weight:600; line-height:1.45; color:#4A4066; }}
-.wordmark {{ position:absolute; left:0; right:0; bottom:66px; text-align:center;
-             font-size:42px; font-weight:800; color:rgba(36,27,61,0.72); }}
+.subline {{ position:absolute; left:{pad}px; right:{pad}px; top:{sub_top}px;
+            text-align:center; font-size:{sub_size}px; font-weight:600; line-height:1.45;
+            color:#4A4066; }}
+.wordmark {{ position:absolute; left:0; right:0; bottom:{head_top}px;
+             text-align:center; font-size:{mark_size}px; font-weight:800;
+             color:rgba(36,27,61,0.72); }}
 </style>
 <div class="canvas">
   <img class="shot" src="file://{shot}">
   <div class="wash"></div>
   <div class="headline">{line1}<br><span class="accent">{line2}</span></div>
   <div class="subline">{sub}</div>
-  <div class="wordmark">{mark}</div>
+  {wordmark}
 </div>"""
 
 MARK = {"en": "🎉 PartyRelay", "zh-Hans": "🎉 猜词派对"}
@@ -86,9 +105,11 @@ def build(lang, kind="phone"):
         src = os.path.join(RENDER, name)
         if not os.path.exists(src):
             print(f"  ✗ 缺底图 {src}（先用 scene.py 渲出来）"); continue
+        # Duo 这一套不要字标：横画幅里它正好压在手机底边上，
+        # 而商店页顶上本来就有 App 名，这行纯属多余
+        wordmark = "" if kind == "duo" else f'<div class="wordmark">{MARK[lang]}</div>'
         html = PAGE.format(W=W, H=H, FONT=FONT, shot=src, line1=line1, line2=line2,
-                           sub=sub, mark=MARK[lang],
-                           sub_top=150 + 96 * 2 * 1.16 + 46)
+                           sub=sub, wordmark=wordmark, **_metrics(W, H))
         hp = os.path.join(TMP, f"{lang}-{i}.html")
         open(hp, "w").write(html)
         dest = os.path.join(out_dir, f"{i:02d}-fold-{base}")

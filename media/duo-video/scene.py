@@ -45,6 +45,13 @@ SHOTS = {
     "store-cover": ((0.135, 0.315, 0.135), (0, 0.000, 0.078), 54),
 }
 SHOT = arg("--shot", "wide")
+# 换画幅时相机得跟着调。Blender 默认 sensor_fit=AUTO，把 36mm 传感器贴到**长边**上，
+# 所以同一组镜头参数从竖版换到横版，垂直视野会直接缩掉三成——主体下半截就被切出画外。
+# --fit vertical 把传感器钉在高度上，竖横两版的垂直取景就一致了；
+# --lens-scale 再在这基础上留出标题的位置，--aim-dz 抬高视点把主体压低一点。
+FIT = arg("--fit", "auto").upper()
+LENS_SCALE = float(arg("--lens-scale", 1.0))
+AIM_DZ = float(arg("--aim-dz", 0.0))
 
 def _res(text):
     w, h = (int(v) for v in text.lower().split("x"))
@@ -219,7 +226,10 @@ def build():
     loc, target, lens = SHOTS[SHOT]
     bpy.ops.object.camera_add(location=loc)
     cam = bpy.context.object
-    cam.data.lens = lens
+    cam.data.lens = lens * LENS_SCALE
+    if FIT in ("VERTICAL", "HORIZONTAL"):
+        cam.data.sensor_fit = FIT
+    target = (target[0], target[1], target[2] + AIM_DZ)
     d = Vector(target) - cam.location
     cam.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
     scene.camera = cam
