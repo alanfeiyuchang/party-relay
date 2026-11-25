@@ -3,6 +3,14 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var store: GameStore
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var coverCamera = CoverScreenCamera.shared
+    /// 点过「再讲一遍」之后给个确认态，否则按下去毫无反馈。
+    /// 初值从真实状态读：只存在 @State 里的话，关掉再进设置就退回「没点过」的样子，
+    /// 而 UserDefaults 里其实已经武装好了——那是在骗人
+    @State private var foldIntroRearmed = !FoldTutorial.hasSeenIntro
+
+    /// 相机权限被拒：外屏从此不会亮，而玩的时候没有任何地方说得清为什么
+    private var cameraDenied: Bool { coverCamera.denied }
 
     var body: some View {
         NavigationStack {
@@ -116,6 +124,32 @@ struct SettingsView: View {
                     .tint(.indigo)
                 } footer: {
                     Text(L("settings.privacy_footer"))
+                }
+
+                // 折叠玩法：只有真有铰链的机器才显示，普通 iPhone 上一个字都不提
+                if FoldTutorial.deviceCanFold {
+                    Section {
+                        Button {
+                            FeedbackManager.shared.tap()
+                            // 重新武装：下次折到 90° 再讲一遍。派对游戏每局换人拿手机，
+                            // 「只弹一次、之后永远找不回」对第二个人起就等于没有说明
+                            FoldTutorial.rearmIntro()
+                            foldIntroRearmed = true
+                        } label: {
+                            Label(L(foldIntroRearmed ? "settings.fold_intro_done"
+                                                     : "settings.fold_intro"),
+                                  systemImage: foldIntroRearmed ? "checkmark.circle.fill"
+                                                                : "laptopcomputer")
+                        }
+                        .disabled(foldIntroRearmed)
+                    } header: {
+                        Text(L("settings.fold_header"))
+                    } footer: {
+                        // 权限被拒之后外屏就是永远不亮，而 App 在玩的时候一个字都不会提。
+                        // 这里是唯一能说清「为什么对面那块屏没反应」的地方
+                        Text(L(cameraDenied ? "settings.fold_camera_denied"
+                                            : "settings.fold_footer"))
+                    }
                 }
 
                 // 反馈

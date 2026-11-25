@@ -202,6 +202,18 @@ enum GameKind: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
+    /// 这个玩法有没有做 90° 笔记本版面（上半屏看词、下半屏操作、外屏给对面看）。
+    ///
+    /// 折叠教学那张图讲的就是这套分工，所以**没做的玩法不能弹它**——
+    /// 表情管理是系统 emoji 键盘占着下半屏，名人堂是两队左右对坐同时看一块屏，
+    /// 两个都不符合那张图，照着做反而会把人带偏。
+    var hasFoldedLayout: Bool {
+        switch self {
+        case .describeGuess, .drawGuess, .lipRead, .act, .quiz: return true
+        case .emojiCode, .hallOfFame: return false
+        }
+    }
+
     /// 暂时下架的玩法：转盘、主页标签、设置列表里都不出现。
     /// 代码、词库、本地化文案全部原样留着——想放回去，把它从这个集合里删掉就行
     static let hidden: Set<GameKind> = [.emojiCode]

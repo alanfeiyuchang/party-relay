@@ -304,7 +304,7 @@ struct HomeExitButton: View {
         }
         // 弹窗开着就停表，点「取消」回来接着计时
         .onChange(of: showConfirm) {
-            store.turnPaused = showConfirm && canRestartTurn
+            store.setPaused(showConfirm && canRestartTurn, for: .dialog)
         }
         .onAppear {
             guard ScreenshotMode.autoPresents("exitconfirm") else { return }
@@ -341,11 +341,18 @@ struct FittingScroll<Content: View>: View {
     @ViewBuilder var content: (CGSize) -> Content
 
     var body: some View {
+        // foldedTopHalf 套在**外面**：里面那个 GeometryReader 量到的就已经是
+        // 收窄之后的高度，minHeight 才不会把内容撑回整屏高
+        fitting.foldedTopHalf()
+    }
+
+    private var fitting: some View {
         GeometryReader { geo in
             ScrollView {
                 content(geo.size).frame(minHeight: geo.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+            .foldedBottomAnchor()
         }
     }
 }
@@ -357,7 +364,45 @@ struct FittingScroll<Content: View>: View {
 /// 中间豁开一大条空白（弹簧把按钮全推到屏底）。
 extension View {
     func pageFrame(maxWidth: CGFloat = 560, maxHeight: CGFloat = 760) -> some View {
-        frame(maxWidth: maxWidth, maxHeight: maxHeight)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        modifier(PageFrame(maxWidth: maxWidth, maxHeight: maxHeight))
+    }
+}
+
+
+/// 页面正文的外框。
+///
+/// 折到 90° 之后正文被挤进立起来那半屏（四百多点高，见 `FoldToTopHalf`），
+/// 本来按整屏排的内容就放不下了。VStack 里的 Spacer 会被压到 0，但固定高度的东西
+/// （大 emoji、标题、回顾卡片、按钮）压不动，于是整体居中、上下各溢出一截——
+/// 下面那一截正好骑在折痕上，等于没修。
+///
+/// 所以折叠时给正文套一层滚动。放得下的时候 `.basedOnSize` 让它完全不像滚动视图
+/// （不回弹、没有滚动条），放不下才真的能滚。
+///
+/// 关键是这一层在**页面的 ZStack 里面**，背景是它的兄弟节点且 `ignoresSafeArea`，
+/// 所以背景照样铺满整块屏，只有正文被收进半屏。
+private struct PageFrame: ViewModifier {
+    @ObservedObject private var hinge = HingeMonitor.shared
+    let maxWidth: CGFloat
+    let maxHeight: CGFloat
+
+    func body(content: Content) -> some View {
+        if hinge.isLaptopPosture {
+            ScrollView {
+                content
+                    .frame(maxWidth: maxWidth)
+                    .frame(maxWidth: .infinity)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            // 停在底部：主按钮在最后，不这么做它就滚到屏外，页面成死胡同
+            .foldedBottomAnchor()
+            // 先关进立起来那半屏，再在里面滚。顺序反过来（给滚动视图垫安全区）
+            // 等于什么都没做，见 FoldedTopHalf 的注释
+            .foldedTopHalf()
+        } else {
+            content
+                .frame(maxWidth: maxWidth, maxHeight: maxHeight)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }

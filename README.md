@@ -1,4 +1,4 @@
-# 🎉 派对接力 · PartyRelay
+# 🎉 猜词派对 · PartyRelay
 
 A local, offline, pass-the-phone party game. SwiftUI · iOS 17+ · zero dependencies, zero network calls.
 

@@ -1,0 +1,41 @@
+{
+  "sourceLanguage": "zh-Hans",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "主屏图标下面的名字和系统设置里的 App 名。跟随**系统语言**，不跟 App 内的中/EN 开关（那个只管界面文案）。iPhone 主屏大约 12 个字符就截断。",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PartyRelay"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "猜词派对"
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you fold the phone to 90°, the outer screen shows the timer and score to the other players. iOS only lets an app put content on that screen while it is using the camera, so PartyRelay keeps a camera session open. It never records, saves, or shows anything from the camera."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "折成 90° 时，外屏会朝着其他人显示计时和得分。iOS 只允许正在使用相机的 App 往外屏放内容，所以这里会开一个相机会话——它不拍照、不录像、不保存，也不会把相机画面显示出来。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

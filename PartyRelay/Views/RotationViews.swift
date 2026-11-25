@@ -367,6 +367,42 @@ struct GuesserRing<Center: View>: View {
     }
 }
 
+/// 折成 90° 时放在**下半屏**的那排人名。
+///
+/// 摊平时名字是围着词排成弧的（`GuesserRing`）——词和名字在同一块屏上，
+/// 弧形把它们绑成一个整体。折起来之后这两件事分到了两半屏：
+/// 词在立起来那半（只看不点），名字在平躺那半（只点不看），弧就没有意义了。
+/// 平铺成几行反而更好按：平躺那半屏靠近自己的那一头才是拇指够得到的地方。
+struct GuesserPad: View {
+    @EnvironmentObject var store: GameStore
+    var onGuess: (UUID) -> Void
+
+    private var guessers: [Player] {
+        store.players.filter { $0.id != store.performer.id }
+    }
+
+    /// 人少时一行两个（按钮大一点好戳），人多了一行三个
+    private var rows: [[Player]] {
+        let perRow = guessers.count <= 4 ? 2 : 3
+        return stride(from: 0, to: guessers.count, by: perRow).map {
+            Array(guessers[$0..<min($0 + perRow, guessers.count)])
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            ForEach(rows.indices, id: \.self) { r in
+                HStack(spacing: 10) {
+                    ForEach(rows[r]) { p in
+                        GuesserChip(player: p) { onGuess(p.id) }
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// 一组名字排成弧：两端往词那边弯、并且微微转向中间。
 /// 每排最多 3 个（4 个时一排排下），一组最多 6 个（12 人局去掉表演者剩 11 个）
 private struct GuesserArc: View {
@@ -563,6 +599,7 @@ struct RotationHandoffView: View {
 
                 if let turn = store.previousTurn {
                     PreviousTurnRecap(turn: turn)
+                        .hiddenWhenFolded()
                 }
 
                 Spacer()

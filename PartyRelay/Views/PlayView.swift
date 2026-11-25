@@ -5,6 +5,7 @@ import Combine
 struct PlayView: View {
     @EnvironmentObject var store: GameStore
     @ObservedObject private var motion = MotionManager.shared
+    @ObservedObject private var hinge = HingeMonitor.shared
 
     @State private var word = ""
     @State private var ownPoints = 0        // 己方猜对
@@ -40,11 +41,21 @@ struct PlayView: View {
             skipsLeft = store.skipAllowance
             word = store.nextWord()
             if store.settings.privacyGuardOn { motion.start() }
+            // 外屏只在猜词这一页点亮；相机会话也只在这段时间里跑
+            CoverScreenModel.shared.mode = .question
+            CoverScreenModel.shared.sync(remaining: remaining, total: store.roundDuration)
+            CoverScreenModel.shared.enabled = true
+            CoverScreenCamera.shared.start()
         }
-        .onDisappear { motion.stop() }
+        .onDisappear {
+            motion.stop()
+            CoverScreenModel.shared.enabled = false
+            CoverScreenCamera.shared.stop()
+        }
         .onReceive(timer) { _ in
             guard started, remaining > 0, !store.turnPaused else { return }
             remaining -= 1
+            CoverScreenModel.shared.sync(remaining: remaining, total: store.roundDuration)
             if remaining == 0 {
                 FeedbackManager.shared.timeUp()
                 store.finishPlay(own: ownPoints, stolen: stolenPoints)
@@ -56,41 +67,100 @@ struct PlayView: View {
 
     // MARK: 3-2-1 预备
 
-    private var readyBody: some View {
-        VStack(spacing: 24) {
-            HomeExitBar()
-            VStack(spacing: 24) {
-                Spacer()
-                Text("\(game.emoji) \(game.title)")
-                    .font(.system(size: 34, weight: .black, design: .rounded))
-                    .foregroundStyle(game.gradient)
-                if store.openBuzz {
-                    OpenBuzzBadge()
+    @ViewBuilder private var readyBody: some View {
+        if hinge.isLaptopPosture {
+            // 预备页也要让开折痕：那个大数字原本正好压在中线上。整页收进上半屏——
+            // 立着的那半朝着执机人，下半屏这几秒本来就没东西
+            CreaseSplit {
+                VStack(spacing: 24) {
+                    HomeExitBar()
+                    countdownStack
                 }
-                Text("\(countdown)")
-                    .font(.system(size: 110, weight: .black, design: .rounded))
-                    .foregroundStyle(game.gradient)
-                    .contentTransition(.numericText(countsDown: true))
-                Spacer()
+            } bottom: {
+                Color.clear
             }
-            .pageFrame()
+            .onReceive(timer) { _ in tickCountdown() }
+        } else {
+            VStack(spacing: 24) {
+                HomeExitBar()
+                countdownStack
+            }
+            .onReceive(timer) { _ in tickCountdown() }
         }
-        .onReceive(timer) { _ in
-            guard !started, !store.turnPaused else { return }
-            if countdown > 1 {
-                FeedbackManager.shared.countdownTick()
-                withAnimation { countdown -= 1 }
-            } else {
-                FeedbackManager.shared.wheelStop()
-                withAnimation { started = true }
+    }
+
+    private var countdownStack: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text("\(game.emoji) \(game.title)")
+                .font(.system(size: 34, weight: .black, design: .rounded))
+                .foregroundStyle(game.gradient)
+            if store.openBuzz {
+                OpenBuzzBadge()
             }
+            Text("\(countdown)")
+                .font(.system(size: hinge.isLaptopPosture ? 76 : 110,
+                              weight: .black, design: .rounded))
+                .foregroundStyle(game.gradient)
+                .contentTransition(.numericText(countsDown: true))
+            Spacer()
+        }
+        .pageFrame()
+    }
+
+    private func tickCountdown() {
+        guard !started, !store.turnPaused else { return }
+        if countdown > 1 {
+            FeedbackManager.shared.countdownTick()
+            withAnimation { countdown -= 1 }
+        } else {
+            FeedbackManager.shared.wheelStop()
+            withAnimation { started = true }
         }
     }
 
     // MARK: 游戏中
 
-    private var playBody: some View {
+    /// 摊成 90° 时，按屏幕中线劈成两半：上半屏朝人（词 + 计时），下半屏朝天（操作按钮）。
+    ///
+    /// 折痕在屏幕上的真实位置系统**不提供任何 API**（`UIHinge` 只给 status 和 angle），
+    /// 所以这里只能按中线分——物理折痕就在屏幕正中，这个假设对 Duo 成立。
+    @ViewBuilder private var playBody: some View {
+        if hinge.isLaptopPosture {
+            // 摊开时要跟物理折痕对齐，不能再被 pageFrame 的 560×760 上限居中留边
+            CreaseSplit {
+                wordHalf
+            } bottom: {
+                // 平躺那半屏靠近自己的那一头才是拇指够得到的地方，按钮压到底边去，
+                // 顺带把折痕那一侧让得更空
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    actionButtons
+                }
+            }
+        } else {
+            VStack(spacing: 14) {
+                wordHalf
+                actionButtons
+            }
+            .pageFrame()
+        }
+    }
+
+    /// 词那一半：摊开时它就是立起来朝人的上半屏
+    private var wordHalf: some View {
         VStack(spacing: 14) {
+            topStatusBar
+            if !hinge.isLaptopPosture { FoldHintPill() }
+            if store.catchUp.isActive {
+                CatchUpBanner(catchUp: store.catchUp, teamName: store.playingTeam.name)
+            }
+            wordArea
+        }
+    }
+
+    private var topStatusBar: some View {
+        Group {
             // 顶部状态栏
             HStack(spacing: 10) {
                 HomeExitButton()
@@ -110,6 +180,7 @@ struct PlayView: View {
                         .contentTransition(.numericText())
                 }
                 Spacer()
+                CoverScreenPill()
                 if store.openBuzz { OpenBuzzBadge(compact: true) }
                 if store.settings.privacyGuardOn {
                     ForceRevealButton(forceShow: $forceShow, taps: $forceTaps)
@@ -118,26 +189,35 @@ struct PlayView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 10)
+        }
+    }
 
-            if store.catchUp.isActive {
-                CatchUpBanner(catchUp: store.catchUp, teamName: store.playingTeam.name)
-            }
-
-            if store.isRotation {
-                // 轮流模式：其他人的名字围着词，谁猜对点谁，没有单独的猜对按钮
+    @ViewBuilder private var wordArea: some View {
+        if store.isRotation && !hinge.isLaptopPosture {
+            // 摊平：其他人的名字围着词，谁猜对点谁，没有单独的猜对按钮
+            VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 GuesserRing(onGuess: creditGuess) { wordOrPrivacy }
                 Spacer(minLength: 0)
-            } else {
+            }
+        } else {
+            VStack(spacing: 0) {
                 Spacer()
                 wordOrPrivacy
                 Spacer()
             }
+        }
+    }
 
+    private var actionButtons: some View {
             // 操作按钮
             VStack(spacing: 10) {
                 if store.isRotation {
-                    EmptyView()
+                    // 折起来时名字按钮在**这一半**：立起来那半只放词和计时，
+                    // 一个需要点的东西都不留（摊平时名字还是围着词排，见 wordArea）
+                    if hinge.isLaptopPosture {
+                        GuesserPad(onGuess: creditGuess)
+                    }
                 } else if store.openBuzz {
                     HStack(spacing: 10) {
                         Button {
@@ -184,8 +264,6 @@ struct PlayView: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 20)
-        }
-        .pageFrame()
     }
 
     /// 词卡 / 防窥屏（姿态驱动）
@@ -216,9 +294,13 @@ struct PlayView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        // 轮流模式上下还要排两圈名字，词卡压矮一点
-        .padding(.vertical, store.isRotation ? 28 : 42)
+        // 摊平的轮流模式上下还要排两圈名字，词卡压矮一点；
+        // 折起来之后名字挪到了下半屏，这半屏只剩词，不用再让位
+        .padding(.vertical, store.isRotation && !hinge.isLaptopPosture ? 28 : 42)
         .padding(.horizontal, 20)
+        // 摊开时撑满立起来那半屏：那半屏除了这个词没别的事要干，
+        // 卡越大隔着一张桌子越好认。maxHeight 要加在 background 之前，底色才跟着长
+        .frame(maxHeight: hinge.isLaptopPosture ? .infinity : nil)
         .background(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
                 .fill(game.gradient)
@@ -241,11 +323,15 @@ struct PlayView: View {
         FeedbackManager.shared.correct()
         ownPoints += 1
         store.creditGuess(by: guesser)   // 两人各 +1，并把这个词记成「某某猜对」
+        CoverScreenModel.shared.flashCorrect(store.coverScorers(guesser: guesser))
         showNextWord()
     }
 
     private func advanceWord(guessed: Bool) {
         store.markCurrentWord(guessed: guessed)
+        // 换词也要让外屏闪一下：对面看不到这块屏，不说的话他们还在猜上一个词
+        if guessed { CoverScreenModel.shared.flashCorrect(store.coverScorers()) }
+        else { CoverScreenModel.shared.flashSkip() }
         showNextWord()
     }
 

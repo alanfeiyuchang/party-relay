@@ -63,7 +63,28 @@ final class GameStore: ObservableObject {
     @Published var turnGameReady = false
     @Published var previousTurn: RotationTurn?  // 上一位刚表演完的那一轮
     /// 返回主页 / 重开小局的弹窗开着时停表（弹窗标题就是「暂停一下」）
-    @Published var turnPaused = false
+    /// 为什么停表。**不是一个布尔量**：同一时刻可能有好几件事都要求停。
+    ///
+    /// 以前是 `@Published var turnPaused`，谁都能直接写。暂停弹窗每次开关都无条件
+    /// 回写一次（`HomeExitButton`），会把折叠教学 / 合上遮罩存下来的状态盖掉——
+    /// 复现：按暂停 → 折到 90° 弹教学 → 弹窗点「继续」→ 表重新走但教学还盖着 →
+    /// 点「知道了」→ 表又停死，而页面上没有任何暂停提示。
+    /// 改成记原因，谁加的谁撤，互相不踩。
+    @Published private(set) var pauseReasons: Set<PauseReason> = []
+
+    enum PauseReason: Hashable {
+        case dialog       // 暂停 / 退出确认弹窗
+        case foldIntro    // 第一次折起来的教学
+        case foldedShut   // 手机合上了
+        case cameraPrompt // 系统相机权限弹窗挂在屏上
+    }
+
+    /// 这一遍的表停着吗
+    var turnPaused: Bool { !pauseReasons.isEmpty }
+
+    func setPaused(_ paused: Bool, for reason: PauseReason) {
+        if paused { pauseReasons.insert(reason) } else { pauseReasons.remove(reason) }
+    }
 
     /// 这一位表演时点过的猜对者（座位号），重开小局时按它把分撤回去
     private var turnCredits: [Int] = []
@@ -382,7 +403,7 @@ final class GameStore: ObservableObject {
         }
         turnCredits = []
         roundWords[playingTeamIndex] = []
-        turnPaused = false
+        pauseReasons.removeAll()
         phase = .handoff
     }
     func startPlaying() { phase = .playing }
@@ -563,7 +584,7 @@ final class GameStore: ObservableObject {
 
     func resetToHome() {
         phase = .home
-        turnPaused = false
+        pauseReasons.removeAll()
         for i in teams.indices {
             teams[i].score = 0
             teams[i].smallTotal = 0

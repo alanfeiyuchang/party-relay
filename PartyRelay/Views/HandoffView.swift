@@ -79,6 +79,7 @@ struct HandoffView: View {
                 if !store.previousTurnWords.isEmpty {
                     TurnWordsRecap(words: store.previousTurnWords,
                                    teamName: store.teams[1 - store.playingTeamIndex].name)
+                        .hiddenWhenFolded()
                 }
 
                 if store.openBuzz {

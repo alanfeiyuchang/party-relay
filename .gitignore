@@ -1,5 +1,6 @@
 # Xcode build artifacts
 build/
+build-device/
 DerivedData/
 *.xcuserstate
 xcuserdata/
@@ -19,4 +20,24 @@ AppStoreConnect/_build/
 # a couple of minutes by the loop in docs/iphone-duo.md. Screenshots/ itself is the
 # App Store set and stays tracked.
 Screenshots/duo-check/
+# 折叠版面的核查图：scripts/fold-shots.sh 随时能重出一套，别进仓库。
+# 评审时每个人各拍一份，所以这里按前缀全挡掉
+Screenshots/fold-*/
+Screenshots/nov2/
+Screenshots/mid2/
+Screenshots/vet2/
 __pycache__/
+out/
+media/duo-video/__pycache__/
+
+# 本机的 Claude Code 设置，不进仓库（signoff-loop 的记录留着）
+.claude/settings.local.json
+
+# 宣传片的 3D 素材和渲染图：24MB，而且不是 App 的一部分。
+# 里面的 .glb/.usdz 是 Sketchfab 上别人的模型（Free Standard 授权），
+# 这个仓库是公开的（Pages 支持页要求），把别人的素材原样转存进来是另一回事。
+# 脚本和说明（duo-video/*.py、*.sh、发布.md）留着，素材本身不跟。
+# 想连素材一起版本化的话，把下面这几行删掉就行。
+media/duo-video/model/
+media/duo-video/render/
+media/duo-video/tex/

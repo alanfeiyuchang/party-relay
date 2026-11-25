@@ -146,6 +146,28 @@ enum ScreenshotMode {
             store.firstTeamIndex = 0
             store.phase = .playing
 
+        case "foldintro":
+            // 专门用来拍第一次折起来那张教学卡：清掉「看过了」的标记，
+            // 并且是 maybeShowFoldIntro 里唯一放行的截图模式。
+            // 没有这一条的话，教学卡在扫图里要么拍不到、要么顶掉本该拍的那一页
+            FoldTutorial.rearmIntro()
+            MotionManager.debugOverride = .upright
+            store.settings.privacyGuardOn = false
+            store.currentGame = .act
+            store.playingTeamIndex = 0
+            store.firstTeamIndex = 0
+            store.phase = .playing
+
+        case "foldintrodraw":
+            // 你画我猜那一版教学（上下半屏的分工反过来）
+            FoldTutorial.rearmIntro()
+            MotionManager.debugOverride = .upright
+            store.settings.privacyGuardOn = false
+            store.currentGame = .drawGuess
+            store.playingTeamIndex = 0
+            store.firstTeamIndex = 0
+            store.phase = .playing
+
         case "act":
             // 普通比手画脚（不带开放抢答、不带防偷窥），用于宣传素材单独展示这个玩法
             MotionManager.debugOverride = .upright
