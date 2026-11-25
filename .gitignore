@@ -32,6 +32,8 @@ media/duo-video/__pycache__/
 
 # 本机的 Claude Code 设置，不进仓库（signoff-loop 的记录留着）
 .claude/settings.local.json
+# 评审过程记录：本地留着接着用，但不公开（这个仓库是公开的）
+.claude/signoff-loop/
 
 # 宣传片的 3D 素材和渲染图：24MB，而且不是 App 的一部分。
 # 里面的 .glb/.usdz 是 Sketchfab 上别人的模型（Free Standard 授权），
