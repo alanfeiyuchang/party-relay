@@ -21,15 +21,15 @@ FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans
 # 每张：底图、大标题（两行）、副标题
 SLIDES = {
     "zh-Hans": [
-        ("store-fold.png",  "折成 90°",        "一台手机，三个人各看各的",
-         "上半屏朝你显示词，下半屏平躺当画板"),
+        ("store-fold.png",  "一台手机",        "两边展示",
+         "实时信息，更容易看到"),
         ("store-cover.png", "对面那块屏",       "实时同步整张画",
          "计时、得分、笔画，猜的人全看得见"),
     ],
     # 英文那两张底图是用英文界面的贴图单独渲的（scene.py --tex tex-en）
     "en": [
-        ("en-store-fold.png",  "Fold it to 90°",   "Three people, one phone",
-         "The word faces you. The canvas lies flat."),
+        ("en-store-fold.png",  "One phone",        "Both sides at once",
+         "Live info, easier to see"),
         ("en-store-cover.png", "The outer screen", "Mirrors every stroke",
          "Timer, score and drawing — live, for everyone else."),
     ],
