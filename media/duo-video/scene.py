@@ -19,7 +19,9 @@ def arg(flag, default):
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
-TEX = os.path.join(HERE, "tex")
+# 贴图目录。中英两套界面各一份（tex / tex-en），商店截图要分别渲一次：
+#   --tex tex-en
+TEX = os.path.join(HERE, arg("--tex", "tex"))
 OUT = arg("--out", os.path.join(HERE, "render", "hero.png"))
 SAMPLES = int(arg("--samples", 96))
 
@@ -35,8 +37,19 @@ SHOTS = {
     "inner": ((0.235, -0.50, 0.46), (0, -0.050, 0.030), 50),
     # 推近外屏：结尾那句呼吁压在这个画面上
     "cover": ((0.115, 0.275, 0.125), (0, 0.0, 0.058), 58),
+
+    # —— 商店截图专用（1290×2796 比 9:16 更瘦更高，上方要留出放标题的地方）——
+    # 机位比宣传片那两个更近：商店截图是缩略图里被扫一眼的，屏上的字必须认得出。
+    # 视点抬高一点，手机因此落在画面偏下，上面那块空给文案。
+    "store-fold":  ((0.205, -0.425, 0.405), (0, -0.045, 0.100), 74),
+    "store-cover": ((0.135, 0.315, 0.135), (0, 0.000, 0.078), 54),
 }
 SHOT = arg("--shot", "wide")
+
+def _res(text):
+    w, h = (int(v) for v in text.lower().split("x"))
+    return w, h
+RES = _res(arg("--res", "1080x1920"))
 
 # 调色：跟 App 自己的紫 / 青 / 橙一套
 INK      = (0.07, 0.06, 0.12, 1)
@@ -222,7 +235,9 @@ def build():
     else:
         scene.eevee.taa_render_samples = SAMPLES
 
-    scene.render.resolution_x, scene.render.resolution_y = 1080, 1920   # 竖屏
+    # 默认竖版 9:16（宣传片）。商店截图要 1290×2796（6.7 寸），比 9:16 更瘦更高，
+    # 所以尺寸做成参数：--res 1290x2796
+    scene.render.resolution_x, scene.render.resolution_y = RES
     scene.render.film_transparent = False
     scene.view_settings.look = "AgX - Medium High Contrast"
     scene.render.filepath = OUT

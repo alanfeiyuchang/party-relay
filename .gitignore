@@ -41,3 +41,5 @@ media/duo-video/__pycache__/
 media/duo-video/model/
 media/duo-video/render/
 media/duo-video/tex/
+media/duo-video/tex-en/
+media/duo-video/store/

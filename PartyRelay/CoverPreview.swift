@@ -18,6 +18,13 @@ enum CoverPreview {
         return CGSize(width: parts[0], height: parts[1])
     }
 
+    /// 计时显示多少秒：`COVER_REMAINING=42`。
+    /// 拍 Blender 贴图时要的是一个好看的定数——默认那个会一秒一跳地倒数到 0，
+    /// 截图截到 0 就成了「这局已经结束」，放进商店截图里很怪
+    static var remaining: Int? {
+        ProcessInfo.processInfo.environment["COVER_REMAINING"].flatMap { Int($0) }
+    }
+
     /// 想直接看闪那一下的样子：COVER_CELEBRATE=1 看答对，COVER_CELEBRATE=skip 看换词
     private static let flashEnv = ProcessInfo.processInfo.environment["COVER_CELEBRATE"]
     static var celebrate: Bool { flashEnv == "1" || flashEnv == "skip" }
@@ -69,7 +76,8 @@ struct CoverScreenPreviewHarness: View {
                     model.syncStrokes(ScreenshotMode.demoStrokes()
                                       + (border ? [borderStroke(aspect: canvasAspect)] : []))
                 }
-                model.sync(remaining: CoverPreview.celebrate ? 37 : 4, total: 60)
+                model.sync(remaining: CoverPreview.remaining
+                           ?? (CoverPreview.celebrate ? 37 : 4), total: 60)
                 if CoverPreview.celebrate {
                     // COVER_SCORERS=2 看轮流模式（猜对的 + 表演的各一行），默认看队伍模式那一行
                     let two = ProcessInfo.processInfo.environment["COVER_SCORERS"] == "2"
@@ -80,6 +88,8 @@ struct CoverScreenPreviewHarness: View {
                 }
             }
             .onReceive(tick) { _ in
+                // 定住了就不倒数（拍贴图用）
+                guard CoverPreview.remaining == nil else { return }
                 guard !CoverPreview.celebrate else {
                     // 庆祝只亮 850ms，截一张正好撞上的概率很低。预览里每秒重放一次，
                     // 随手截一张就能看到——只影响这条预览旁路，正常玩法还是只闪一下
