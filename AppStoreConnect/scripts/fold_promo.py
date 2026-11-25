@@ -15,6 +15,14 @@ RENDER = os.path.join(ROOT, "media", "duo-video", "store")
 OUT = os.path.join(ROOT, "AppStoreConnect", "PromoImages", "fold")
 TMP = os.path.join(ROOT, "AppStoreConnect", "_build", "fold_html")
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+# (宽, 高, 底图前缀, 输出子目录)
+#   6.7 寸 iPhone：1290×2796
+#   iPhone Duo 内屏：2007×2853（ASC 的 Duo 截图位只收 2034×1398 / 1398×2034 /
+#   2853×2007 / 2007×2853 这四种，正好对上真机实测的内外屏点数 ×3）
+SIZES = {
+    "phone": (1290, 2796, "", ""),
+    "duo":   (2007, 2853, "duo-", "duo"),
+}
 W, H = 1290, 2796
 FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif'
 
@@ -65,12 +73,17 @@ html,body {{ width:{W}px; height:{H}px; overflow:hidden; font-family:{FONT}; }}
 MARK = {"en": "🎉 PartyRelay", "zh-Hans": "🎉 猜词派对"}
 
 
-def build(lang):
-    os.makedirs(os.path.join(OUT, lang), exist_ok=True)
+def build(lang, kind="phone"):
+    global W, H
+    W, H, prefix, subdir = SIZES[kind]
+    out_dir = os.path.join(OUT, subdir, lang) if subdir else os.path.join(OUT, lang)
+    os.makedirs(out_dir, exist_ok=True)
     os.makedirs(TMP, exist_ok=True)
     made = []
     for i, (shot, line1, line2, sub) in enumerate(SLIDES[lang], 1):
-        src = os.path.join(RENDER, shot)
+        base = shot.removeprefix("en-")
+        name = (("en-" if lang == "en" else "") + prefix + base)
+        src = os.path.join(RENDER, name)
         if not os.path.exists(src):
             print(f"  ✗ 缺底图 {src}（先用 scene.py 渲出来）"); continue
         html = PAGE.format(W=W, H=H, FONT=FONT, shot=src, line1=line1, line2=line2,
@@ -78,8 +91,7 @@ def build(lang):
                            sub_top=150 + 96 * 2 * 1.16 + 46)
         hp = os.path.join(TMP, f"{lang}-{i}.html")
         open(hp, "w").write(html)
-        dest = os.path.join(OUT, lang,
-                            f"{i:02d}-fold-{shot.removeprefix('en-')}")
+        dest = os.path.join(out_dir, f"{i:02d}-fold-{base}")
         subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars",
                         f"--window-size={W},{H}", f"--screenshot={dest}", f"file://{hp}"],
                        check=True, capture_output=True)
@@ -89,7 +101,9 @@ def build(lang):
 
 
 if __name__ == "__main__":
-    langs = sys.argv[1:] or ["zh-Hans", "en"]
+    args = sys.argv[1:]
+    kind = "duo" if "--duo" in args else "phone"
+    langs = [a for a in args if not a.startswith("--")] or ["zh-Hans", "en"]
     for l in langs:
-        print(f"▶ {l}")
-        build(l)
+        print(f"▶ {l} ({kind})")
+        build(l, kind)
